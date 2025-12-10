@@ -1,0 +1,38 @@
+<% layout('/layouts/boilerplate') -%>
+<body>
+    <header>
+        <h1><%= listing.title %></h1>
+        <a href="/listings">← Back to all listings</a>
+    </header>
+
+    <main>
+        <img
+            src="<%= listing.image %>"
+            alt="<%= listing.title %>"
+            style="max-width: 400px; display: block; margin-bottom: 1rem;"
+        >
+
+        <p><strong>Price:</strong> ₹<%= listing.price %></p>
+        <p><strong>Location:</strong> <%= listing.location %>, <%= listing.country %></p>
+
+        <p><strong>Description:</strong></p>
+        <p><%= listing.description %></p>
+
+        <hr>
+
+        <!-- Edit button -->
+        <a href="/listings/<%= listing._id %>/edit">
+            Edit this listing
+        </a>
+
+        <!-- (Optional) Delete button -->
+        <form
+            method="POST"
+            action="/listings/<%= listing._id %>?_method=DELETE"
+            style="margin-top: 1rem;"
+        >
+            <button type="submit">Delete Listing</button>
+        </form>
+
+    </main>
+</body>
