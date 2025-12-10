@@ -51,7 +51,6 @@
     
   </div>
 </section>
-
 <!-- Featured Listings -->
 <section class="hk-section">
   <div class="hk-section-header">
@@ -60,54 +59,43 @@
   </div>
 
   <div class="row g-4">
-    <!-- Card 1 -->
-    <div class="col-md-4">
-      <div class="hk-stay-card">
-        <div class="hk-stay-image hk-stay-image-1"></div>
-        <div class="hk-stay-body">
-          <p class="hk-stay-location">Manali, Himachal Pradesh</p>
-          <p class="hk-stay-title">Wooden cottage with valley view</p>
-          <p class="hk-stay-meta">4 guests · 2 bedrooms · Wi-Fi</p>
-          <p class="hk-stay-price"><span>₹1,899</span> night</p>
-        </div>
-      </div>
-    </div>
+  <% if (featuredListings && featuredListings.length) { %>
+    <% featuredListings.forEach(function(listing) { %>
+      <div class="col-md-4">
+        <div class="hk-stay-card position-relative">
+          <a href="/listings/<%= listing._id %>" class="stretched-link" aria-label="View <%= listing.title || 'listing' %>" style="z-index:2"></a>
 
-    <!-- Card 2 -->
-    <div class="col-md-4">
-      <div class="hk-stay-card">
-        <div class="hk-stay-image hk-stay-image-2"></div>
-        <div class="hk-stay-body">
-          <p class="hk-stay-location">Jaipur, Rajasthan</p>
-          <p class="hk-stay-title">Heritage room in haveli</p>
-          <p class="hk-stay-meta">2 guests · Breakfast included</p>
-          <p class="hk-stay-price"><span>₹2,300</span> night</p>
-        </div>
-      </div>
-    </div>
+          <div 
+            class="hk-stay-image"
+            style="background-image: url('<%= listing.image ? listing.image : "/images/placeholder.jpg" %>');"
+            role="img"
+            aria-label="<%= listing.title || 'Listing image' %>">
+          </div>
 
-    <!-- Card 3 -->
-    <div class="col-md-4">
-      <div class="hk-stay-card">
-        <div class="hk-stay-image hk-stay-image-3"></div>
-        <div class="hk-stay-body">
-          <p class="hk-stay-location">Coorg, Karnataka</p>
-          <p class="hk-stay-title">Coffee estate homestay</p>
-          <p class="hk-stay-meta">3 guests · Nature trails</p>
-          <p class="hk-stay-price"><span>₹1,750</span> night</p>
+          <div class="hk-stay-body">
+            <p class="hk-stay-location"><%= listing.location ? listing.location : (listing.city || '') %></p>
+            <p class="hk-stay-title"><%= listing.title || 'Untitled listing' %></p>
+
+            <% if (listing.guests || listing.bedrooms || listing.amenities) { %>
+              <p class="hk-stay-meta">
+                <%= listing.guests ? listing.guests + ' guests' : '' %>
+                <% if (listing.bedrooms) { %> · <%= listing.bedrooms %> bedrooms <% } %>
+                <% if (listing.amenities && listing.amenities.length) { %> · <%= listing.amenities.slice(0,2).join(', ') %> <% } %>
+              </p>
+            <% } %>
+
+            <p class="hk-stay-price">
+              <span>&#8377; <%= (typeof listing.price === 'number') ? listing.price.toLocaleString('en-IN') : (listing.price || 'N/A') %></span> night
+            </p>
+          </div>
         </div>
       </div>
+    <% }) %>
+  <% } else { %>
+    <div class="col-12">
+      <p>No featured stays available right now. <a href="/listings">Browse listings</a>.</p>
     </div>
-  </div>
+  <% } %>
+</div>
 </section>
-
-<!-- Host CTA -->
-<section class="hk-section hk-host-section">
-  <div class="hk-host-card">
-    <div>
-      <h2>Have a cozy place to share?</h2>
-      <p>List your space on Homekuti and host travelers who value warmth over wallpaper.</p>
-    </div>
-    <a href="/listings/new" class="btn hk-btn-primary">Start hosting</a>
-  </div>
-</section>
+<!-- End of Home Page -->

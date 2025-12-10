@@ -1,18 +1,56 @@
 <% layout('/layouts/boilerplate') -%>
+
 <body>
-    <main>
-        <h2>All Listings</h2>
-        <form method="get" action="/listings/new">
-            <button type="submit">
-                Create New Listing
-            </button>
-        </form>
-        <ul>
-            <% allListings.forEach(listing => { %>
-                <li>
-                    <a href="/listings/<%= listing._id %>"> <%= listing.title %> </a>
-                </li>
-            <% }) %>
-        </ul>
-    </main>
+  <main>
+    <div class="hk-section-header">
+      <h2>All Listings</h2>
+    </div>
+
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4">
+
+      <% allListings.forEach(listing => { %>
+
+        <div class="col">
+          <a href="/listings/<%= listing._id %>" class="hk-listing-link" style="text-decoration: none;">
+
+            <article class="hk-stay-card">
+
+              <!-- Image -->
+              <div 
+                class="hk-stay-image"
+                style="background-image: url('<%= listing.image %>');">
+              </div>
+
+              <!-- Content -->
+              <div class="hk-stay-body">
+                <p class="hk-stay-location">
+                  <%= listing.location || "Unknown location" %>
+                </p>
+
+                <p class="hk-stay-title">
+                  <%= listing.title %>
+                </p>
+
+                <p class="hk-stay-meta">
+                  <% if(listing.guests) { %><%= listing.guests %> guests<% } %>
+                  <% if(listing.bedrooms) { %> · <%= listing.bedrooms %> bedrooms <% } %>
+                  <% if(listing.amenities && listing.amenities.length) { %>
+                    · <%= listing.amenities[0] %>
+                  <% } %>
+                </p>
+
+                <p class="hk-stay-price">
+                  <span>₹<%= listing.price.toLocaleString("en-IN") %></span> night
+                </p>
+              </div>
+
+            </article>
+
+          </a>
+        </div>
+
+      <% }) %>
+
+    </div>
+  </main>
 </body>

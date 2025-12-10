@@ -1,3 +1,15 @@
+/* 
+    :root (variables) — needed before styles that use them
+    body / base styles
+    Navbar
+    Card (listing card component styles)
+    Listings page-specific styles (grid / listing page container)
+    Home (hero, search pill, host CTA, panels)
+    Footer
+    Misc / forms / responsive / anything else at the end 
+*/
+
+
 /* =========================================
    Global Reset & Variables
 ========================================= */
@@ -33,11 +45,19 @@
     --radius-full: 999px;
 }
 
+
+/* .plus-jakarta-sans-<uniquifier> {
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: <weight>;
+  font-style: normal;
+} */
+
 /* =========================================
    Base Styles
 ========================================= */
 body {
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
     background: radial-gradient(circle at top, #ffffff 0%, #f5f4f8 55%, #f1f5f9 100%);
     color: var(--text-main);
     line-height: 1.6;
@@ -95,7 +115,8 @@ header h1 {
 .hk-brand {
     font-size: 1.25rem;
     font-weight: 600;
-    color: var(--primary) !important;
+    color: var(--primary) !important; 
+    /* important means it overrides other styles. */
     display: flex;
     align-items: center;
     gap: 8px;
@@ -165,12 +186,161 @@ header h1 {
     }
 }
 
+/* ================= All Listings Page ================= */
+
+.hk-listings-page {
+  max-width: 1120px;
+  margin: 2.5rem auto 3rem auto;
+  padding: 0 1.25rem;
+}
+
+.hk-section-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.hk-section-header h2 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+/* ---- Card ---- */
+
+.hk-listing-card {
+  background: #ffffff;
+  border-radius: 22px;
+  overflow: hidden;
+  border: 1px solid #ffffff;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.06);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease,
+              border-color 0.15s ease;
+}
+
+.hk-listing-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 22px 55px rgba(15, 23, 42, 0.12);
+  border-color: rgba(148, 163, 184, 0.9);
+}
+
+/* ---- Image + overlays ---- */
+
+.hk-listing-image-wrap {
+  position: relative;
+  border-radius: 22px;
+  overflow: hidden;
+}
+
+.hk-listing-image {
+  width: 100%;
+  height: 210px;
+  object-fit: cover;
+  display: block;
+}
+
+.hk-listing-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 4px 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #111827;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+}
+
+.hk-listing-like {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.1);
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.hk-listing-like i {
+  font-size: 1.05rem;
+  color: #374151;
+  transition: color 0.15s ease;
+}
+
+.hk-listing-like:hover {
+  transform: translateY(-1px);
+  background: #ffffff;
+}
+
+.hk-listing-like:hover i {
+  color: #ff4b6b; /* same primary as rest of site */
+}
+.card {
+    border: none !important;
+    margin-bottom: 2rem;
+}
+.card-img-top {
+    border-radius: 1rem !important;
+    width: 100% !important;
+    object-fit: cover !important;
+}
+.card-body {
+    padding: 0.25rem 1.25rem !important;
+}
+/* ---- Body ---- */
+
+.hk-listing-body {
+  padding: 0.85rem 1rem 1rem 1rem;
+}
+
+.hk-listing-title {
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 0.2rem;
+}
+
+.hk-listing-price {
+  font-size: 0.9rem;
+  color: #111827;
+}
+
+.hk-listing-price span {
+  margin-left: 4px;
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+.hk-stay-image {
+  height: 180px;
+  background-size: cover;
+  background-position: center;
+}
+
+
+/* Responsive tweaks */
+
+@media (max-width: 576px) {
+  .hk-listing-image {
+    height: 190px;
+  }
+}
+
 /* =========================================
    Footer – Light, Clean
 ========================================= */
 .footer {
     background: #ffffff;
-    color: #4b5563;
+    color: #4e4e4e;
     padding: 32px 20px 24px 20px;
     margin-top: 60px;
     border-top: 1px solid rgba(226, 232, 240, 0.9);
@@ -209,7 +379,7 @@ header h1 {
 /* Footer links */
 .footer-links a {
     text-decoration: none;
-    color: #6b7280;
+    color: #4e4e4e;
     margin: 0 12px;
     font-size: 0.95rem;
     transition: color 0.18s ease, transform 0.1s ease;
@@ -220,25 +390,41 @@ header h1 {
     transform: translateY(-1px);
 }
 
-/* Social icons */
+/*  Social icons */
 .footer-social a {
-    color: #9ca3af;
-    margin: 0 8px;
-    font-size: 1.1rem;
-    transition: color 0.18s ease, transform 0.1s ease;
+    margin: 0 10px;
+    text-decoration: none;
+}
+.footer-social a i {
+    transition: color 0.25s ease, transform 0.15s ease;
+    font-size: 1.35rem;
+    color: #4e4e4e;
 }
 
-.footer-social a:hover {
-    color: var(--accent);
-    transform: translateY(-1px);
+.footer-social a:hover i.fa-facebook {
+    color: #1877F2; /* Facebook Blue */
+    transform: translateY(-2px);
 }
+
+.footer-social a:hover i.fa-instagram {
+    background: linear-gradient(45deg, #f9ce34, #ee2a7b, #6228d7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    transform: translateY(-2px);
+}
+
+.footer-social a:hover i.fa-twitter {
+    color: #1DA1F2; /* X/Twitter Blue */
+    transform: translateY(-2px);
+}
+
 
 /* Copyright */
 .footer-copy {
     max-width: 1120px;
     margin: 8px auto 0 auto;
     font-size: 0.8rem;
-    color: var(--text-softer);
+    color: var(--text-muted);
     text-align: center;
 }
 
@@ -623,6 +809,7 @@ form button[type="submit"]:active {
 .hk-stay-card {
   background: #ffffff;
   border-radius: 18px;
+  height: 20rem;
   overflow: hidden;
   border: 1px solid rgba(226, 232, 240, 0.9);
   box-shadow: var(--shadow-card);
