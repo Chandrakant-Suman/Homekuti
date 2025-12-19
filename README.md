@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="./images/logo.jpg" width="100" alt="Homekuti Logo" />
+  <img src="/public/images/logo.jpg" width="100" alt="Homekuti Logo" />
 </p>
 
-<h1 align="center">🏡 Homekuti</h1>
+<h1 align="center">🏡Homekuti</h1>
 <p align="center"><em>Where every stay feels like home.</em></p>
 
 ---
