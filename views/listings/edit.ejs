@@ -1,15 +1,121 @@
 <% layout('/layouts/boilerplate') -%>
-<body>
-    <h1>Edit your Listing</h1>
 
-    <form method="POST" action="/listings/<%= listing._id %>?_method=PUT">
-        <input type="text" name="listing[title]" value="<%= listing.title %>" required>
-        <textarea name="listing[description]" required><%= listing.description %></textarea>
-        <input type="text" name="listing[image]" value="<%= listing.image %>">
-        <input type="number" name="listing[price]" value="<%= listing.price %>" required>
-        <input type="text" name="listing[location]" value="<%= listing.location %>" required>
-        <input type="text" name="listing[country]" value="<%= listing.country %>" required>
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8 col-md-10">
 
-        <button type="submit">Edit Listing</button>
-    </form>
-</body>
+      <h2 class="mb-4 text-center">Edit Listing</h2>
+
+      <form
+        method="POST"
+        action="/listings/<%= listing._id %>?_method=PUT"
+        class="needs-validation"
+        novalidate
+      >
+
+        <!-- Title -->
+        <div class="mb-3">
+          <label class="form-label">Title</label>
+          <input
+            type="text"
+            class="form-control"
+            name="listing[title]"
+            value="<%= listing.title %>"
+            required
+            minlength="3"
+          >
+          <div class="valid-feedback">Looks good!</div>
+          <div class="invalid-feedback">Title is required.</div>
+        </div>
+
+        <!-- Description -->
+        <div class="mb-3">
+          <label class="form-label">Description</label>
+          <textarea
+            class="form-control"
+            name="listing[description]"
+            rows="4"
+            required
+            minlength="100"
+          ><%= listing.description %></textarea>
+          <div class="valid-feedback">Looks good!</div>
+          <div class="invalid-feedback">
+            Description is required (min 100 characters).
+          </div>
+        </div>
+
+        <!-- Image URL -->
+        <div class="mb-3">
+          <label class="form-label">Image URL</label>
+          <input
+            type="text"
+            class="form-control"
+            name="listing[image]"
+            value="<%= listing.image %>"
+            placeholder="https://example.com/image.jpg"
+          >
+          <div class="valid-feedback">Optional</div>
+        </div>
+
+        <!-- Price + Location -->
+        <div class="row">
+          <!-- Price -->
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Price</label>
+            <input
+              type="number"
+              class="form-control"
+              name="listing[price]"
+              min="500"
+              value="<%= listing.price %>"
+              required
+            >
+            <div class="valid-feedback">This is OK!</div>
+            <div class="invalid-feedback">
+              Enter a valid price; min. ₹500
+            </div>
+          </div>
+
+          <!-- Location -->
+          <div class="col-md-8 mb-3">
+            <label class="form-label">Location</label>
+            <input
+              type="text"
+              class="form-control"
+              name="listing[location]"
+              value="<%= listing.location %>"
+              required
+              minlength="3"
+            >
+            <div class="valid-feedback">Looks good!</div>
+            <div class="invalid-feedback">Location is required.</div>
+          </div>
+        </div>
+
+        <!-- Country -->
+        <div class="mb-4">
+          <label class="form-label">Country</label>
+          <input
+            type="text"
+            class="form-control"
+            name="listing[country]"
+            value="<%= listing.country %>"
+            required
+            minlength="3"
+          >
+          <div class="valid-feedback">Looks good!</div>
+          <div class="invalid-feedback">Country is required.</div>
+        </div>
+
+        <!-- Submit -->
+        <div class="d-grid">
+          <button class="btn btn-success btn-lg" type="submit">
+            Update Listing
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+</div>

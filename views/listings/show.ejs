@@ -33,33 +33,38 @@
   </p>
 
   <!-- Ratings (Static for now) -->
-  <div style="margin:1rem 0; font-size:1.1rem;">
+  <!-- <div style="margin:1rem 0; font-size:1.1rem;">
     ⭐ 4.8 (32 reviews)
-  </div>
+  </div> -->
 
   <hr style="margin:1.5rem 0;">
+<!-- Edit / Delete Actions -->
+<div class="edit-delete-btn">
 
-<!-- Edit / Delete Buttons -->
-<!-- <div style="margin-top:1.5rem; gap:1rem; padding:0;"> -->
+  <!-- Edit -->
+  <form 
+    method="GET"
+    action="/listings/<%= listing._id %>/edit"
+    class="form-no-card"
+  >
+    <button type="submit" class="btn-pill btn-pill-edit">
+      Edit
+    </button>
+  </form>
 
-  <!-- Edit Button -->
-<form action="/listings/<%= listing._id %>/edit" method="GET" class="form-no-card">
-  <button type="submit" class="btn-pill">
-    Edit
-  </button>
-</form>
+  <!-- Delete -->
+  <form 
+    method="POST"
+    action="/listings/<%= listing._id %>?_method=DELETE"
+    onsubmit="return confirm('Delete this listing?');"
+    class="form-no-card"
+  >
+    <button type="submit" class="btn-pill btn-pill-delete">
+      Delete
+    </button>
+  </form>
 
+</div>
 
-<!-- Delete Button -->
-<form method="POST" action="/listings/<%= listing._id %>?_method=DELETE" 
-      onsubmit="return confirm('Delete this listing?');" 
-      class="form-no-card">
-  <button type="submit" class="btn-pill">
-    Delete
-  </button>
-</form>
-
-<!-- 
-</div> -->
 
 </main>

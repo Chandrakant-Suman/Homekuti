@@ -438,6 +438,7 @@ ul li p {
 .hk-section-header a { font-size:0.9rem; color:#4b5563; }
 
 /* home stay card (use this for home featured blocks) */
+/* We can also use the overlay effect for image to adjust the opacity of the image background. */
 .hk-stay-card {
   background: #ffffff;
   border-radius: 18px;
@@ -557,42 +558,15 @@ ul li p {
     text-decoration: none;
 }
 
-
 /* =========================================
    Forms / New-Edit Listing (generic)
+   Bootstrap-validation friendly
 ========================================= */
-body > h1 {
-    max-width: 1120px;
-    margin: 2.5rem auto 0.75rem auto;
-    padding: 0 1.25rem;
-    font-size: 1.9rem;
-    color: var(--text-main);
-}
-.form-no-card {
-    background: transparent !important;
-    padding: 0 !important;
-    box-shadow: none !important;
-    border: none !important;
-    display: inline !important;
-}
-
-.btn-pill {
-  padding: 0.6rem 1.6rem;
-  border: 2px solid #c62828;
-  border-radius: 999px;
-  background: #ffffff;
-  color: #c62828;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  text-decoration: none;
-  display: inline-block;
-}
 
 form {
     max-width: 1120px;
-    margin: 1rem auto 0 auto;
-    padding: 1.5rem 1.5rem 1.85rem 1.5rem;
+    margin: 1rem auto 0;
+    padding: 1.5rem 1.5rem 1.85rem;
     background: var(--bg-card);
     border-radius: var(--radius-card);
     box-shadow: var(--shadow-card);
@@ -601,30 +575,22 @@ form {
     flex-direction: column;
     gap: 0.9rem;
 }
-form label { font-size: 0.9rem; color: #4b5563; }
 
-form input[type="text"],
-form input[type="number"],
+form label {
+    font-size: 0.9rem;
+    color: #4b5563;
+}
+
 form textarea {
-    width: 100%;
-    padding: 0.7rem 0.85rem;
-    border-radius: 0.6rem;
-    border: 1px solid #d1d5db;
-    font-size: 0.95rem;
-    outline: none;
-    transition: border 0.15s ease, box-shadow 0.15s ease, background 0.15s ease, transform 0.05s ease;
-    background: #f9fafb;
-    color: var(--text-main);
+    min-height: 90px;
+    resize: vertical;
 }
 
-form textarea { min-height: 90px; resize: vertical; }
-form input::placeholder, form textarea::placeholder { color: #9ca3af; }
-form input:focus, form textarea:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.32);
-    background: #ffffff;
-    transform: translateY(-1px);
+form input::placeholder,
+form textarea::placeholder {
+    color: #9ca3af;
 }
+
 form button[type="submit"] {
     margin-top: 0.75rem;
     padding: 0.75rem 1.8rem;
@@ -636,13 +602,61 @@ form button[type="submit"] {
     font-weight: 600;
     cursor: pointer;
     align-self: flex-start;
-    transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease, opacity 0.12s ease;
+    transition: background 0.15s ease,
+                transform 0.1s ease,
+                box-shadow 0.15s ease,
+                opacity 0.12s ease;
 }
+
 form button[type="submit"]:hover {
     background: linear-gradient(135deg, var(--primary-dark), #be234c);
     transform: translateY(-1px);
     box-shadow: 0 18px 40px rgba(255, 75, 107, 0.45);
     opacity: 0.98;
+}
+
+/* ----- Button-pill for edit/submit ----- */
+/* Remove card styling for action forms */
+.form-no-card {
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    display: inline-flex !important;
+}
+
+.edit-delete-btn{
+  display: flex;
+  justify-content:left;
+
+}
+.btn-pill {
+    /* margin-left: 10px; */
+    margin-right: 10px;
+    padding: 0.75rem 2.4rem;
+    border-radius: 999px;
+    border: none;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #ffffff;
+    cursor: pointer;
+    transition: transform 0.12s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+.btn-pill:hover {
+    transform: translateY(-2px);
+    opacity: 0.95;
+}
+/* ------- Form Validation ------- */
+.was-validated .form-control:invalid,
+.form-control.is-invalid {
+    border-color: #dc3545;
+}
+
+.was-validated .form-control:valid,
+.form-control.is-valid {
+    border-color: #198754;
 }
 
 /* =========================================
