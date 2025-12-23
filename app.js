@@ -8,6 +8,7 @@ const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
 const ExpressError = require("./utils/ExpressError");
 const wrapAsync = require("./utils/wrapAsync.js");
+const { listingSchema } = require("./schema.js");
 
 const MONGO_URL = "mongodb://127.0.0.1:27017/Homekuti";
 
@@ -15,11 +16,11 @@ const MONGO_URL = "mongodb://127.0.0.1:27017/Homekuti";
 // DATABASE
 // -----------------------
 main()
-  .then(() => console.log("Connected to MongoDB"))
-  .catch(err => console.log("Mongo Error:", err));
+   .then(() => console.log("Connected to MongoDB"))
+   .catch((err) => console.log("Mongo Error:", err));
 
 async function main() {
-  await mongoose.connect(MONGO_URL);
+   await mongoose.connect(MONGO_URL);
 }
 
 // -----------------------
@@ -35,11 +36,12 @@ app.set("views", path.join(__dirname, "views"));
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride("_method"));
+app.use(express.json()); // important for APIs
 
 app.use((req, res, next) => {
-  res.locals.activeRoute = req.path;
-  res.locals.user = req.user || null;
-  next();
+   res.locals.activeRoute = req.path;
+   res.locals.user = req.user || null;
+   next();
 });
 
 // -----------------------
@@ -47,92 +49,108 @@ app.use((req, res, next) => {
 // -----------------------
 
 // HOME
-app.get("/", wrapAsync(async (req, res) => {
-  const featuredListings = await Listing.aggregate([{ $sample: { size: 3 } }]);
-  res.render("home", { featuredListings });
-}));
+app.get(
+   "/",
+   wrapAsync(async (req, res) => {
+      const featuredListings = await Listing.aggregate([
+         { $sample: { size: 3 } },
+      ]);
+      res.render("home", { featuredListings });
+   })
+);
+
+const validateListing = (req, res, next) => {
+   let { error } = listingSchema.validate(req.body);
+   if (error) {
+      let errorMessage = error.details.map((el) => el.message).join(", ");
+      console.log(errorMessage);
+      throw new ExpressError(400, errorMessage);
+   } else {
+      next();
+   }
+};
 
 // INDEX
-app.get("/listings", wrapAsync(async (req, res) => {
-  const allListings = await Listing.find({});
-  res.render("listings/index", { allListings });
-}));
+app.get(
+   "/listings",
+   wrapAsync(async (req, res) => {
+      const allListings = await Listing.find({});
+      res.render("listings/index", { allListings });
+   })
+);
 
 // NEW
 app.get("/listings/new", (req, res) => {
-  res.render("listings/new");
+   res.render("listings/new");
 });
 
-// CREATE
-app.post("/listings", wrapAsync(async (req, res) => {
-  if (!req.body.listing) {
-    throw new ExpressError(400, "Send valid data for listing.");
-  }
-  const newListing = new Listing(req.body.listing);
-  await newListing.save();
-  res.redirect(`/listings/${newListing._id}`);
-}));
+// CREATE route (Browser-based)
+app.post(
+   "/listings",
+   validateListing,
+   wrapAsync(async (req, res) => {
+      if(req.body=== undefined){
+          throw new ExpressError(400, "Invalid Listing Data");
+      }
+      await new Listing(req.body.listing).save();
+      res.redirect("/listings");
+   })
+);
 
 // SHOW
-app.get("/listings/:id", wrapAsync(async (req, res) => {
-  const { id } = req.params;
-
-  if (!mongoose.isValidObjectId(id)) {
-    throw new ExpressError(404, "Listing not found");
-  }
-
-  const listing = await Listing.findById(id);
-  if (!listing) {
-    throw new ExpressError(404, "Listing not found");
-  }
-
-  res.render("listings/show", { listing });
-}));
+app.get(
+   "/listings/:id",
+   wrapAsync(async (req, res) => {
+      let { id } = req.params;
+      const listing = await Listing.findById(id);
+      res.render("listings/show", { listing });
+   })
+);
 
 // EDIT
-app.get("/listings/:id/edit", wrapAsync(async (req, res) => {
-  const { id } = req.params;
-
-  if (!mongoose.isValidObjectId(id)) {
-    throw new ExpressError(404, "Listing not found");
-  }
-
-  const listing = await Listing.findById(id);
-  if (!listing) {
-    throw new ExpressError(404, "Listing not found");
-  }
-
-  res.render("listings/edit", { listing });
-}));
+app.get(
+   "/listings/:id/edit",
+   wrapAsync(async (req, res) => {
+      let { id } = req.params;
+      const listing = await Listing.findById(id);
+      res.render("listings/edit.ejs", { listing });
+   })
+);
 
 // UPDATE
-app.put("/listings/:id", wrapAsync(async (req, res) => {
-  const { id } = req.params;
-
-  const listing = await Listing.findByIdAndUpdate(
-    id,
-    req.body.listing,
-    { runValidators: true, new: true }
-  );
-
-  if (!listing) {
-    throw new ExpressError(404, "Listing not found");
-  }
-
-  res.redirect(`/listings/${id}`);
-}));
+app.put(
+   "/listings/:id",
+   validateListing,
+   wrapAsync(async (req, res) => {
+      let { id } = req.params;
+      const listing = await Listing.findByIdAndUpdate(
+         id,
+         { ...req.body.listing },
+         { runValidators: true, new: true }
+      );
+      res.redirect(`/listings/${id}`);
+   })
+);
 
 // DELETE
-app.delete("/listings/:id", wrapAsync(async (req, res) => {
-  const { id } = req.params;
+app.delete(
+   "/listings/:id",
+   wrapAsync(async (req, res) => {
+      let { id } = req.params;
+      let deletedListing = await Listing.findByIdAndDelete(id);
+      console.log(deletedListing);
+      res.redirect("/listings");
+   })
+);
 
-  if (!mongoose.isValidObjectId(id)) {
-    throw new ExpressError(404, "Listing not found");
-  }
-
-  await Listing.findByIdAndDelete(id);
-  res.redirect("/listings");
-}));
+// API ROUTE - Get all listings in JSON
+app.get(
+   "/api/listings",
+   wrapAsync(async (req, res) => {
+      const allListings = await Listing.find({});
+      res.json(allListings);
+   })
+);
 
 // STATIC PAGES
 app.get("/about", (req, res) => res.render("about"));
@@ -140,26 +158,25 @@ app.get("/contact", (req, res) => res.render("contact"));
 app.get("/terms", (req, res) => res.render("terms"));
 app.get("/privacy", (req, res) => res.render("privacy"));
 
+
 // -----------------------
+// ERROR HANDLING
+// -----------------------
+
 // 404 CATCH-ALL
-// -----------------------
-app.use((req, res, next) => {
-  next(new ExpressError(404, "404: Page Not Found"));
+app.use( (req, res, next) => {
+   next(new ExpressError(404, "Page Not Found"));
 });
 
-// -----------------------
 // CENTRAL ERROR HANDLER
-// -----------------------
 app.use((err, req, res, next) => {
-  const { statusCode = 500, message = "Something went wrong" } = err;
-  res.render("error.ejs",{err});
-  // res.status(statusCode).send(message);
+   const { statusCode = 500, message = "Something went wrong" } = err;
+   res.status(statusCode).render("error.ejs", { err });
+   // res.status(statusCode).send(message);
 });
 
-// -----------------------
 // SERVER
-// -----------------------
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+   console.log(`Server running on port ${PORT}`);
 });

@@ -2,23 +2,23 @@
    Variables
 ========================================= */
 :root {
-    --bg-body: #f5f4f8;          /* soft neutral */
+    --bg-body: #f5f4f8;
     --bg-surface: #ffffff;
     --bg-card: #ffffff;
     --bg-card-soft: #f3f4f7;
     --bg-header: #ffffff;
 
-    --text-main: #1f2933;        /* deep, not black */
+    --text-main: #1f2933;
     --text-muted: #6b7280;
     --text-light: #9ca3af;
     --text-softer: #a0aec0;
 
     --border-soft: #e3e5ec;
 
-    --primary: #ff4b6b;          /* refined pink */
+    --primary: #ff4b6b;
     --primary-dark: #e13258;
-    --accent: #14b8a6;           /* teal accent */
-    --accent-soft: #f97373;      /* softer warm accent */
+    --accent: #14b8a6;
+    --accent-soft: #f97373;
 
     --shadow-soft: 0 10px 35px rgba(15, 23, 42, 0.04);
     --shadow-card: 0 18px 45px rgba(15, 23, 42, 0.06);
@@ -85,7 +85,10 @@ a:hover {
     align-items: center;
     gap: 8px;
 }
-.hk-logo {
+
+/* ✅ MERGED LOGO RULE (Navbar + Footer) */
+.hk-logo,
+.footer-logo {
     width: 32px;
     height: 32px;
     object-fit: contain;
@@ -707,8 +710,4 @@ form button[type="submit"]:hover {
 
 .hk-stay-card:hover {
   background: rgba(255, 255, 255, 0.95);
-}
-/* Home image softening (very subtle) */
-.hk-stay-image {
-  filter: saturate(0.98) contrast(0.98);
 }
