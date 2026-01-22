@@ -3,12 +3,15 @@ const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
 const Listing = require("./models/listing.js");
+const maintenance = require("./middlewares/maintenance");
+const Review = require("./models/review.js");
 const path = require("path");
 const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
 const ExpressError = require("./utils/ExpressError");
 const wrapAsync = require("./utils/wrapAsync.js");
 const { listingSchema } = require("./schema.js");
+const { reviewSchema } = require("./schema.js");
 
 const MONGO_URL = "mongodb://127.0.0.1:27017/Homekuti";
 
@@ -50,7 +53,7 @@ app.use((req, res, next) => {
 
 // HOME
 app.get(
-   "/",
+   "/",maintenance,
    wrapAsync(async (req, res) => {
       const featuredListings = await Listing.aggregate([
          { $sample: { size: 3 } },
@@ -70,9 +73,20 @@ const validateListing = (req, res, next) => {
    }
 };
 
+const validateReview = (req, res, next) => {
+   let { error } = reviewSchema.validate(req.body);
+   if (error) {
+      let errorMessage = error.details.map((el) => el.message).join(", ");
+      console.log(errorMessage);
+      throw new ExpressError(400, errorMessage);
+   } else {
+      next();
+   }
+};
+
 // INDEX
 app.get(
-   "/listings",
+   "/listings",maintenance,
    wrapAsync(async (req, res) => {
       const allListings = await Listing.find({});
       res.render("listings/index", { allListings });
@@ -80,13 +94,13 @@ app.get(
 );
 
 // NEW
-app.get("/listings/new", (req, res) => {
+app.get("/listings/new",maintenance, (req, res) => {
    res.render("listings/new");
 });
 
 // CREATE route (Browser-based)
 app.post(
-   "/listings",
+   "/listings",maintenance,
    validateListing,
    wrapAsync(async (req, res) => {
       if(req.body=== undefined){
@@ -119,7 +133,7 @@ app.get(
 
 // UPDATE
 app.put(
-   "/listings/:id",
+   "/listings/:id",maintenance,
    validateListing,
    wrapAsync(async (req, res) => {
       let { id } = req.params;
@@ -134,7 +148,7 @@ app.put(
 
 // DELETE
 app.delete(
-   "/listings/:id",
+   "/listings/:id",maintenance,
    wrapAsync(async (req, res) => {
       let { id } = req.params;
       let deletedListing = await Listing.findByIdAndDelete(id);
@@ -142,6 +156,20 @@ app.delete(
       res.redirect("/listings");
    })
 );
+
+// REVIEWS
+// post route for adding a review to a listing
+app.post("/listings/:id/reviews", validateReview, wrapAsync(async (req,res)=>{
+   let listing=await Listing.findById(req.params.id);
+   let newReview=new Review(req.body.review);
+   listing.reviews.push(newReview);
+   await newReview.save();
+   await listing.save();
+
+   console.log("Added Review: ",newReview);
+   res.redirect(`/listings/${listing._id}`);
+
+}))
 
 // API ROUTE - Get all listings in JSON
 app.get(
@@ -157,6 +185,7 @@ app.get("/about", (req, res) => res.render("about"));
 app.get("/contact", (req, res) => res.render("contact"));
 app.get("/terms", (req, res) => res.render("terms"));
 app.get("/privacy", (req, res) => res.render("privacy"));
+app.get("/maintenance", (req, res) => res.render("maintenance"));
 
 
 // -----------------------
