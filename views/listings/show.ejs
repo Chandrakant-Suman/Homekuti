@@ -1,67 +1,102 @@
 <% layout('/layouts/boilerplate') -%>
 
-  <main style="max-width:900px; margin:2rem auto; padding:1rem; font-family:Inter, sans-serif;">
-
+  <main style="
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 1rem;
+  font-family: Inter, sans-serif;
+">
     <!-- Title -->
-    <h1 style="margin-top:1.2rem; font-size:2rem; font-weight:700;">
+    <h1 style="margin-top: 1.2rem; font-size: 2rem; font-weight: 700">
       <%= listing.title %>
     </h1>
+
     <!-- Image -->
-    <div
-      style="border-radius:12px; overflow:hidden; width:300px; height:200px; box-shadow:0 4px 18px rgba(0,0,0,0.12);">
+    <div style="
+    border-radius: 12px;
+    overflow: hidden;
+    width: 300px;
+    height: 200px;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.12);
+  ">
       <img src="<%= listing.image || '/images/placeholder.jpg' %>" alt="<%= listing.title %>"
-        style="width:100%; height:100%; object-fit:cover;">
+        style="width: 100%; height: 100%; object-fit: cover" />
     </div>
 
     <!-- Description -->
-    <p style="margin-top:1rem; line-height:1.6; color:#444;">
+    <p style="margin-top: 1rem; line-height: 1.6; color: #444">
       <%= listing.description || 'No description provided.' %>
     </p>
 
     <!-- Location -->
-    <p style="color:#555; margin:0.2rem 0;">
+    <p style="color: #555; margin: 0.2rem 0">
       <strong>Location:</strong>
       <%= listing.location %>, <%= listing.country %>
     </p>
 
     <!-- Price -->
-    <p style="font-size:1.2rem; margin:0.4rem 0;">
+    <p style="font-size: 1.2rem; margin: 0.4rem 0">
       <strong>Price:</strong> ₹<%= listing.price %> / night
     </p>
 
     <!-- Edit / Delete Actions -->
     <div class="edit-delete-btn">
-
       <!-- Edit -->
       <form method="GET" action="/listings/<%= listing._id %>/edit" class="form-no-card">
-        <button type="submit" class="btn-pill btn-pill-edit">
-          Edit
-        </button>
+        <button type="submit" class="btn me-2">Edit</button>
       </form>
 
       <!-- Delete -->
       <form method="POST" action="/listings/<%= listing._id %>?_method=DELETE"
         onsubmit="return confirm('Delete this listing?');" class="form-no-card">
-        <button type="submit" class="btn-pill btn-pill-delete">
-          Delete
-        </button>
+        <button type="submit" class="btn btn-danger">Delete</button>
       </form>
     </div>
-    <hr style="margin: 1rem 0;">
+
+    <hr style="margin: 1rem 0" />
 
     <!-- Reviews Section -->
     <div class="col-10 offset-0">
-      <h4>Leave a review: </h4>
-      <form action="/listings/<%=listing.id%>/reviews" method="post" novalidate class="needs-validation">
+      <h4>Leave a review:</h4>
+
+      <form action="/listings/<%= listing.id %>/reviews" method="post" novalidate class="needs-validation">
         <div>
           <label for="rating" class="form-label">Rating</label>
-          <input type="range" min="1" max="5" id="rating" class="form-range" name="review[rating]">
+          <input type="range" min="1" max="5" id="rating" class="form-range" name="review[rating]" />
+
           <div class="mt-3">
             <label for="comment" class="form-label">Comments</label>
             <textarea name="review[comment]" id="comment" cols="50" rows="5" class="form-control" required></textarea>
             <div class="invalid-feedback">Please enter a comment.</div>
           </div>
-          <button type="submit" class="btn-pill mt-3">Submit</button>
+
+          <button type="submit" class="btn mt-3">Submit</button>
         </div>
       </form>
+
+      <hr style="margin: 1.5rem 0" />
+
+      <h4>All reviews:</h4>
+
+      <div class="row">
+        <% for (review of listing.reviews) { %>
+          <div class="card col-5 ms-3 mb-3">
+            <div class="card-body">
+              <h5 class="card-title">Jane Doe</h5>
+              <p class="card-text mb-0">
+                <%= review.comment %>
+              </p>
+              <p class="card-text mb-0"><b><%= review.rating %> stars</b></p>
+            </div>
+
+            <form method="post" action="/listings/<%= listing.id %>/reviews/<%= review._id %>?_method=DELETE"
+              class="form-no-card mt-0 mb-3 ms-3">
+              <button type="submit" class="btn btn-sm mb-3 mt-0">
+                Delete
+              </button>
+            </form>
+          </div>
+          <% } %>
+      </div>
+    </div>
   </main>
