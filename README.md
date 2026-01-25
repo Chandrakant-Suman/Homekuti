@@ -58,14 +58,21 @@ This project emphasizes:
 
 ---
 ##  Project Structure
-Homekuti/
-│── models/
-│── routes/
-│── public/
-│── views/
-│── app.js
-│── package.json
-│── README.md
+Project/
+├── init/
+├── middlewares/
+├── models/
+├── node_modules/
+├── public/
+├── utils/
+├── views/
+│
+├── .gitignore
+├── app.js
+├── package.json
+├── package-lock.json
+├── README.md
+└── schema.js
 
 
 ## 🚀 Installation
