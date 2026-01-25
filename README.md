@@ -57,6 +57,7 @@ This project emphasizes:
 | Templates | EJS Partial Views |
 
 ---
+```text
 ##  Project Structure
 Project/
 ├── init/
@@ -73,7 +74,7 @@ Project/
 ├── package-lock.json
 ├── README.md
 └── schema.js
-
+```
 
 ## 🚀 Installation
 
