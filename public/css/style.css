@@ -283,6 +283,7 @@ ul li p {
   margin-top: 1.25rem;
   display: flex;
   gap: 0.75rem;
+  text-decoration: none;
 }
 
 /* Buttons – clean & consistent */
@@ -336,7 +337,8 @@ ul li p {
 .hk-search-btn {
   border: none; outline: none; background: var(--primary); color: #fff; width: 40px; height: 40px;
   border-radius: 999px; display: inline-flex; align-items: center; justify-content: center;
-  margin-left: auto; cursor: pointer; box-shadow: 0 18px 45px rgba(255, 75, 107, 0.55);
+  margin-left: auto; cursor: pointer; 
+  /* box-shadow: 0 18px 45px rgba(255, 75, 107, 0.55); */
 }
 .hk-search-btn i { font-size: 0.9rem; }
 
