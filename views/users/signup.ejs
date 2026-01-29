@@ -1,0 +1,95 @@
+<% layout('/layouts/boilerplate') -%>
+
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8">
+
+      <h2 class="mb-4 text-center">Create Your Account</h2>
+
+      <form 
+        action="/user/signup" 
+        method="POST" 
+        class="needs-validation" 
+        novalidate
+      >
+
+        <!-- Username -->
+        <div class="mb-2">
+          <label class="form-label">Username</label>
+
+          <input
+            type="text"
+            class="form-control"
+            name="username"
+            required
+            minlength="3"
+            placeholder="Enter username"
+          >
+
+          <div class="valid-feedback">Looks good!</div>
+          <div class="invalid-feedback">
+            Username must be at least 3 characters.
+          </div>
+        </div>
+
+
+        <!-- Email -->
+        <div class="mb-2">
+          <label class="form-label">Email</label>
+
+          <input
+            type="email"
+            class="form-control"
+            name="email"
+            required
+            placeholder="Enter email"
+          >
+
+          <div class="valid-feedback">Valid email!</div>
+          <div class="invalid-feedback">
+            Please enter a valid email.
+          </div>
+        </div>
+
+
+        <!-- Password -->
+        <div class="mb-3">
+          <label class="form-label">Password</label>
+
+          <input
+            type="password"
+            class="form-control"
+            name="password"
+            required
+            minlength="6"
+            placeholder="Create password"
+          >
+
+          <div class="valid-feedback">Strong password!</div>
+          <div class="invalid-feedback">
+            Password must be at least 6 characters.
+          </div>
+        </div>
+
+
+        <!-- Submit -->
+        <div class="d-grid mb-3">
+          <button class="btn btn-primary btn-lg" type="submit">
+            Sign Up
+          </button>
+        </div>
+
+      </form>
+
+
+      <!-- Redirect -->
+      <p class="text-center text-muted">
+        Already have an account?
+        <a href="/user/signin" class="text-decoration-none">
+          Sign in here
+        </a>
+      </p>
+
+    </div>
+  </div>
+</div>

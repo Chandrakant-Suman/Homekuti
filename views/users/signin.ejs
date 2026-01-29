@@ -1,0 +1,74 @@
+<% layout('/layouts/boilerplate') -%>
+
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8">
+
+      <h2 class="mb-4 text-center">Sign In</h2>
+
+      <form 
+        action="/user/signin" 
+        method="POST" 
+        class="needs-validation" 
+        novalidate
+      >
+
+        <!-- Username -->
+        <div class="mb-3">
+          <label class="form-label">Username</label>
+
+          <input
+            type="text"
+            class="form-control"
+            name="username"
+            required
+            placeholder="Enter username"
+          >
+
+          <div class="valid-feedback">Looks good!</div>
+          <div class="invalid-feedback">
+            Username is required.
+          </div>
+        </div>
+
+
+        <!-- Password -->
+        <div class="mb-3">
+          <label class="form-label">Password</label>
+
+          <input
+            type="password"
+            class="form-control"
+            name="password"
+            required
+            placeholder="Enter password"
+          >
+
+          <div class="valid-feedback">Ok!</div>
+          <div class="invalid-feedback">
+            Password is required.
+          </div>
+        </div>
+
+
+        <!-- Submit -->
+        <div class="d-grid mb-3">
+          <button class="btn btn-primary btn-lg" type="submit">
+            Sign In
+          </button>
+        </div>
+
+      </form>
+
+
+      <!-- Redirect -->
+      <p class="text-center text-muted">
+        Don’t have an account?
+        <a href="/user/signup" class="text-decoration-none">
+          Sign up here
+        </a>
+      </p>
+
+    </div>
+  </div>
+</div>

@@ -10,6 +10,10 @@ const ejsMate = require("ejs-mate");
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
 const flash = require("connect-flash");
+const passport = require("passport");
+const LocalStrategy = require("passport-local");
+
+const User = require("./models/user.js");
 
 // ================= MODELS =================
 // Central data layer (MongoDB schemas)
@@ -19,8 +23,9 @@ const Listing = require("./models/listing");
 // ================= ROUTES =================
 // Modular route handlers (keeps app.js clean)
 
-const listings = require("./routes/listing.js");
-const reviews = require("./routes/review.js");
+const listingRouter = require("./routes/listing.js");
+const reviewsRouter = require("./routes/review.js");
+const userRouter = require("./routes/user.js");
 
 // ================= UTILITIES & MIDDLEWARE =================
 // Reusable helpers and custom middleware
@@ -79,6 +84,21 @@ app.use(cookieParser());
 app.use(session(sessionOptions));
 app.use(flash());
 
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(new LocalStrategy(User.authenticate()));
+
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
+// ================= GLOBAL TEMPLATE VARIABLES =================
+// Variables accessible in every EJS file
+
+app.use((req, res, next) => {
+   res.locals.activeRoute = req.path; // For navbar highlighting
+   res.locals.user = req.user || null; // For future authentication
+   next();
+});
 
 // Make flash messages globally available in EJS
 // This avoids passing success/error manually in every render
@@ -89,14 +109,6 @@ app.use((req, res, next) => {
    next();
 });
 
-// ================= GLOBAL TEMPLATE VARIABLES =================
-// Variables accessible in every EJS file
-
-app.use((req, res, next) => {
-   res.locals.activeRoute = req.path; // For navbar highlighting
-   res.locals.user = req.user || null; // For future authentication
-   next();
-});
 
 // ================= ROUTE SETUP =================
 
@@ -116,8 +128,9 @@ app.get(
 );
 
 // LISTING ROUTES (CRUD Operations)
-app.use("/listings", listings);
-app.use("/listings/:id/reviews", reviews);
+app.use("/listings", listingRouter);
+app.use("/listings/:id/reviews", reviewsRouter);
+app.use("/user", userRouter);
 
 // ================= API ENDPOINT =================
 // Public JSON API (useful for mobile / frontend clients)

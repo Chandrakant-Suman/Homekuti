@@ -48,3 +48,20 @@
   });
 
 })();
+
+// AUTO HIDE FLASH ALERTS AFTER 3 SECONDS
+// setTimeout(() => {
+//   const alert = document.querySelector(".alert");
+//   if (alert) {
+//     alert.classList.remove("show");
+//     alert.classList.add("fade");
+//   }
+// }, 3000);
+
+setTimeout(() => {
+  const alert = document.querySelector('.alert');
+  if (alert) {
+    bootstrap.Alert.getOrCreateInstance(alert).close();
+  }
+}, 5000);
+
