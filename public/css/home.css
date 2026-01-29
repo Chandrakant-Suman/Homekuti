@@ -1,0 +1,180 @@
+/* =========================================
+   Home (Hero, Search Pill, Featured cards, Host CTA)
+========================================= */
+/* Hero */
+.hk-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  padding: 2.5rem 0 1.5rem 0;
+}
+.hk-hero-content { max-width: 540px; }
+.hk-hero-kicker {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-light);
+  margin-bottom: 0.75rem;
+}
+.hk-hero-title {
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 0.75rem;
+}
+.hk-hero-subtitle {
+  font-size: 0.98rem;
+  color: #4b5563;
+  max-width: 480px;
+}
+.hk-hero-actions {
+  margin-top: 1.25rem;
+  display: flex;
+  gap: 0.75rem;
+  text-decoration: none;
+}
+
+/* Buttons – clean & consistent */
+.btn {
+  background-color: var(--primary);
+  color: #fff !important;
+  border-radius: 0.375rem;
+}
+
+.btn:hover {
+  background-color: var(--primary-dark);
+  transform: translateY(-1px);
+}
+
+.btn:active {
+  transform: translateY(0);
+  box-shadow: 0 3px 10px rgba(255, 47, 85, 0.872);
+}
+
+/* Right side mini card in hero */
+.hk-hero-side {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+}
+.hk-hero-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 1.25rem 1.4rem;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.16);
+  max-width: 280px;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+}
+.hk-hero-card h3 { font-size: 1.02rem; margin-bottom: 0.4rem; color: #111827; }
+.hk-hero-card p { font-size: 0.9rem; color: #6b7280; margin-bottom: 0.6rem; }
+.hk-hero-tag { display:inline-block; font-size:0.85rem; font-weight:600; color:var(--primary); }
+
+/* Search Pill */
+.hk-search-wrapper { display:flex; justify-content:center; margin-bottom:2rem; }
+.hk-search-pill {
+  background: #ffffff; border-radius: 999px; padding: 0.7rem 0.7rem;
+  display: flex; align-items: center; gap: 0.2rem;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  max-width: 720px; width: 100%;
+}
+.hk-search-item { padding: 0.25rem 1rem; display:flex; flex-direction:column; }
+.hk-search-label { font-size: 0.8rem; font-weight: 600; color: #111827; }
+.hk-search-value { font-size: 0.9rem; color: #6b7280; }
+.hk-search-divider { width: 1px; height: 32px; background: #e5e7eb; }
+.hk-search-btn {
+  border: none; outline: none; background: var(--primary); color: #fff; width: 40px; height: 40px;
+  border-radius: 999px; display: inline-flex; align-items: center; justify-content: center;
+  margin-left: auto; cursor: pointer; 
+  /* box-shadow: 0 18px 45px rgba(255, 75, 107, 0.55); */
+}
+.hk-search-btn i { font-size: 0.9rem; }
+
+/* Featured stay small card (home) */
+.hk-section { margin-top: 2.5rem; margin-bottom: 1rem; }
+.hk-section-header { display:flex; align-items:baseline; justify-content:space-between; margin-bottom:1rem; }
+.hk-section-header h2 { font-size:1.3rem; font-weight:600; color:#111827; }
+.hk-section-header a { font-size:0.9rem; color:#4b5563; }
+
+/* home stay card (use this for home featured blocks) */
+/* We can also use the overlay effect for image to adjust the opacity of the image background. */
+.hk-stay-card {
+  background: #ffffff;
+  border-radius: 18px;
+  height: 20rem; 
+  overflow: hidden;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.hk-stay-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 22px 55px rgba(15, 23, 42, 0.20);
+  border-color: rgba(148, 163, 184, 0.9);
+}
+.hk-stay-image { height: 180px; background-size: cover; background-position: center; }
+.hk-stay-image-1 { background-image: linear-gradient(135deg, #ffe2e7, #ffd5dd); }
+.hk-stay-image-2 { background-image: linear-gradient(135deg, #dbeafe, #bfdbfe); }
+.hk-stay-image-3 { background-image: linear-gradient(135deg, #dcfce7, #bbf7d0); }
+
+.hk-stay-body { padding: 0.85rem 1rem 1rem 1rem; }
+.hk-stay-location { font-size: 0.85rem; color: #6b7280; margin-bottom: 0.15rem; }
+.hk-stay-title { font-size: 0.98rem; font-weight: 600; color: #111827; margin-bottom: 0.25rem; }
+.hk-stay-meta { font-size: 0.85rem; color: #9ca3af; margin-bottom: 0.4rem; }
+.hk-stay-price { font-size: 0.9rem; color: #4b5563; }
+.hk-stay-price span { font-weight: 600; color: #111827; }
+
+/* Home cards – glassy depth like listings */
+.hk-stay-card {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.hk-stay-card:hover {
+  background: rgba(255, 255, 255, 0.95);
+}
+/* Host CTA */
+.hk-host-section { margin-bottom: 3rem; }
+.hk-host-card {
+  background: #ffffff; border-radius: 18px; padding: 1.4rem 1.6rem;
+  border: 1px solid rgba(226, 232, 240, 0.9); box-shadow: var(--shadow-soft);
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+}
+.hk-host-card h2 { font-size: 1.25rem; margin-bottom: 0.35rem; color: #111827; }
+.hk-host-card p { font-size: 0.95rem; color: #4b5563; }
+
+/* Hero mini tagline */
+.hk-search-end { display:flex; align-items:center; gap:12px; margin-left:auto; }
+.hero-mini-tagline {
+  font-size: 0.90rem; font-style: italic; color: #4b5563; white-space: nowrap; margin:0; line-height:1;
+}
+
+/* Panels below search pill */
+.hk-panel {
+  max-width: 720px; margin: 0.75rem auto 0 auto; background: #ffffff; border-radius: 24px;
+  box-shadow: 0 22px 60px rgba(15, 23, 42, 0.16); border: 1px solid rgba(226, 232, 240, 0.95);
+  padding: 1rem 1.25rem; display: none;
+}
+.hk-panel h4 { font-size: 1rem; margin-bottom: 0.75rem; color: #111827; }
+
+/* Panels: where / when / who content helpers */
+#wherePanel ul { list-style: none; padding-left: 0; margin-bottom: 0.5rem; }
+#wherePanel li { padding: 0.45rem 0.3rem; cursor: pointer; font-size: 0.9rem; color: #374151; border-radius: 8px; }
+#wherePanel li:hover { background: #f3f4f6; }
+#whereCustom { width: 100%; padding: 0.5rem 0.6rem; border-radius: 10px; border: 1px solid #d1d5db; }
+
+.hk-date-row { display: flex; gap: 1rem; }
+.hk-date-row label { font-size: 0.85rem; color: #6b7280; }
+.hk-date-row input[type="date"] { padding: 0.4rem 0.5rem; border-radius: 10px; border: 1px solid #d1d5db; }
+
+.hk-guest-row { display:flex; justify-content:space-between; align-items:center; padding:0.6rem 0; border-bottom:1px solid #f3f4f6; }
+.hk-guest-row:last-child { border-bottom:none; }
+.hk-guest-title { font-size:0.95rem; color:#111827; }
+.hk-guest-sub { font-size:0.8rem; color:#6b7280; }
+.hk-guest-controls { display:flex; align-items:center; gap:0.5rem; }
+.hk-guest-btn { width:28px; height:28px; border-radius:999px; border:1px solid #d1d5db; background:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+.hk-guest-count { min-width:16px; text-align:center; }
+.hk-panel-apply { margin-top:0.8rem; border:none; background:#111827; color:#fff; padding:0.4rem 0.9rem; border-radius:999px; font-size:0.85rem; }

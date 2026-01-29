@@ -1,156 +1,137 @@
 <% layout('/layouts/boilerplate') -%>
 
-<section class="hk-hero">
-  <div class="hk-hero-content">
-    <p class="hk-hero-kicker">
-      Curated homestays • Cozy cottages • Mountain escapes
-    </p>
-
-    <h1 class="hk-hero-title">
-      Find a stay that actually feels like home.
-    </h1>
-
-    <p class="hk-hero-subtitle">
-      Discover handpicked homes, cabins, and rooms hosted by people who care.
-      No generic hotel vibe, just warm, lived-in spaces.
-    </p>
-
-    <!-- ✅ NORMAL BUTTONS (no pill) -->
-    <div class="hk-hero-actions">
-      <a href="/listings" class="btn" style="text-decoration: none;">
-        Explore all stays
-      </a>
-
-      <a href="/listings/new" class="btn" style="text-decoration: none;">
-        Become a host
-      </a>
-    </div>
-  </div>
-
-  <div class="hk-hero-side d-none d-md-block">
-    <div class="hk-hero-card">
-      <h3>Weekend idea</h3>
-      <p>
-        3 nights in a hillside homestay, chai on the balcony,
-        no Slack notifications.
-      </p>
-      <span class="hk-hero-tag">From ₹1,499/night</span>
-    </div>
-  </div>
-</section>
-
-<!-- ================= SEARCH ================= -->
-
-<section class="hk-search-wrapper">
-  <div class="hk-search-pill">
-    <div class="hk-search-item">
-      <span class="hk-search-label">Where</span>
-      <span class="hk-search-value">Search destinations</span>
-    </div>
-
-    <div class="hk-search-divider"></div>
-
-    <div class="hk-search-item">
-      <span class="hk-search-label">When</span>
-      <span class="hk-search-value">Add dates</span>
-    </div>
-
-    <div class="hk-search-divider"></div>
-
-    <div class="hk-search-item">
-      <span class="hk-search-label">Who</span>
-      <span class="hk-search-value">Add guests</span>
-    </div>
-
-    <div class="hk-search-end">
-      <p class="hero-mini-tagline">
-        Where every stay feels like home.
+  <section class="hk-hero">
+    <div class="hk-hero-content">
+      <p class="hk-hero-kicker">
+        Curated homestays • Cozy cottages • Mountain escapes
       </p>
 
-      <!-- ✅ INTENTIONALLY ROUND (icon-only action) -->
-      <button class="hk-search-btn" aria-label="Search">
-        <i class="fa-solid fa-magnifying-glass"></i>
-      </button>
-    </div>
-  </div>
-</section>
+      <h1 class="hk-hero-title">
+        Find a stay that actually feels like home.
+      </h1>
 
-<!-- ================= FEATURED ================= -->
+      <p class="hk-hero-subtitle">
+        Discover handpicked homes, cabins, and rooms hosted by people who care.
+        No generic hotel vibe, just warm, lived-in spaces.
+      </p>
 
-<section class="hk-section">
-  <div class="hk-section-header">
-    <h2>Featured stays</h2>
-    <a href="/listings"><strong>View all</strong></a>
-  </div>
+      <!-- ✅ NORMAL BUTTONS (no pill) -->
+      <div class="hk-hero-actions">
+        <a href="/listings" class="btn" style="text-decoration: none;">
+          Explore all stays
+        </a>
 
-  <div class="row g-4">
-    <% if (featuredListings && featuredListings.length) { %>
-      <% featuredListings.forEach(listing => { %>
-
-        <div class="col-md-4">
-          <div class="hk-stay-card position-relative">
-
-            <a
-              href="/listings/<%= listing._id %>"
-              class="stretched-link"
-              aria-label="View <%= listing.title %>"
-              style="z-index:2"
-            ></a>
-
-            <% 
-              let displayImage = "/images/placeholder.jpg";
-              if (listing.image) {
-                if (typeof listing.image === "string") displayImage = listing.image;
-                else if (listing.image.url) displayImage = listing.image.url;
-              }
-            %>
-
-            <div
-              class="hk-stay-image"
-              style="background-image:url('<%= displayImage %>')"
-            ></div>
-
-            <div class="hk-stay-body">
-              <p class="hk-stay-location">
-                <%= listing.location || listing.city || "Location unavailable" %>
-              </p>
-
-              <p class="hk-stay-title">
-                <%= listing.title || "Untitled listing" %>
-              </p>
-
-              <p class="hk-stay-meta">
-                <% if (listing.guests) { %>
-                  <%= listing.guests %> guests
-                <% } %>
-                <% if (listing.bedrooms) { %>
-                  · <%= listing.bedrooms %> bedrooms
-                <% } %>
-              </p>
-
-              <p class="hk-stay-price">
-                <span>
-                  ₹<%= listing.price
-                        ? Number(listing.price).toLocaleString("en-IN")
-                        : "N/A" %>
-                </span>
-                /night
-              </p>
-            </div>
-
-          </div>
-        </div>
-
-      <% }) %>
-    <% } else { %>
-
-      <div class="col-12 text-center py-5">
-        <p>No featured stays available right now.</p>
-        <a href="/listings" class="btn btn-outline-dark">
-          Browse all listings
+        <a href="/listings/new" class="btn" style="text-decoration: none;">
+          Become a host
         </a>
       </div>
+    </div>
 
-    <% } %>
-  </div>
-</section>
+    <div class="hk-hero-side d-none d-md-block">
+      <div class="hk-hero-card">
+        <h3>Weekend idea</h3>
+        <p>
+          3 nights in a hillside homestay, chai on the balcony,
+          no Slack notifications.
+        </p>
+        <span class="hk-hero-tag">From ₹1,499/night</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= SEARCH ================= -->
+
+  <section class="hk-search-wrapper">
+    <div class="hk-search-pill">
+      <div class="hk-search-item">
+        <span class="hk-search-label">Where</span>
+        <span class="hk-search-value">Search destinations</span>
+      </div>
+
+      <div class="hk-search-divider"></div>
+
+      <div class="hk-search-item">
+        <span class="hk-search-label">When</span>
+        <span class="hk-search-value">Add dates</span>
+      </div>
+
+      <div class="hk-search-divider"></div>
+
+      <div class="hk-search-item">
+        <span class="hk-search-label">Who</span>
+        <span class="hk-search-value">Add guests</span>
+      </div>
+
+      <div class="hk-search-end">
+        <p class="hero-mini-tagline">
+          Where every stay feels like home.
+        </p>
+
+        <!-- ✅ INTENTIONALLY ROUND (icon-only action) -->
+        <button class="hk-search-btn" aria-label="Search">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FEATURED ================= -->
+
+  <section class="hk-section">
+    <div class="hk-section-header">
+      <h2>Featured stays</h2>
+      <a href="/listings"><strong>View all</strong></a>
+    </div>
+
+    <div class="row g-4">
+      <% if (featuredListings && featuredListings.length) { %>
+        <% featuredListings.forEach(listing=> { %>
+
+          <div class="col-md-4">
+            <div class="hk-stay-card position-relative">
+              <a href="/listings/<%= listing._id %>" class="stretched-link" aria-label="View <%= listing.title %>"
+                style="z-index:2"></a>
+              <% let displayImage="/images/placeholder.jpg" ; if (listing.image) { if (typeof listing.image==="string" )
+                displayImage=listing.image; else if (listing.image.url) displayImage=listing.image.url; } %>
+                <div class="hk-stay-image" style="background-image:url('<%= displayImage %>')"></div>
+
+                <div class="hk-stay-body">
+                  <p class="hk-stay-location">
+                    <%= listing.location || listing.city || "Location unavailable" %>
+                  </p>
+
+                  <p class="hk-stay-title">
+                    <%= listing.title || "Untitled listing" %>
+                  </p>
+
+                  <p class="hk-stay-meta">
+                    <% if (listing.guests) { %>
+                      <%= listing.guests %> guests
+                        <% } %>
+                          <% if (listing.bedrooms) { %>
+                            · <%= listing.bedrooms %> bedrooms
+                              <% } %>
+                  </p>
+
+                  <p class="hk-stay-price">
+                    <span>
+                      ₹<%= listing.price ? Number(listing.price).toLocaleString("en-IN") : "N/A" %>
+                    </span>
+                    /night
+                  </p>
+                </div>
+            </div>
+          </div>
+          <% }) %>
+            <% } else { %>
+
+              <div class="col-12 text-center py-5">
+                <p>No featured stays available right now.</p>
+                <a href="/listings" class="btn btn-outline-dark">
+                  Browse all listings
+                </a>
+              </div>
+
+              <% } %>
+    </div>
+  </section>

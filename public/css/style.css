@@ -100,7 +100,7 @@ a:hover {
 }
 
 /* badge + like */
-.hk-listing-badge {
+/* .hk-listing-badge {
   position: absolute;
   top: 12px;
   left: 12px;
@@ -111,8 +111,8 @@ a:hover {
   background: #ffffff;
   color: #111827;
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
-}
-
+} */
+/* 
 .hk-listing-like {
   position: absolute;
   top: 10px;
@@ -139,8 +139,8 @@ a:hover {
   background: #ffffff;
 }
 .hk-listing-like:hover i {
-  color: #ff4b6b; /* same primary as rest of site */
-}
+  color: #ff4b6b; 
+} */
 
 /* card helper bootstrap overrides used in project */
 .listing-card {
@@ -362,13 +362,14 @@ ul li p {
 }
 .hk-stay-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 22px 55px rgba(15, 23, 42, 0.14);
+  box-shadow: 0 22px 55px rgba(15, 23, 42, 0.20);
   border-color: rgba(148, 163, 184, 0.9);
 }
 .hk-stay-image { height: 180px; background-size: cover; background-position: center; }
 .hk-stay-image-1 { background-image: linear-gradient(135deg, #ffe2e7, #ffd5dd); }
 .hk-stay-image-2 { background-image: linear-gradient(135deg, #dbeafe, #bfdbfe); }
 .hk-stay-image-3 { background-image: linear-gradient(135deg, #dcfce7, #bbf7d0); }
+
 .hk-stay-body { padding: 0.85rem 1rem 1rem 1rem; }
 .hk-stay-location { font-size: 0.85rem; color: #6b7280; margin-bottom: 0.15rem; }
 .hk-stay-title { font-size: 0.98rem; font-weight: 600; color: #111827; margin-bottom: 0.25rem; }
@@ -376,6 +377,16 @@ ul li p {
 .hk-stay-price { font-size: 0.9rem; color: #4b5563; }
 .hk-stay-price span { font-weight: 600; color: #111827; }
 
+/* Home cards – glassy depth like listings */
+.hk-stay-card {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.hk-stay-card:hover {
+  background: rgba(255, 255, 255, 0.95);
+}
 /* Host CTA */
 .hk-host-section { margin-bottom: 3rem; }
 .hk-host-card {
@@ -418,6 +429,7 @@ ul li p {
 .hk-guest-btn { width:28px; height:28px; border-radius:999px; border:1px solid #d1d5db; background:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; }
 .hk-guest-count { min-width:16px; text-align:center; }
 .hk-panel-apply { margin-top:0.8rem; border:none; background:#111827; color:#fff; padding:0.4rem 0.9rem; border-radius:999px; font-size:0.85rem; }
+
 /* =========================================
    Forms / New-Edit Listing (simple & clean)
 ========================================= */
@@ -674,13 +686,4 @@ form button[type="submit"]:hover {
 @media (max-width: 576px) {
   .hk-listing-image { height: 190px; }
 }
-/* Home cards – glassy depth like listings */
-.hk-stay-card {
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-}
 
-.hk-stay-card:hover {
-  background: rgba(255, 255, 255, 0.95);
-}

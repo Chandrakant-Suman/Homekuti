@@ -55,6 +55,7 @@ router.post(
         }
         const listing = new Listing(data);
         await listing.save();
+        req.flash("success", "Successfully created a new listing!");
         res.redirect("/listings");
     })
 );
@@ -67,7 +68,9 @@ router.get("/:id", wrapAsync(async (req, res) => {
         .populate("reviews");
 
     if (!listing) {
-        throw new ExpressError(404, "Listing Not Found");
+        req.flash("error", "Listing Not Found");
+        // throw new ExpressError(404, "Listing Not Found");
+        return res.redirect("/listings");
     }
 
     res.render("listings/show", { listing });
@@ -79,7 +82,9 @@ router.get("/:id/edit", wrapAsync(async (req, res) => {
     const listing = await Listing.findById(req.params.id);
 
     if (!listing) {
-        throw new ExpressError(404, "Listing Not Found");
+        req.flash("error", "Listing Not Found");
+        // throw new ExpressError(404, "Listing Not Found");
+        return res.redirect("/listings");
     }
 
     res.render("listings/edit", { listing });
@@ -128,34 +133,29 @@ router.put(
         }
 
         await Listing.findByIdAndUpdate(id, data);
-
+        req.flash("success", "Listing updated successfully!");
         res.redirect(`/listings/${id}`);
     })
 );
 
 // DELETE
 router.delete("/:id", wrapAsync(async (req, res) => {
-
     const listing = await Listing.findById(req.params.id);
-
     if (!listing) return res.redirect("/listings");
-
     if (listing.image !== "/images/listings/example.jpg") {
-
         const imgPath = path.join(
             __dirname,
             "..",
             "public",
             listing.image
         );
-
         if (fs.existsSync(imgPath)) {
             fs.unlinkSync(imgPath);
         }
     }
-
     await Listing.findByIdAndDelete(req.params.id);
-
+    console.log("Deleted Listing:", req.params.id);
+    req.flash("success", "Successfully deleted the listing!");
     res.redirect("/listings");
 }));
 

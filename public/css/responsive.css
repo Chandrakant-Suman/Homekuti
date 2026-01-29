@@ -1,0 +1,52 @@
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    .hk-nav .nav-link {
+        margin: 6px 0;
+    }
+}
+/* Responsive tweaks for listing image */
+@media (max-width: 576px) {
+  .hk-listing-image {
+    height: 190px;
+  }
+}
+
+/* =========================================
+   Responsive Tweaks (global)
+========================================= */
+@media (max-width: 992px) {
+  .hk-hero {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .hk-hero-side {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 768px) {
+  .hk-search-pill {
+    flex-wrap: wrap;
+    border-radius: 24px;
+  }
+  .hk-search-item {
+    flex: 1 1 100%;
+  }
+  .hk-search-divider {
+    display: none;
+  }
+  .hk-search-btn {
+    margin-left: 0;
+  }
+  .hk-host-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  /* mobile adjustments */
+  .hk-nav .nav-link { margin: 6px 0; }
+}
+
+@media (max-width: 576px) {
+  .hk-listing-image { height: 190px; }
+}
