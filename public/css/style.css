@@ -261,6 +261,7 @@ ul li p {
   padding: 2.5rem 0 1.5rem 0;
 }
 .hk-hero-content { max-width: 540px; }
+
 .hk-hero-kicker {
   font-size: 0.9rem;
   text-transform: uppercase;
@@ -635,6 +636,97 @@ form textarea::placeholder {
 .navbar-toggler-icon {
     filter: invert(0.25);
 }
+
+/* ================================
+   User Dropdown (Navbar)
+================================ */
+/* ================================
+   User Dropdown (Compact Style)
+================================ */
+
+/* Hamburger button */
+.user-menu-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  height: 100%;
+  padding: 12px 16px;      /* ↑ ~1.4x area */
+
+  font-size: 1.8rem;      /* ↑ ~1.4x from 1.3rem */
+  line-height: 1;
+
+  text-decoration: none !important;
+  color: inherit !important;
+}
+
+
+/* Remove caret */
+.user-menu-btn::after {
+  display: none !important;
+}
+
+/* Remove focus glow */
+.user-menu-btn:focus,
+.user-menu-btn:active {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Dropdown container */
+.user-dropdown {
+  min-width: 140px;
+  padding: 4px;
+  margin-right: 30px;
+  border-radius: 8px;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+}
+
+/* Close to navbar */
+.dropdown-menu {
+  margin-top: 6px !important;
+}
+
+/* Items = Smaller boxes */
+.user-dropdown .dropdown-item {
+  height: 5px;
+  width: 20px;
+  padding: 5px 10px;        /* ↓ smaller */
+  font-size: 0.85rem;      /* ↓ smaller */
+  line-height: 1.2;
+
+  border-radius: 5px;      /* ↓ smaller */
+  font-weight: 500;
+
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  color: #1f2933;
+}
+
+/* Hover */
+.user-dropdown .dropdown-item:hover {
+  background: #f1f5f9;
+}
+
+/* Active */
+.user-dropdown .dropdown-item:active {
+  background: #e2e8f0;
+}
+
+/* Icons */
+.user-dropdown .dropdown-item i {
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+.user-dropdown .dropdown-item:hover i {
+  color: var(--primary);
+}
+
 
 /* =========================================
    Footer – Light, Clean

@@ -97,6 +97,7 @@ passport.deserializeUser(User.deserializeUser());
 app.use((req, res, next) => {
    res.locals.activeRoute = req.path; // For navbar highlighting
    res.locals.user = req.user || null; // For future authentication
+   res.locals.currUser = req.user; // Current logged-in user
    next();
 });
 

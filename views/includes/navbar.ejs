@@ -1,52 +1,62 @@
 <nav class="navbar navbar-expand-md hk-navbar shadow-sm sticky-top">
   <div class="container">
-
     <!-- Brand -->
     <a class="navbar-brand hk-brand" href="/">
-      <img src="/images/logo.jpg" class="hk-logo" alt="Homekuti Logo">
+      <img src="/images/logo.jpg" class="hk-logo" alt="Homekuti Logo" />
       <span>Homekuti</span>
     </a>
 
     <!-- Mobile Toggle -->
-    <button
-      class="navbar-toggler"
-      type="button"
-      data-bs-toggle="collapse"
-      data-bs-target="#navbarNav"
-      aria-controls="navbarNav"
-      aria-expanded="false"
-      aria-label="Toggle navigation"
-    >
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+      aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
 
     <!-- Links -->
     <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
       <div class="navbar-nav hk-nav">
-
-        <a
-          class="nav-link <%= activeRoute === '/' ? 'active' : '' %>"
-          href="/"
-        >
+        <a class="nav-link <%= activeRoute === '/' ? 'active' : '' %>" href="/">
           Home
         </a>
-
-        <a
-          class="nav-link <%= activeRoute === '/listings' ? 'active' : '' %>"
-          href="/listings"
-        >
+        <a class="nav-link <%= activeRoute === '/listings' ? 'active' : '' %>" href="/listings">
           All Listings
         </a>
-
-        <a
-          class="nav-link <%= activeRoute === '/listings/new' ? 'active' : '' %>"
-          href="/listings/new"
-        >
+        <a class="nav-link <%= activeRoute === '/listings/new' ? 'active' : '' %>" href="/listings/new">
           Add Listing
         </a>
 
+        <!-- User Dropdown -->
+        <div class="nav-item dropdown ms-auto">
+          <!-- Hamburger -->
+          <a class="nav-link user-menu-btn" href="#" id="userMenu" role="button" data-bs-toggle="dropdown"
+            aria-expanded="false">
+            <i class="fa-solid fa-bars"></i>
+          </a>
+          <!-- Menu -->
+          <ul class="dropdown-menu dropdown-menu-end user-dropdown" aria-labelledby="userMenu">
+            <% if(!currUser) { %>
+            <li>
+              <a class="dropdown-item" href="/user/signup">
+                <i class="fa-solid fa-user-plus"></i>
+                Sign Up
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="/user/signin">
+                <i class="fa-solid fa-right-to-bracket"></i>
+                Sign In
+              </a>
+            </li>
+            <% } %> <% if(currUser) { %>
+            <li>
+              <a class="dropdown-item" href="/user/logout">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                Log Out
+              </a>
+            </li>
+            <% } %>
+          </ul>
+        </div>
       </div>
     </div>
-
-  </div>
 </nav>
