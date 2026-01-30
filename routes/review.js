@@ -1,11 +1,13 @@
 const express = require("express");
-const router = express.Router({mergeParams: true});
+const router = express.Router({ mergeParams: true });
 const wrapAsync = require("../utils/wrapAsync");
 const ExpressError = require("../utils/ExpressError");
 const Listing = require("../models/listing");
 const Review = require("../models/review");
 const { reviewSchema } = require("../schema");
+const { isReviewAuthor, isLoggedIn } = require("../middlewares/authenicate");
 
+// ================= VALIDATION =================
 const validateReview = (req, res, next) => {
     const { error } = reviewSchema.validate(req.body);
     if (error) {
@@ -18,10 +20,12 @@ const validateReview = (req, res, next) => {
 // ADD REVIEW
 router.post(
     "/",
+    isLoggedIn,
     validateReview,
     wrapAsync(async (req, res) => {
         const listing = await Listing.findById(req.params.id);
         const review = new Review(req.body.review);
+        review.author = req.user._id;
         listing.reviews.push(review);
         await review.save();
         await listing.save();
@@ -29,6 +33,7 @@ router.post(
         res.redirect(`/listings/${listing._id}`);
     })
 );
+
 
 // DELETE REVIEW
 router.delete(

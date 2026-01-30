@@ -1,27 +1,52 @@
 <nav class="navbar navbar-expand-md hk-navbar shadow-sm sticky-top">
   <div class="container">
+
+    <!-- Brand -->
     <a class="navbar-brand hk-brand" href="/">
-      <img src="/images/logo.jpg" class="hk-logo" alt="logo" />
-      <span class="hk-brand-text">Homekuti</span>
-      </a>
+      <img src="/images/logo.jpg" class="hk-logo" alt="Homekuti Logo">
+      <span>Homekuti</span>
     </a>
 
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup">
+    <!-- Mobile Toggle -->
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarNav"
+      aria-controls="navbarNav"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
       <span class="navbar-toggler-icon"></span>
     </button>
 
-    <div class="collapse navbar-collapse justify-content-end" id="navbarNavAltMarkup">
+    <!-- Links -->
+    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
       <div class="navbar-nav hk-nav">
-        <a class="nav-link <%= activeRoute === '/' ? 'active' : '' %>" href="/">Home</a>
 
-        <a class="nav-link <%= activeRoute === '/listings' ? 'active' : '' %>" href="/listings">
-          All Listing
+        <a
+          class="nav-link <%= activeRoute === '/' ? 'active' : '' %>"
+          href="/"
+        >
+          Home
         </a>
 
-        <a class="nav-link <%= activeRoute === '/listings/new' ? 'active' : '' %>" href="/listings/new">
-          Add new Listing
+        <a
+          class="nav-link <%= activeRoute === '/listings' ? 'active' : '' %>"
+          href="/listings"
+        >
+          All Listings
         </a>
+
+        <a
+          class="nav-link <%= activeRoute === '/listings/new' ? 'active' : '' %>"
+          href="/listings/new"
+        >
+          Add Listing
+        </a>
+
       </div>
     </div>
+
   </div>
 </nav>

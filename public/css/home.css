@@ -32,24 +32,8 @@
   margin-top: 1.25rem;
   display: flex;
   gap: 0.75rem;
+  color: #fff;
   text-decoration: none;
-}
-
-/* Buttons – clean & consistent */
-.btn {
-  background-color: var(--primary);
-  color: #fff !important;
-  border-radius: 0.375rem;
-}
-
-.btn:hover {
-  background-color: var(--primary-dark);
-  transform: translateY(-1px);
-}
-
-.btn:active {
-  transform: translateY(0);
-  box-shadow: 0 3px 10px rgba(255, 47, 85, 0.872);
 }
 
 /* Right side mini card in hero */

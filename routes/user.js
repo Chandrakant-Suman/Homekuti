@@ -63,9 +63,9 @@ router.post(
 // ================= LOGOUT =================
 
 router.get("/logout", (req, res, next) => {
-    req.logout(function (err) {
+    req.logout( (err)=> {
         if (err) return next(err);
-        req.flash("success", "Logged out successfully.");
+        req.flash("success", "Logged you out successfully.");
         res.redirect("/");
     });
 });

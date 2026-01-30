@@ -1,21 +1,21 @@
 (() => {
   'use strict';
 
+  // ===============================
+  // FORM VALIDATION
+  // ===============================
+
   const form = document.querySelector('.needs-validation');
-  if (!form) return; // safety check
-
+  if (!form) return;
   const fields = form.querySelectorAll('.form-control');
-
-  // SUBMIT VALIDATION (force red ❌ on all invalid fields)
   form.addEventListener('submit', (event) => {
     let formIsValid = true;
-
     fields.forEach(field => {
-      // trim text inputs & textarea (avoid space-only cheating)
+
+      // Trim spaces
       if (field.tagName === 'INPUT' || field.tagName === 'TEXTAREA') {
         field.value = field.value.trim();
       }
-
       if (!field.checkValidity()) {
         field.classList.add('is-invalid');
         field.classList.remove('is-valid');
@@ -25,16 +25,15 @@
         field.classList.remove('is-invalid');
       }
     });
-
+    
     if (!formIsValid) {
       event.preventDefault();
       event.stopPropagation();
     }
-
     form.classList.add('was-validated');
   });
 
-  // REAL-TIME VALIDATION (while typing)
+  // Live validation
   fields.forEach(field => {
     field.addEventListener('input', () => {
       if (field.checkValidity()) {
@@ -46,22 +45,37 @@
       }
     });
   });
-
 })();
 
-// AUTO HIDE FLASH ALERTS AFTER 3 SECONDS
-// setTimeout(() => {
-//   const alert = document.querySelector(".alert");
-//   if (alert) {
-//     alert.classList.remove("show");
-//     alert.classList.add("fade");
-//   }
-// }, 3000);
+
+// ===============================
+// FREEZE BUTTON AFTER CLICK
+// ===============================
+
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll(".hk-btn").forEach(btn => {
+    btn.addEventListener("click", function () {
+      this.classList.add("clicked");
+    });
+  });
+});
+
+
+// Reset on back/forward navigation
+window.addEventListener("pageshow", function () {
+  document.querySelectorAll(".hk-btn.clicked").forEach(btn => {
+    btn.classList.remove("clicked");
+  });
+});
+
+
+// ===============================
+// AUTO CLOSE ALERTS
+// ===============================
 
 setTimeout(() => {
-  const alert = document.querySelector('.alert');
-  if (alert) {
+  const alert = document.querySelector('.auto-close');
+  if (alert && window.bootstrap) {
     bootstrap.Alert.getOrCreateInstance(alert).close();
   }
 }, 5000);
-

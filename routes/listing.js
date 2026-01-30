@@ -10,6 +10,7 @@ const ExpressError = require("../utils/ExpressError");
 const downloadImage = require("../utils/downloadImage");
 
 const { listingSchema } = require("../schema");
+const { isLoggedIn } = require("../middlewares/authenicate");
 
 // ================= VALIDATION =================
 
@@ -25,19 +26,30 @@ const validateListing = (req, res, next) => {
 // ================= ROUTES =================
 
 // INDEX
-router.get("/", wrapAsync(async (req, res) => {
+router.get(
+    "/", 
+    wrapAsync(async (req, res) => {
     const listings = await Listing.find({});
     res.render("listings/index", { allListings: listings });
 }));
 
 // NEW
-router.get("/new", (req, res) => {
+router.get(
+    "/new", 
+    isLoggedIn, 
+    (req, res) => {
+    console.log(req.user);
+    if (!isLoggedIn) {
+        req.flash("error", "You must be signed in to create a new listing.");
+        return res.redirect("/user/signin");
+    }
     res.render("listings/new");
 });
 
 // CREATE
 router.post(
     "/",
+    isLoggedIn,
     validateListing,
     wrapAsync(async (req, res) => {
         let data = req.body.listing;
@@ -61,74 +73,64 @@ router.post(
 );
 
 // SHOW
-router.get("/:id", wrapAsync(async (req, res) => {
-
+router.get(
+    "/:id", 
+    wrapAsync(async (req, res) => {
     const listing = await Listing
         .findById(req.params.id)
         .populate("reviews");
-
     if (!listing) {
         req.flash("error", "Listing Not Found");
         // throw new ExpressError(404, "Listing Not Found");
         return res.redirect("/listings");
     }
-
     res.render("listings/show", { listing });
 }));
 
 // EDIT
-router.get("/:id/edit", wrapAsync(async (req, res) => {
-
+router.get(
+    "/:id/edit", 
+    isLoggedIn, 
+    wrapAsync(async (req, res) => {
     const listing = await Listing.findById(req.params.id);
-
     if (!listing) {
         req.flash("error", "Listing Not Found");
         // throw new ExpressError(404, "Listing Not Found");
         return res.redirect("/listings");
     }
-
     res.render("listings/edit", { listing });
 }));
 
 // UPDATE
 router.put(
     "/:id",
+    isLoggedIn,
     validateListing,
     wrapAsync(async (req, res) => {
-
         const { id } = req.params;
         let data = req.body.listing;
-
         const listing = await Listing.findById(id);
-
         if (!listing) {
             throw new ExpressError(404, "Listing Not Found");
         }
-
         // Handle Image Update
         if (data.image && data.image !== listing.image) {
-
             if (listing.image !== "/images/listings/example.jpg") {
-
                 const oldPath = path.join(
                     __dirname,
                     "..",
                     "public",
                     listing.image
                 );
-
                 if (fs.existsSync(oldPath)) {
                     fs.unlinkSync(oldPath);
                 }
             }
-
             const filename =
                 "listing_" +
                 Date.now() +
                 path.extname(data.image.split("?")[0]);
-
             await downloadImage(data.image, filename);
-
             data.image = `/images/listings/${filename}`;
         }
 
@@ -139,7 +141,10 @@ router.put(
 );
 
 // DELETE
-router.delete("/:id", wrapAsync(async (req, res) => {
+router.delete(
+    "/:id", 
+    isLoggedIn, 
+    wrapAsync(async (req, res) => {
     const listing = await Listing.findById(req.params.id);
     if (!listing) return res.redirect("/listings");
     if (listing.image !== "/images/listings/example.jpg") {

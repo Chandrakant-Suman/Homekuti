@@ -286,22 +286,91 @@ ul li p {
   text-decoration: none;
 }
 
-/* Buttons – clean & consistent */
-.btn {
+
+a.stretched-link {
+  z-index: 1;
+}
+
+/* =================================
+   REAL BUTTON SYSTEM (NO BOOTSTRAP)
+================================= */
+.hk-btn {
+  appearance: button;
+  -webkit-appearance: button;
+  position: relative;
+  z-index: 10;
+
+  height: 36px;
+  padding: 0 14px;          /* Only horizontal padding */
+
+  border: 2px solid var(--primary);
   background-color: var(--primary);
-  color: #fff !important;
-  border-radius: 0.375rem;
+  color: #fff;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 0.45rem;
+
+  font-size: 16px;
+  font-weight: 600;
+
+  cursor: pointer;
+  text-decoration: none;
+  outline: none;
+
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.1s ease;
 }
 
-.btn:hover {
+
+/* Hover */
+.hk-btn:hover {
+  text-decoration: none;
   background-color: var(--primary-dark);
-  transform: translateY(-1px);
+  border-color: var(--primary-dark);
+  color: #fff;
 }
 
-.btn:active {
-  transform: translateY(0);
-  box-shadow: 0 3px 10px rgba(255, 47, 85, 0.872);
+
+/* Active */
+.hk-btn:active {
+  background-color: #fff;
+  color: var(--primary);
+  border-color: var(--primary);
+
+  transform: scale(0.96);
 }
+
+/* Focus (lightweight) */
+.hk-btn:focus,
+.hk-btn:focus-visible {
+  outline: none;
+}
+
+/* Disabled */
+.hk-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.hk-btn.clicked {
+  background-color: #fff !important;
+  color: var(--primary) !important;
+  border-color: var(--primary) !important;
+
+  pointer-events: none; /* prevent hover again */
+}
+
+
+
+/* =========================================
+   Home (Hero, Search Pill, Featured cards, Host CTA)
+========================================= */
 
 /* Right side mini card in hero */
 .hk-hero-side {
@@ -462,26 +531,6 @@ form textarea::placeholder {
     color: #9ca3af;
 }
 
-/* ✅ SIMPLE submit button (NOT pill) */
-form button[type="submit"] {
-    margin-top: 0.75rem;
-    padding: 0.6rem 1.4rem;
-    border: none;
-    border-radius: 0.375rem; /* normal button */
-    background-color: var(--primary);
-    color: #ffffff;
-    font-size: 0.95rem;
-    font-weight: 600;
-    cursor: pointer;
-    align-self: flex-start;
-    transition: background-color 0.2s ease, transform 0.15s ease;
-}
-
-form button[type="submit"]:hover {
-    background-color: var(--primary-dark);
-    transform: translateY(-1px);
-}
-
 /* Remove card styling for inline action forms */
 .form-no-card {
     background: transparent !important;
@@ -507,20 +556,17 @@ form button[type="submit"]:hover {
 .form-control.is-valid {
     border-color: #198754;
 }
-
-/* ================================================
-   Navbar & Footer
-================================================ */
-
 /* =========================================
    Navbar – Light Premium
 ========================================= */
+
 .hk-navbar {
     background: #ffffff;
     border-bottom: 1px solid rgba(226, 232, 240, 0.9);
     padding: 12px 0;
     box-shadow: var(--shadow-soft);
 }
+
 .hk-navbar .container {
     max-width: 1120px;
 }
@@ -533,9 +579,10 @@ form button[type="submit"]:hover {
     display: flex;
     align-items: center;
     gap: 8px;
+    text-decoration: none !important;
 }
 
-/* MERGED LOGO RULE (Navbar + Footer) */
+/* Logo (Navbar + Footer) */
 .hk-logo,
 .footer-logo {
     width: 32px;
@@ -554,7 +601,7 @@ form button[type="submit"]:hover {
     font-size: 0.95rem;
 }
 
-/* Underline element (hidden by default) */
+/* Underline */
 .hk-nav .nav-link::after {
     content: "";
     position: absolute;
@@ -568,83 +615,111 @@ form button[type="submit"]:hover {
     transition: width 0.25s ease;
 }
 
-/* Only ACTIVE link displays underline + bold */
+
+/* Active */
 .hk-nav .nav-link.active {
     font-weight: 600;
     color: #111827 !important;
 }
+
 .hk-nav .nav-link.active::after {
     width: 60%;
 }
 
-/* No hover underline expansion */
-.hk-nav .nav-link:hover::after {
-    width: 0 !important;
-}
+/* Hover */
 .hk-nav .nav-link:hover {
     color: #111827 !important;
 }
 
-/* Toggler Icon (for light navbar) */
+/* Toggler */
 .navbar-toggler-icon {
     filter: invert(0.25);
-}
-
-/* Mobile adjustments */
-@media (max-width: 768px) {
-    .hk-nav .nav-link {
-        margin: 6px 0;
-    }
 }
 
 /* =========================================
    Footer – Light, Clean
 ========================================= */
+
 .footer {
     background: #ffffff;
     color: #4e4e4e;
-    padding: 32px 20px 24px 20px;
+    padding: 32px 20px 24px;
     margin-top: auto;
     border-top: 1px solid rgba(226, 232, 240, 0.9);
     box-shadow: 0 -10px 35px rgba(15, 23, 42, 0.04);
 }
+
 .footer-content {
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
     max-width: 1120px;
-    margin: 0 auto 10px auto;
+    margin: 0 auto 10px;
     gap: 18px;
 }
-.footer-brand { display:flex; align-items:center; gap:10px; }
-.footer-logo { width:32px; height:32px; object-fit:contain; }
-.footer-title { font-size:18px; font-weight:700; letter-spacing:0.04em; }
-.footer-links a { text-decoration:none; color:#4e4e4e; margin:0 12px; font-size:0.95rem; transition: color .18s ease, transform .1s ease; }
-.footer-links a:hover { color: var(--primary); transform: translateY(-1px); }
+
+.footer-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.footer-title {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+
+.footer-links a {
+    text-decoration: none;
+    color: #4e4e4e;
+    margin: 0 12px;
+    font-size: 0.95rem;
+    transition: color .18s ease, transform .1s ease;
+}
+
+.footer-links a:hover {
+    color: var(--primary);
+    transform: translateY(-1px);
+}
 
 /* Social icons */
-.footer-social a { margin:0 10px; text-decoration:none; }
-.footer-social a i { transition: color .25s ease, transform .15s ease; font-size:1.35rem; color:#4e4e4e; }
-.footer-social a:hover i.fa-facebook { color: #1877F2; transform: translateY(-2px); }
+
+.footer-social a {
+    margin: 0 10px;
+    text-decoration: none;
+}
+
+.footer-social a i {
+    transition: color .25s ease, transform .15s ease;
+    font-size: 1.35rem;
+    color: #4e4e4e;
+}
+
+.footer-social a:hover i.fa-facebook {
+    color: #1877F2;
+    transform: translateY(-2px);
+}
+
 .footer-social a:hover i.fa-instagram {
     background: linear-gradient(45deg, #f9ce34, #ee2a7b, #6228d7);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     transform: translateY(-2px);
 }
-.footer-social a:hover i.fa-twitter { color: #1DA1F2; transform: translateY(-2px); }
+
+.footer-social a:hover i.fa-twitter {
+    color: #1DA1F2;
+    transform: translateY(-2px);
+}
 
 .footer-copy {
     max-width: 1120px;
-    margin: 8px auto 0 auto;
+    margin: 8px auto 0;
     font-size: 0.8rem;
     color: var(--text-muted);
     text-align: center;
-}
-.footer-copy a {
-    color: var(--primary);
-    text-decoration: none;
 }
 
 /* =========================================

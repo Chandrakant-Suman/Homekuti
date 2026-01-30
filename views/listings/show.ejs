@@ -32,11 +32,11 @@
     <!-- Actions -->
     <div class="edit-delete-btn">
       <form method="GET" action="/listings/<%= listing._id %>/edit" class="form-no-card">
-        <button type="submit" class="btn me-2">Edit</button>
+        <button type="submit" class="hk-btn me-2">Edit</button>
       </form>
       <form method="POST" action="/listings/<%= listing._id %>?_method=DELETE"
         onsubmit="return confirm('Delete this listing?');" class="form-no-card">
-        <button type="submit" class="btn btn-danger">Delete</button>
+        <button type="submit" class="hk-btn">Delete</button>
       </form>
     </div>
     <hr style="margin:1rem 0;">
@@ -58,7 +58,7 @@
           <textarea name="review[comment]" id="comment" rows="4" class="form-control" required></textarea>
           <div class="invalid-feedback">Please enter a comment.</div>
         </div>
-        <button type="submit" class="btn">Submit Review</button>
+        <button type="submit" class="hk-btn">Submit Review</button>
       </form>
 
       <hr style="margin:1.5rem 0;">
@@ -87,7 +87,7 @@
                 </div>
                 <form method="POST" action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE"
                   class="form-no-card mt-0 ms-3">
-                  <button type="submit" class="btn btn-sm mb-3">Delete</button>
+                  <button type="submit" class="hk-btn mb-3 ms-3" style="width:fit-content">Delete</button>
                 </form>
               </div>
               <% } %>
