@@ -1,52 +1,28 @@
 const express = require("express");
 const router = express.Router({ mergeParams: true });
 const wrapAsync = require("../utils/wrapAsync");
-const ExpressError = require("../utils/ExpressError");
-const Listing = require("../models/listing");
-const Review = require("../models/review");
-const { reviewSchema } = require("../schema");
-const { isReviewAuthor, isLoggedIn } = require("../middlewares/authenicate");
 
-// ================= VALIDATION =================
-const validateReview = (req, res, next) => {
-    const { error } = reviewSchema.validate(req.body);
-    if (error) {
-        const msg = error.details.map(el => el.message).join(",");
-        throw new ExpressError(400, msg);
-    }
-    next();
-};
+const { isLoggedIn } = require("../middlewares/authenicate");
+const { validateReview } = require("../middlewares/validateReview");
+const { isReviewAuthor } = require("../middlewares/authorize");
+
+const reviewController = require("../controllers/reviews");
 
 // ADD REVIEW
 router.post(
     "/",
     isLoggedIn,
     validateReview,
-    wrapAsync(async (req, res) => {
-        const listing = await Listing.findById(req.params.id);
-        const review = new Review(req.body.review);
-        review.author = req.user._id;
-        listing.reviews.push(review);
-        await review.save();
-        await listing.save();
-        req.flash("success", "Review added successfully!");
-        res.redirect(`/listings/${listing._id}`);
-    })
+    wrapAsync(reviewController.addReview)
 );
-
 
 // DELETE REVIEW
 router.delete(
     "/:reviewId",
-    wrapAsync(async (req, res) => {
-        const { id, reviewId } = req.params;
-        await Listing.findByIdAndUpdate(id, {
-            $pull: { reviews: reviewId }
-        });
-        await Review.findByIdAndDelete(reviewId);
-        req.flash("success", "Review deleted successfully!");
-        res.redirect(`/listings/${id}`);
-    })
+    isLoggedIn,
+    isReviewAuthor,
+    wrapAsync(reviewController.deleteReview)
 );
+
 
 module.exports = router;

@@ -13,16 +13,13 @@ const flash = require("connect-flash");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
 
-const User = require("./models/user.js");
-
 // ================= MODELS =================
 // Central data layer (MongoDB schemas)
-
 const Listing = require("./models/listing");
+const User = require("./models/user.js");
 
 // ================= ROUTES =================
 // Modular route handlers (keeps app.js clean)
-
 const listingRouter = require("./routes/listing.js");
 const reviewsRouter = require("./routes/review.js");
 const userRouter = require("./routes/user.js");

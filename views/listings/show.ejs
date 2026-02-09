@@ -13,13 +13,16 @@
         style="width:100%;height:100%;object-fit:cover;">
     </div>
 
-    <!-- Description -->
+    <!-- Owner + Description -->
+    <p><i>Owned by <%= listing.owner.username %></i></p>
+
     <p style="margin-top:1rem;line-height:1.6;color:#444;">
+      <strong>Description:</strong>
       <%= listing.description || "No description provided." %>
     </p>
 
     <!-- Location -->
-    <p style="color:#555;margin:0.2rem 0;">
+    <p style="margin-top:1rem;line-height:1;color:#444;">
       <strong>Location:</strong>
       <%= listing.location %>, <%= listing.country %>
     </p>
@@ -30,68 +33,78 @@
     </p>
 
     <!-- Actions -->
-    <div class="edit-delete-btn">
-      <form method="GET" action="/listings/<%= listing._id %>/edit" class="form-no-card">
-        <button type="submit" class="hk-btn me-2">Edit</button>
-      </form>
-      <form method="POST" action="/listings/<%= listing._id %>?_method=DELETE"
-        onsubmit="return confirm('Delete this listing?');" class="form-no-card">
-        <button type="submit" class="hk-btn">Delete</button>
-      </form>
-    </div>
-    <hr style="margin:1rem 0;">
+    <% if(currUser && currUser._id.equals(listing.owner._id)) { %>
+      <div class="edit-delete-btn">
+        <form method="GET" action="/listings/<%= listing._id %>/edit" class="form-no-card">
+          <button type="submit" class="hk-btn me-2">Edit</button>
+        </form>
+        <form method="POST" action="/listings/<%= listing._id %>?_method=DELETE"
+          onsubmit="return confirm('Delete this listing?');" class="form-no-card">
+          <button type="submit" class="hk-btn">Delete</button>
+        </form>
+      </div>
+      <% } %>
 
-    <!-- Review Form -->
-    <div class="col-10 offset-0">
+        <hr style="margin:1rem 0;">
 
-      <h4 class="mb-3">Leave a Review</h4>
+        <!-- Review Form -->
+        <div class="col-10 offset-0">
+          <% if(currUser){ %>
+            <h4 class="mb-3">Leave a Review</h4>
 
-      <form action="/listings/<%= listing._id %>/reviews" method="POST" novalidate class="needs-validation">
+            <form action="/listings/<%= listing._id %>/reviews" method="POST" novalidate class="needs-validation">
 
-        <div class="mb-3">
-          <label for="rating" class="form-label">Rating (1–5)</label>
-          <input type="range" min="1" max="5" id="rating" class="form-range" name="review[rating]" required>
-        </div>
-
-        <div class="mb-3">
-          <label for="comment" class="form-label">Comment</label>
-          <textarea name="review[comment]" id="comment" rows="4" class="form-control" required></textarea>
-          <div class="invalid-feedback">Please enter a comment.</div>
-        </div>
-        <button type="submit" class="hk-btn">Submit Review</button>
-      </form>
-
-      <hr style="margin:1.5rem 0;">
-
-      <!-- Review Count -->
-      <h4 class="mb-3">Reviews: <%= listing.reviews.length %>
-      </h4>
-
-      <% if (listing.reviews.length===0) { %>
-        <p style="color:#777;font-style:italic;">
-          No reviews yet. Be the first to review.
-        </p>
-
-        <% } else { %>
-          <div class="row">
-            <% for (let review of listing.reviews) { %>
-              <div class="card col-5 ms-3 mb-3">
-                <div class="card-body">
-                  <h5 class="card-title">Guest</h5>
-                  <p class="card-text mb-1">
-                    <%= review.comment %>
-                  </p>
-                  <p class="card-text mb-0"><strong>
-                      <%= review.rating %> ★
-                    </strong></p>
-                </div>
-                <form method="POST" action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE"
-                  class="form-no-card mt-0 ms-3">
-                  <button type="submit" class="hk-btn mb-3 ms-3" style="width:fit-content">Delete</button>
-                </form>
+              <div class="mb-3">
+                <label for="rating" class="form-label">Rating (1–5)</label>
+                <input type="range" min="1" max="5" id="rating" class="form-range" name="review[rating]" required>
               </div>
+
+              <div class="mb-3">
+                <label for="comment" class="form-label">Comment</label>
+                <textarea name="review[comment]" id="comment" rows="4" class="form-control" required></textarea>
+                <div class="invalid-feedback">Please enter a comment.</div>
+              </div>
+              <button type="submit" class="hk-btn">Submit Review</button>
+            </form>
+            <% } else { %>
+              <p>
+                <a href="/user/signin">Log in</a> to leave a review.
+              </p>
               <% } %>
-          </div>
-          <% } %>
-    </div>
+                <hr style="margin:1.5rem 0;">
+
+                <!-- Review Count -->
+                <h4 class="mb-3">Reviews: <%= listing.reviews.length %>
+                </h4>
+
+                <% if (listing.reviews.length===0) { %>
+                  <p style="color:#777;font-style:italic;">
+                    No reviews yet. Be the first to review.
+                  </p>
+
+                  <% } else { %>
+                    <div class="row">
+                      <% for (let review of listing.reviews) { %>
+                        <div class="card col-5 ms-3 mb-3">
+                          <div class="card-body">
+                            <h5 class="card-title">
+                              <%= review.author.username %>
+                            </h5>
+                            <p class="card-text mb-1">
+                              <%= review.comment %>
+                            </p>
+                            <p class="card-text mb-0"><strong>
+                                <%= review.rating %> ★
+                              </strong></p>
+                          </div>
+                          <form method="POST"
+                            action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE"
+                            class="form-no-card mt-0 ms-3">
+                            <button type="submit" class="hk-btn mb-3 ms-3" style="width:fit-content">Delete</button>
+                          </form>
+                        </div>
+                        <% } %>
+                    </div>
+                    <% } %>
+        </div>
   </main>

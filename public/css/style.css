@@ -638,30 +638,26 @@ form textarea::placeholder {
 }
 
 /* ================================
-   User Dropdown (Navbar)
-================================ */
-/* ================================
-   User Dropdown (Compact Style)
+   Hamburger Button
 ================================ */
 
-/* Hamburger button */
 .user-menu-btn {
   display: flex;
   align-items: center;
   justify-content: center;
 
-  height: 100%;
-  padding: 12px 16px;      /* ↑ ~1.4x area */
+  padding: 10px 14px;
 
-  font-size: 1.8rem;      /* ↑ ~1.4x from 1.3rem */
+  font-size: 1.6rem;
   line-height: 1;
 
+  color: #1f2933 !important;
   text-decoration: none !important;
-  color: inherit !important;
+
+  cursor: pointer;
 }
 
-
-/* Remove caret */
+/* Remove Bootstrap caret */
 .user-menu-btn::after {
   display: none !important;
 }
@@ -673,58 +669,88 @@ form textarea::placeholder {
   box-shadow: none !important;
 }
 
-/* Dropdown container */
+
+/* ================================
+   Dropdown Container
+================================ */
+
 .user-dropdown {
-  min-width: 140px;
-  padding: 4px;
-  margin-right: 30px;
-  border-radius: 8px;
-  border: 1px solid rgba(226, 232, 240, 0.9);
+  padding: 6px;
 
-  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
-}
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
 
-/* Close to navbar */
-.dropdown-menu {
+  box-shadow: 0 8px 24px rgba(15,23,42,0.12);
+
   margin-top: 6px !important;
+
+  min-width: unset; /* Auto width */
 }
 
-/* Items = Smaller boxes */
-.user-dropdown .dropdown-item {
-  height: 5px;
-  width: 20px;
-  padding: 5px 10px;        /* ↓ smaller */
-  font-size: 0.85rem;      /* ↓ smaller */
-  line-height: 1.2;
 
-  border-radius: 5px;      /* ↓ smaller */
-  font-weight: 500;
+/* ================================
+   Auth Items (Boxes)
+================================ */
+
+.user-dropdown .auth-item {
+  width: auto; /* Fit content */
+
+  padding: 8px 14px;
+  margin: 4px;
 
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+
+  font-size: 0.9rem;
+  font-weight: 500;
 
   color: #1f2933;
+
+  background: #ffffff;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+
+  transition: all 0.2s ease;
 }
 
-/* Hover */
-.user-dropdown .dropdown-item:hover {
-  background: #f1f5f9;
+
+/* Hover Effect */
+.user-dropdown .auth-item:hover {
+  background: #f8fafc;
+  transform: translateY(-1px);
+  text-decoration: none;
 }
 
-/* Active */
-.user-dropdown .dropdown-item:active {
-  background: #e2e8f0;
-}
 
-/* Icons */
-.user-dropdown .dropdown-item i {
+/* ================================
+   Icons
+================================ */
+
+.user-dropdown .auth-item i {
   font-size: 0.9rem;
   color: #6b7280;
 }
 
-.user-dropdown .dropdown-item:hover i {
-  color: var(--primary);
+
+/* ================================
+   Logout Special (Optional)
+================================ */
+
+.logout-item {
+  color: #dc2626;
+}
+
+.logout-item i {
+  color: #dc2626;
+}
+
+.logout-item:hover {
+  background: #fee2e2;
+  text-decoration: none;
 }
 
 
@@ -796,7 +822,7 @@ form textarea::placeholder {
 
 .footer-social a:hover i.fa-instagram {
     background: linear-gradient(45deg, #f9ce34, #ee2a7b, #6228d7);
-    -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     transform: translateY(-2px);
 }

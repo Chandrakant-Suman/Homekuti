@@ -1,16 +1,14 @@
-const mongoose = require('mongoose');
-const initData = require('./data.js');
-const Listing = require('../models/listing.js');
-
-const MONGO_URL = 'mongodb://127.0.0.1:27017/Homekuti';
+const mongoose = require("mongoose");
+const initData = require("./data.js");
+const Listing = require("../models/listing.js");
+const MONGO_URL = "mongodb://127.0.0.1:27017/Homekuti";
+const OWNER_ID = new mongoose.Types.ObjectId(
+  "697eedc0ca93151c7775c697"
+);
 
 main()
-  .then(() => {
-    console.log('Connected to MongoDB');
-  })
-  .catch((err) => {
-    console.log('Error connecting to MongoDB:', err);
-  });
+  .then(() => console.log("Connected to MongoDB"))
+  .catch((err) => console.log("Mongo error:", err));
 
 async function main() {
   await mongoose.connect(MONGO_URL);
@@ -18,37 +16,27 @@ async function main() {
 
 const initDB = async () => {
   try {
-    // Clear existing listings
     await Listing.deleteMany({});
-
-    // Normalize image -> always a string URL
     const normalizedData = initData.data.map((item) => {
       let image = item.image;
-
-      if (image && typeof image === 'object') {
-        // case: { filename: 'listingimage', url: 'https://...' }
+      if (image && typeof image === "object") {
         image = image.url;
       }
-
-      // if still falsy, let schema default handle empty string
-      if (!image) {
-        image = '';
-      }
-
+      if (!image) image = "";
       return {
         ...item,
-        image, // overwrite with string
+        image,
+        owner: OWNER_ID
       };
     });
 
     await Listing.insertMany(normalizedData);
-    console.log('data was initialized');
+    console.log("Database seeded successfully");
   } catch (err) {
-    console.error('Error while initializing data:', err);
+    console.error("Seeding failed:", err);
   } finally {
-    // optional: close connection after seeding
     await mongoose.connection.close();
-    console.log('MongoDB connection closed');
+    console.log("MongoDB connection closed");
   }
 };
 
