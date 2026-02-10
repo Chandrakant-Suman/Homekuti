@@ -79,3 +79,13 @@ setTimeout(() => {
     bootstrap.Alert.getOrCreateInstance(alert).close();
   }
 }, 5000);
+
+document.addEventListener("click", (e) => {
+  const dropdown = document.querySelector(".user-dropdown");
+  const toggle = document.getElementById("mainMenu");
+
+  if (!toggle.contains(e.target) && dropdown && !dropdown.contains(e.target)) {
+    const instance = bootstrap.Dropdown.getInstance(toggle);
+    if (instance) instance.hide();
+  }
+});

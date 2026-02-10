@@ -1,74 +1,60 @@
-<nav class="navbar navbar-expand-md hk-navbar shadow-sm sticky-top">
-  <div class="container">
+<nav class="hk-navbar">
+  <div class="hk-nav-container">
+
     <!-- Brand -->
-    <a class="navbar-brand hk-brand" href="/">
-      <img src="/images/logo.jpg" class="hk-logo" alt="Homekuti Logo" />
+    <a href="/" class="hk-brand">
+      <img src="/images/logo.jpg" alt="Homekuti" class="hk-logo" />
       <span>Homekuti</span>
     </a>
+    <!-- Right side nav -->
+    <div class="hk-right">
+      <!-- Desktop links -->
+      <div class="hk-links">
+        <a href="/" class="<%= activeRoute === '/' ? 'active' : '' %>">Home</a>
+        <a href="/listings" class="<%= activeRoute === '/listings' ? 'active' : '' %>">All Listings</a>
+        <a href="/listings/new" class="<%= activeRoute === '/listings/new' ? 'active' : '' %>">Add Listing</a>
+      </div>
 
-    <!-- Mobile Toggle -->
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-      aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
+      <!-- Hamburger -->
+      <div class="hk-menu">
+        <button class="hk-menu-btn" id="menuBtn" aria-label="Menu">
+          ☰
+        </button>
 
-    <!-- Links -->
-    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-      <div class="navbar-nav hk-nav">
-        <a class="nav-link <%= activeRoute === '/' ? 'active' : '' %>" href="/">
-          Home
-        </a>
-        <a class="nav-link <%= activeRoute === '/listings' ? 'active' : '' %>" href="/listings">
-          All Listings
-        </a>
-        <a class="nav-link <%= activeRoute === '/listings/new' ? 'active' : '' %>" href="/listings/new">
-          Add Listing
-        </a>
+        <!-- Dropdown -->
+        <div class="hk-dropdown" id="menuDropdown">
 
-        <!-- User Dropdown -->
-        <div class="nav-item dropdown ms-auto">
+          <!-- Mobile-only links -->
+          <div class="hk-dropdown-section mobile-only">
+            <a href="/">Home</a>
+            <a href="/listings">All Listings</a>
+            <a href="/listings/new">Add Listing</a>
+            <div class="divider"></div>
+          </div>
 
-          <!-- Hamburger Button -->
-          <a class="nav-link user-menu-btn" href="#" id="userMenu" role="button" data-bs-toggle="dropdown"
-            aria-expanded="false">
-
-            <i class="fa-solid fa-bars"></i>
-          </a>
-
-          <!-- Dropdown Menu -->
-          <ul class="dropdown-menu dropdown-menu-end user-dropdown" aria-labelledby="userMenu">
-
-            <% if(!currUser) { %>
-
-              <!-- Sign Up -->
-              <a href="/user/signup" class="dropdown-item auth-item">
-                <i class="fa-solid fa-user-plus"></i>
-                <span>Sign Up</span>
-              </a>
-
-              <!-- Sign In -->
-              <a href="/user/signin" class="dropdown-item auth-item">
-                <i class="fa-solid fa-right-to-bracket"></i>
-                <span>Sign In</span>
-              </a>
-
+          <% if(!currUser) { %>
+            <a href="/user/signup">Sign Up</a>
+            <a href="/user/signin">Sign In</a>
+            <% } else { %>
+              <a href="/user/logout" class="danger">Log Out</a>
               <% } %>
 
-
-                <% if(currUser) { %>
-
-                  <!-- Logout -->
-                  <a href="/user/logout" class="dropdown-item auth-item logout-item">
-                    <i class="fa-solid fa-right-from-bracket"></i>
-                    <span>Log Out</span>
-                  </a>
-
-                  <% } %>
-
-          </ul>
-
         </div>
-
       </div>
     </div>
+  </div>
 </nav>
+
+<script>
+  const btn = document.getElementById("menuBtn");
+  const menu = document.getElementById("menuDropdown");
+
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    menu.classList.toggle("open");
+  });
+
+  document.addEventListener("click", () => {
+    menu.classList.remove("open");
+  });
+</script>
