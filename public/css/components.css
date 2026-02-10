@@ -1,0 +1,618 @@
+/* =========================================
+   COMPONENTS.CSS
+   Reusable UI Components
+========================================= */
+
+/* =================================
+   BUTTONS
+================================= */
+.hk-btn {
+  appearance: button;
+  -webkit-appearance: button;
+  position: relative;
+  z-index: 10;
+  height: 36px;
+  padding: 0 14px;
+  border: 2px solid var(--primary);
+  background-color: var(--primary);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.45rem;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  outline: none;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
+}
+
+.hk-btn:hover {
+  text-decoration: none;
+  background-color: var(--primary-dark);
+  border-color: var(--primary-dark);
+  color: #fff;
+}
+
+.hk-btn:active {
+  background-color: #fff;
+  color: var(--primary);
+  border-color: var(--primary);
+  transform: scale(0.96);
+}
+
+.hk-btn:focus,
+.hk-btn:focus-visible {
+  outline: none;
+}
+
+.hk-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.hk-btn.clicked {
+  background-color: #fff !important;
+  color: var(--primary) !important;
+  border-color: var(--primary) !important;
+  pointer-events: none;
+}
+
+/* =========================================
+   LISTING CARDS
+========================================= */
+.hk-listing-card {
+  background: #ffffff;
+  border-radius: 22px;
+  overflow: hidden;
+  border: 1px solid #ffffff;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.06);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.hk-listing-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 22px 55px rgba(15, 23, 42, 0.12);
+  border-color: rgba(148, 163, 184, 0.9);
+}
+
+/* Image + overlays */
+.hk-listing-image-wrap {
+  position: relative;
+  border-radius: 22px;
+  overflow: hidden;
+}
+
+.hk-listing-image {
+  width: 100%;
+  height: 210px;
+  object-fit: cover;
+  display: block;
+}
+
+/* Card Body */
+.hk-listing-body {
+  padding: 0.85rem 1rem 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 1 1 auto;
+}
+
+.hk-listing-title {
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 0.2rem;
+}
+
+.hk-listing-price {
+  font-size: 0.9rem;
+  color: #111827;
+}
+
+.hk-listing-price span {
+  margin-left: 4px;
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+/* Bootstrap overrides for listing cards */
+.listing-card {
+  border: none !important;
+  margin-bottom: 2rem;
+}
+
+.listing-card .card-img-top {
+  border-radius: 1rem !important;
+  width: 100% !important;
+  object-fit: cover !important;
+}
+
+.listing-card .card-body {
+  padding: 0.25rem 1.25rem !important;
+}
+
+/* =========================================
+   STAY CARDS (Featured/Home)
+========================================= */
+.hk-stay-card {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border-radius: 18px;
+  height: 20rem;
+  overflow: hidden;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.hk-stay-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 22px 55px rgba(15, 23, 42, 0.20);
+  border-color: rgba(148, 163, 184, 0.9);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.hk-stay-image {
+  height: 180px;
+  background-size: cover;
+  background-position: center;
+}
+
+/* Image gradient variations */
+.hk-stay-image-1 {
+  background-image: linear-gradient(135deg, #ffe2e7, #ffd5dd);
+}
+
+.hk-stay-image-2 {
+  background-image: linear-gradient(135deg, #dbeafe, #bfdbfe);
+}
+
+.hk-stay-image-3 {
+  background-image: linear-gradient(135deg, #dcfce7, #bbf7d0);
+}
+
+.hk-stay-body {
+  padding: 0.85rem 1rem 1rem 1rem;
+}
+
+.hk-stay-location {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-bottom: 0.15rem;
+}
+
+.hk-stay-title {
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 0.25rem;
+}
+
+.hk-stay-meta {
+  font-size: 0.85rem;
+  color: #9ca3af;
+  margin-bottom: 0.4rem;
+}
+
+.hk-stay-price {
+  font-size: 0.9rem;
+  color: #4b5563;
+}
+
+.hk-stay-price span {
+  font-weight: 600;
+  color: #111827;
+}
+
+/* =========================================
+   SEARCH PILL
+========================================= */
+.hk-search-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.hk-search-pill {
+  background: #ffffff;
+  border-radius: 999px;
+  padding: 0.7rem;
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  max-width: 720px;
+  width: 100%;
+}
+
+.hk-search-item {
+  padding: 0.25rem 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.hk-search-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.hk-search-value {
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+.hk-search-divider {
+  width: 1px;
+  height: 32px;
+  background: #e5e7eb;
+}
+
+.hk-search-end {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+
+.hk-search-btn {
+  border: none;
+  outline: none;
+  background: var(--primary);
+  color: #fff;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.hk-search-btn:hover {
+  background-color: var(--primary-dark);
+  transform: scale(1.05);
+}
+
+.hk-search-btn i {
+  font-size: 0.9rem;
+}
+
+/* =========================================
+   SEARCH PANELS
+========================================= */
+.hk-panel {
+  max-width: 720px;
+  margin: 0.75rem auto 0;
+  background: #ffffff;
+  border-radius: 24px;
+  box-shadow: 0 22px 60px rgba(15, 23, 42, 0.16);
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  padding: 1rem 1.25rem;
+  display: none;
+}
+
+.hk-panel h4 {
+  font-size: 1rem;
+  margin-bottom: 0.75rem;
+  color: #111827;
+}
+
+/* Where Panel */
+#wherePanel ul {
+  list-style: none;
+  padding-left: 0;
+  margin-bottom: 0.5rem;
+  margin-top: 0;
+}
+
+#wherePanel li {
+  padding: 0.45rem 0.3rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #374151;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+}
+
+#wherePanel li:hover {
+  background: #f3f4f6;
+}
+
+#whereCustom {
+  width: 100%;
+  padding: 0.5rem 0.6rem;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+}
+
+/* When Panel */
+.hk-date-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.hk-date-row label {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.hk-date-row input[type="date"] {
+  padding: 0.4rem 0.5rem;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+}
+
+/* Who Panel */
+.hk-guest-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.hk-guest-row:last-child {
+  border-bottom: none;
+}
+
+.hk-guest-title {
+  font-size: 0.95rem;
+  color: #111827;
+}
+
+.hk-guest-sub {
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.hk-guest-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.hk-guest-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.hk-guest-btn:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.hk-guest-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.hk-guest-count {
+  min-width: 16px;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #111827;
+}
+
+.hk-panel-apply {
+  margin-top: 0.8rem;
+  border: none;
+  background: #111827;
+  color: #fff;
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.hk-panel-apply:hover {
+  background: #374151;
+}
+
+/* =========================================
+   FORMS
+========================================= */
+form {
+  max-width: 1120px;
+  margin: 1rem auto 0;
+  padding: 1.5rem;
+  background: var(--bg-card);
+  border-radius: var(--radius-card);
+  border: 1px solid var(--border-soft);
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+form label {
+  font-size: 0.9rem;
+  color: #4b5563;
+}
+
+form textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+form input::placeholder,
+form textarea::placeholder {
+  color: #9ca3af;
+}
+
+/* Remove card styling for inline action forms */
+.form-no-card {
+  background: transparent !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+  border: none !important;
+  display: inline-flex !important;
+}
+
+.edit-delete-btn {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Validation */
+.was-validated .form-control:invalid,
+.form-control.is-invalid {
+  border-color: #dc3545;
+}
+
+.was-validated .form-control:valid,
+.form-control.is-valid {
+  border-color: #198754;
+}
+
+/* =========================================
+   SECTION HEADERS
+========================================= */
+.hk-section {
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.hk-section-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.hk-section-header h2 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.hk-section-header a {
+  font-size: 0.9rem;
+  color: #4b5563;
+  transition: color 0.2s ease;
+}
+
+.hk-section-header a:hover {
+  color: var(--primary);
+}
+
+/* =========================================
+   HOST CTA CARD
+========================================= */
+.hk-host-section {
+  margin-bottom: 3rem;
+}
+
+.hk-host-card {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 1.4rem 1.6rem;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: var(--shadow-soft);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.hk-host-card:hover {
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.12);
+  border-color: rgba(148, 163, 184, 0.7);
+}
+
+.hk-host-card h2 {
+  font-size: 1.25rem;
+  margin-bottom: 0.35rem;
+  color: #111827;
+}
+
+.hk-host-card p {
+  font-size: 0.95rem;
+  color: #4b5563;
+}
+
+/* =========================================
+   COMPONENT RESPONSIVE
+========================================= */
+@media (max-width: 768px) {
+  .hk-search-pill {
+    flex-wrap: wrap;
+    border-radius: 24px;
+    padding: 0.6rem;
+  }
+
+  .hk-search-item {
+    flex: 1 1 100%;
+    padding: 0.4rem 0.8rem;
+  }
+
+  .hk-search-divider {
+    display: none;
+  }
+
+  .hk-search-end {
+    width: 100%;
+    justify-content: space-between;
+    margin-left: 0;
+    padding: 0.4rem 0.8rem;
+  }
+
+  .hk-search-btn {
+    margin-left: 0;
+  }
+
+  .hk-host-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .hk-section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .hk-listing-image {
+    height: 190px;
+  }
+
+  .hk-stay-card {
+    height: 18rem;
+  }
+
+  .hk-stay-image {
+    height: 160px;
+  }
+
+  .hk-date-row {
+    flex-direction: column;
+  }
+
+  .hk-panel {
+    padding: 0.8rem 1rem;
+  }
+}

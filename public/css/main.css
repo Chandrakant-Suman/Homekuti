@@ -1,0 +1,19 @@
+/* =========================================
+   MAIN CSS ENTRY FILE
+   Do not write styles here
+========================================= */
+
+/* 1. Variables & Base */
+@import url("./base.css");
+
+/* 2. Reusable Components */
+@import url("./components.css");
+
+/* 3. Layout (Navbar, Footer) */
+@import url("./layout.css");
+
+/* 4. Page-specific styles */
+@import url("./pages.css");
+
+/* 5. Media Queries */
+@import url("./responsive.css");
