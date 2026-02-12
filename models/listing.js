@@ -14,16 +14,8 @@ const listingSchema = new Schema({
   },
 
   image: {
-    type: String,
-    required: true,
-    default: "/images/listings/example.jpg",
-
-    set: (value) => {
-      if (!value || value.trim() === "") {
-        return "/images/listings/example.jpg";
-      }
-      return value;
-    }
+    url: String,
+    filename: String
   },
 
   price: {

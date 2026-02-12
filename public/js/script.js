@@ -5,15 +5,24 @@
   // FORM VALIDATION
   // ===============================
   const form = document.querySelector('.needs-validation');
+
   if (form) {
+
     const fields = form.querySelectorAll('.form-control');
+    const imageInput = document.querySelector('#imageInput, #editImageInput');
+    const imageError = document.querySelector('#imageError, #editImageError');
+    const submitButton = form.querySelector('.hk-btn'); // Get submit button
+
+    const MAX_SIZE = 5 * 1024 * 1024; // 5MB
 
     form.addEventListener('submit', (event) => {
+
       let formIsValid = true;
 
       fields.forEach(field => {
-        // Trim spaces
-        if (field.tagName === 'INPUT' || field.tagName === 'TEXTAREA') {
+
+        // ✅ DO NOT TOUCH FILE INPUT VALUE
+        if (field.type !== "file") {
           field.value = field.value.trim();
         }
 
@@ -27,17 +36,64 @@
         }
       });
 
+      // ===============================
+      // FILE VALIDATION (NEW + EDIT)
+      // ===============================
+      if (imageInput) {
+
+        const file = imageInput.files[0];
+
+        imageInput.classList.remove("is-valid", "is-invalid");
+
+        // NEW FORM → required
+        if (imageInput.id === "imageInput") {
+
+          if (!file) {
+            formIsValid = false;
+            imageError.textContent = "Please upload a listing image.";
+            imageInput.classList.add("is-invalid");
+          }
+        }
+
+        // BOTH FORMS → size check
+        if (file && file.size > MAX_SIZE) {
+          formIsValid = false;
+          imageError.textContent = "Image must be less than 5MB.";
+          imageInput.classList.add("is-invalid");
+        }
+
+        if (file && file.size <= MAX_SIZE) {
+          imageInput.classList.add("is-valid");
+        }
+      }
+
       if (!formIsValid) {
         event.preventDefault();
         event.stopPropagation();
+        
+        // 🔥 IMPORTANT: Remove clicked class if validation fails
+        if (submitButton) {
+          submitButton.classList.remove('clicked');
+        }
+      } else {
+        // ✅ Only freeze button if form is valid
+        if (submitButton) {
+          submitButton.classList.add('clicked');
+        }
       }
 
       form.classList.add('was-validated');
     });
 
-    // Live validation
+    // ===============================
+    // LIVE VALIDATION
+    // ===============================
     fields.forEach(field => {
+
       field.addEventListener('input', () => {
+
+        if (field.type === "file") return; // 🔥 ignore file input
+
         if (field.checkValidity()) {
           field.classList.add('is-valid');
           field.classList.remove('is-invalid');
@@ -46,19 +102,44 @@
           field.classList.remove('is-valid');
         }
       });
+
     });
+
+    // ===============================
+    // FILE LIVE VALIDATION
+    // ===============================
+    if (imageInput) {
+      imageInput.addEventListener("change", () => {
+
+        const file = imageInput.files[0];
+
+        imageInput.classList.remove("is-valid", "is-invalid");
+
+        if (!file) return;
+
+        if (file.size > MAX_SIZE) {
+          imageError.textContent = "Image must be less than 5MB.";
+          imageInput.classList.add("is-invalid");
+        } else {
+          imageInput.classList.add("is-valid");
+        }
+      });
+    }
+
   }
 
   // ===============================
-  // FREEZE BUTTON AFTER CLICK
+  // REMOVE BUTTON FREEZE CODE (Not needed anymore)
   // ===============================
+  // Commented out - now handled in form submit event
+  /*
   document.querySelectorAll(".hk-btn").forEach(btn => {
     btn.addEventListener("click", function () {
       this.classList.add("clicked");
     });
   });
+  */
 
-  // Reset on back/forward navigation
   window.addEventListener("pageshow", () => {
     document.querySelectorAll(".hk-btn.clicked").forEach(btn => {
       btn.classList.remove("clicked");

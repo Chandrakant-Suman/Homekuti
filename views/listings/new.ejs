@@ -1,118 +1,82 @@
 <% layout('/layouts/boilerplate') -%>
 
-<div class="container mt-5">
-  <div class="row justify-content-center">
-    <div class="col-lg-8 col-md-10">
+  <div class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-8 col-md-10">
 
-      <h2 class="mb-4 text-center">Create a New Listing</h2>
+        <h2 class="mb-4 text-center">Create a New Listing</h2>
 
-      <form 
-        method="POST" 
-        action="/listings" 
-        class="needs-validation" 
-        novalidate
-      >
+        <form method="POST" action="/listings" class="needs-validation" novalidate enctype="multipart/form-data">
 
-        <!-- Title -->
-        <div class="mb-1">
-          <label class="form-label">Title</label>
-          <input
-            type="text"
-            required minlength="3"
-            class="form-control"
-            name="listing[title]"
-            placeholder="Enter a catchy title"
-            required
-          >
-          <div class="valid-feedback">Looks good!</div>
-          <div class="invalid-feedback">Title is required.</div>
-        </div>
-
-        <!-- Description -->
-        <div class="mb-1">
-          <label class="form-label">Description</label>
-          <textarea
-            class="form-control"
-            name="listing[description]"
-            rows="4"
-            required minlength="50"
-            placeholder="Describe the stay"
-            required
-          ></textarea>
-          <div class="valid-feedback">Looks good!</div>
-          <div class="invalid-feedback">Description is required (min 50 characters).</div>
-        </div>
-
-        <!-- Image URL -->
-        <div class="mb-1">
-          <label class="form-label">Image URL(JPG/JPEG/PNG)</label>
-          <input
-            type="text"
-            class="form-control"
-            name="listing[image]"
-            placeholder="Paste image link here"
-          >
-          <div class="valid-feedback">Optional</div>
-          <!-- <div class="invalid-feedback">Image is optional.</div> -->
-        </div>
-
-        <!-- Price + Location -->
-        <!-- Price -->
-        <div class="row">
-          <div class="col-md-4 mb-1">
-            <label class="form-label">Price</label>
-            <input
-              type="number"
-              class="form-control"
-              name="listing[price]"
-              min="500"
-              placeholder="₹ per night"
-              required
-            >
-            <div class="valid-feedback">This is OK!</div>
-          <div class="invalid-feedback">Enter a valid price; min.₹500</div>
-          </div>
-
-          <!-- Location -->
-          <div class="col-md-8 mb-1">
-            <label class="form-label">Location</label>
-            <input
-              type="text"
-              required minlength="3"
-              class="form-control"
-              name="listing[location]"
-              placeholder="City / Area"
-              required
-            >
+          <!-- Title -->
+          <div class="mb-1">
+            <label class="form-label">Title</label>
+            <input type="text" required minlength="3" class="form-control" name="listing[title]"
+              placeholder="Enter a catchy title" required>
             <div class="valid-feedback">Looks good!</div>
-          <div class="invalid-feedback">Location is required.</div>
+            <div class="invalid-feedback">Title is required.</div>
           </div>
-        </div>
 
-        <!-- Country -->
-        <div class="mb-1">
-          <label class="form-label">Country</label>
-          <input
-            type="text"
-            required minlength="3"
-            class="form-control"
-            name="listing[country]"
-            placeholder="Country"
-            required
-          >
-          <div class="valid-feedback">Looks good!</div>
-          <div class="invalid-feedback">Country is required.</div>
-        </div>
+          <!-- Description -->
+          <div class="mb-1">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" name="listing[description]" rows="4" required minlength="50"
+              placeholder="Describe the stay" required></textarea>
+            <div class="valid-feedback">Looks good!</div>
+            <div class="invalid-feedback">Description is required (min 50 characters).</div>
+          </div>
 
-        <!-- Submit -->
-        <div class="d-grid">
-          <button class="hk-btn" type="submit">
-            Create Listing
-          </button>
-        </div>
+          <!-- Image URL -->
+          <div class="mb-3">
+            <label class="form-label">Upload Listing Image *</label>
 
-      </form>
+            <input type="file" class="form-control" name="listing[image]" id="imageInput" accept="image/*" required>
 
+            <div class="invalid-feedback" id="imageError">
+              Please upload a listing image.
+            </div>
+          </div>
+
+          <!-- Price + Location -->
+          <!-- Price -->
+          <div class="row">
+            <div class="col-md-4 mb-1">
+              <label class="form-label">Price</label>
+              <input type="number" class="form-control" name="listing[price]" min="500" placeholder="₹ per night"
+                required>
+              <div class="valid-feedback">This is OK!</div>
+              <div class="invalid-feedback">Enter a valid price; min.₹500</div>
+            </div>
+
+            <!-- Location -->
+            <div class="col-md-8 mb-1">
+              <label class="form-label">Location</label>
+              <input type="text" required minlength="3" class="form-control" name="listing[location]"
+                placeholder="City / Area" required>
+              <div class="valid-feedback">Looks good!</div>
+              <div class="invalid-feedback">Location is required.</div>
+            </div>
+          </div>
+
+          <!-- Country -->
+          <div class="mb-1">
+            <label class="form-label">Country</label>
+            <input type="text" required minlength="3" class="form-control" name="listing[country]" placeholder="Country"
+              required>
+            <div class="valid-feedback">Looks good!</div>
+            <div class="invalid-feedback">Country is required.</div>
+          </div>
+
+          <!-- Submit -->
+          <div class="d-grid">
+            <button class="hk-btn" type="submit">
+              Create Listing
+            </button>
+          </div>
+
+        </form>
+
+      </div>
     </div>
   </div>
-</div>
+ 

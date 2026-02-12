@@ -8,25 +8,23 @@ const { saveRedirectUrl } = require("../middlewares/authenicate");
 const userController = require("../controllers/users");
 
 // ================= SIGNIN =================
-// Show login form
-router.get("/signin", userController.signinForm);
 
-// Handle login
-router.post("/signin",
+router.route("/signin")
+.get(userController.signinForm)
+.post(
   passport.authenticate("local", {
-    failureRedirect: "/signin",
+    failureRedirect: "/user/signin",
     failureFlash: true
   }),
   userController.signin
 );
 
+
 // ================= SIGNUP =================
 // Show register form
-router.get("/signup", userController.signupForm);
-
-// Handle register and auto login
-router.post(
-  "/signup",
+router.route("/signup")
+.get(userController.signupForm)
+.post(
   wrapAsync(userController.signup)
 );
 

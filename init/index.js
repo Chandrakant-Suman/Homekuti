@@ -1,9 +1,13 @@
+require("dotenv").config();
+
 const mongoose = require("mongoose");
 const initData = require("./data.js");
 const Listing = require("../models/listing.js");
-const MONGO_URL = "mongodb://127.0.0.1:27017/Homekuti";
+
+const MONGO_URL = `mongodb://${process.env.MONGODB_URI}`;
+
 const OWNER_ID = new mongoose.Types.ObjectId(
-  "697eedc0ca93151c7775c697"
+  `${process.env.ADMIN_OBJECT_ID}`
 );
 
 main()
@@ -17,20 +21,15 @@ async function main() {
 const initDB = async () => {
   try {
     await Listing.deleteMany({});
-    const normalizedData = initData.data.map((item) => {
-      let image = item.image;
-      if (image && typeof image === "object") {
-        image = image.url;
-      }
-      if (!image) image = "";
-      return {
-        ...item,
-        image,
-        owner: OWNER_ID
-      };
-    });
+
+    const normalizedData = initData.data.map((item) => ({
+      ...item,
+      owner: OWNER_ID,
+      image: item.image   // ✅ KEEP OBJECT
+    }));
 
     await Listing.insertMany(normalizedData);
+
     console.log("Database seeded successfully");
   } catch (err) {
     console.error("Seeding failed:", err);

@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
 
-// path is of the parent directory of the current file so we use ".."
 const wrapAsync = require("../utils/wrapAsync");
 
 const { isLoggedIn } = require("../middlewares/authenicate");
@@ -10,55 +9,49 @@ const { validateListing } = require("../middlewares/validateListing");
 
 const listingController = require("../controllers/listing");
 
+// ✅ Modern multer setup (NO cloudinary storage adapter)
+const multer = require("multer");
+
+const upload = multer({
+  storage: multer.memoryStorage(), // 🚀 latest pattern
+  limits: { fileSize: 5 * 1024 * 1024 } // optional: 5MB limit
+});
+
 // ================= ROUTES =================
 
-// INDEX
-router.get(
-    "/",
-    wrapAsync(listingController.index)
+router.route("/")
+.get(wrapAsync(listingController.index))
+.post(
+  isLoggedIn,
+  upload.single("listing[image]"), // multer parses multipart
+  validateListing,
+  wrapAsync(listingController.createListing)
 );
 
 // NEW
 router.get("/new", isLoggedIn, listingController.renderNewForm);
 
-// CREATE
-router.post(
-    "/",
-    isLoggedIn,
-    validateListing,
-    wrapAsync(listingController.createListing)
-);
-
-// SHOW
-router.get(
-    "/:id",
-    wrapAsync(listingController.showListing)
+router.route("/:id")
+.get(wrapAsync(listingController.showListing))
+.put(
+  isLoggedIn,
+  isOwner,
+  upload.single("listing[image]"),
+  validateListing,
+  wrapAsync(listingController.updateListing)
+)
+.delete(
+  isLoggedIn,
+  isOwner,
+  wrapAsync(listingController.deleteListing)
 );
 
 // EDIT
 router.get(
-    "/:id/edit",
-    isLoggedIn,
-    isOwner,
-    wrapAsync(listingController.editListing)
+  "/:id/edit",
+  isLoggedIn,
+  isOwner,
+  wrapAsync(listingController.editListing)
 );
 
-// UPDATE
-router.put(
-    "/:id",
-    isLoggedIn,
-    isOwner,
-    validateListing,
-    wrapAsync(listingController.updateListing)
-);
-
-// DELETE
-router.delete(
-    "/:id",
-    isLoggedIn,
-    isOwner,
-    wrapAsync(listingController.deleteListing)
-);
-
-// ================= EXPORT =================
 module.exports = router;

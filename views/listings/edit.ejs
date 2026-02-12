@@ -1,122 +1,127 @@
 <% layout('/layouts/boilerplate') -%>
 
-<div class="container mt-5">
-  <div class="row justify-content-center">
-    <div class="col-lg-8 col-md-10">
+  <div class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-8 col-md-10">
 
-      <h2 class="mb-4 text-center">Edit Listing</h2>
+        <h2 class="mb-4 text-center">Edit Listing</h2>
 
-      <form
-        method="POST"
-        action="/listings/<%= listing._id %>?_method=PUT"
-        class="needs-validation"
-        novalidate
-      >
+        <form method="POST" action="/listings/<%= listing._id %>?_method=PUT" class="needs-validation" novalidate
+          enctype="multipart/form-data">
 
-        <!-- Title -->
-        <div class="mb-3">
-          <label class="form-label">Title</label>
-          <input
-            type="text"
-            class="form-control"
-            name="listing[title]"
-            value="<%= listing.title %>"
-            required
-            minlength="3"
-          >
-          <div class="valid-feedback">Looks good!</div>
-          <div class="invalid-feedback">Title is required.</div>
-        </div>
-
-        <!-- Description -->
-        <div class="mb-3">
-          <label class="form-label">Description</label>
-          <textarea
-            class="form-control"
-            name="listing[description]"
-            rows="4"
-            required
-            minlength="50"
-          ><%= listing.description %></textarea>
-          <div class="valid-feedback">Looks good!</div>
-          <div class="invalid-feedback">
-            Description is required (min 50 characters).
+          <!-- Title -->
+          <div class="mb-3">
+            <label class="form-label">Title</label>
+            <input type="text" class="form-control" name="listing[title]" value="<%= listing.title %>" required
+              minlength="3">
+            <div class="valid-feedback">Looks good!</div>
+            <div class="invalid-feedback">Title is required.</div>
           </div>
-        </div>
 
-        <!-- Image URL -->
-        <div class="mb-3">
-          <label class="form-label">Image URL</label>
-          <input
-            type="text"
-            class="form-control"
-            name="listing[image]"
-            value="<%= listing.image %>"
-            placeholder="Paste image link here"
-            required
-          >
-          <div class="valid-feedback">Optional</div>
-        </div>
-
-        <!-- Price + Location -->
-        <div class="row">
-          <!-- Price -->
-          <div class="col-md-4 mb-3">
-            <label class="form-label">Price</label>
-            <input
-              type="number"
-              class="form-control"
-              name="listing[price]"
-              min="500"
-              value="<%= listing.price %>"
-              required
-            >
-            <div class="valid-feedback">This is OK!</div>
+          <!-- Description -->
+          <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" name="listing[description]" rows="4" required
+              minlength="50"><%= listing.description %></textarea>
+            <div class="valid-feedback">Looks good!</div>
             <div class="invalid-feedback">
-              Enter a valid price; min. ₹500
+              Description is required (min 50 characters).
             </div>
           </div>
 
-          <!-- Location -->
-          <div class="col-md-8 mb-3">
-            <label class="form-label">Location</label>
-            <input
-              type="text"
-              class="form-control"
-              name="listing[location]"
-              value="<%= listing.location %>"
-              required
-              minlength="3"
-            >
-            <div class="valid-feedback">Looks good!</div>
-            <div class="invalid-feedback">Location is required.</div>
+          <!-- ⭐ CURRENT IMAGE PREVIEW -->
+          <div class="mb-3">
+            <label class="form-label">Current Image</label>
+            <div style="width:260px;height:160px;overflow:hidden;border-radius:10px;">
+              <img
+                src="<%= listing.image.url ? listing.image.url.replace('/upload/', '/upload/w_260,h_160,c_fill,q_60,f_auto/') : listing.image %>"
+                style="width:100%;height:100%;object-fit:cover;" loading="lazy" alt="<%= listing.title %>">
+            </div>
           </div>
-        </div>
 
-        <!-- Country -->
-        <div class="mb-4">
-          <label class="form-label">Country</label>
-          <input
-            type="text"
-            class="form-control"
-            name="listing[country]"
-            value="<%= listing.country %>"
-            required
-            minlength="3"
-          >
-          <div class="valid-feedback">Looks good!</div>
-          <div class="invalid-feedback">Country is required.</div>
-        </div>
+          <!-- ⭐ IMAGE UPLOAD (Same as new.ejs) -->
+          <div class="mb-3">
+            <label class="form-label">Upload New Image (Optional)</label>
+            <input type="file" class="form-control" name="listing[image]" id="editImageInput" accept="image/*">
+            <div class="invalid-feedback" id="editImageError">
+              Image must be less than 5MB.
+            </div>
+          </div>
 
-        <!-- Submit -->
-        <div class="d-grid">
-          <button class="hk-btn" type="submit">
-            Update Listing
-          </button>
-        </div>
+          <!-- Price + Location -->
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Price</label>
+              <input type="number" class="form-control" name="listing[price]" min="500" value="<%= listing.price %>"
+                required>
+              <div class="valid-feedback">This is OK!</div>
+              <div class="invalid-feedback">
+                Enter a valid price; min. ₹500
+              </div>
+            </div>
 
-      </form>
+            <div class="col-md-8 mb-3">
+              <label class="form-label">Location</label>
+              <input type="text" class="form-control" name="listing[location]" value="<%= listing.location %>" required
+                minlength="3">
+              <div class="valid-feedback">Looks good!</div>
+              <div class="invalid-feedback">Location is required.</div>
+            </div>
+          </div>
 
+          <!-- Country -->
+          <div class="mb-4">
+            <label class="form-label">Country</label>
+            <input type="text" class="form-control" name="listing[country]" value="<%= listing.country %>" required
+              minlength="3">
+            <div class="valid-feedback">Looks good!</div>
+            <div class="invalid-feedback">Country is required.</div>
+          </div>
+
+          <!-- Submit -->
+          <div class="d-grid">
+            <button class="hk-btn" type="submit">
+              Update Listing
+            </button>
+          </div>
+
+        </form>
+
+      </div>
     </div>
   </div>
-</div>
+
+  <script>
+    (() => {
+
+      const editImageInput = document.getElementById("editImageInput");
+      const editError = document.getElementById("editImageError");
+
+      if (!editImageInput) return;
+
+      const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+
+      editImageInput.addEventListener("change", function () {
+
+        const file = this.files[0];
+
+        // reset states
+        this.classList.remove("is-valid", "is-invalid");
+
+        // nothing selected (allowed on edit)
+        if (!file) return;
+
+        // ❌ too large
+        if (file.size > MAX_SIZE) {
+          editError.textContent = "Image must be less than 5MB.";
+          this.classList.add("is-invalid");
+          return;
+        }
+
+        // ✅ valid file
+        this.classList.add("is-valid");
+
+      });
+
+    })();
+  </script>

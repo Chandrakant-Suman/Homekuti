@@ -1,39 +1,63 @@
 const Listing = require("../models/listing");
-const downloadImage = require("../utils/downloadImage");
-const path = require("path");
+const ExpressError = require("../utils/ExpressError");
 
+const cloudinary = require("../cloudConfig");
+const streamifier = require("streamifier");
+
+// ================= INDEX =================
 module.exports.index = async (req, res) => {
     const listings = await Listing.find({});
     res.render("listings/index", { allListings: listings });
 };
 
+// ================= NEW FORM =================
 module.exports.renderNewForm = (req, res) => {
     res.render("listings/new");
 };
-module.exports.createListing = async (req, res) => {
-    let data = req.body.listing;
-    // Default image
-    if (!data.image || data.image.trim() === "") {
-        data.image = "/images/listings/example.jpg";
+
+// ================= CREATE LISTING =================
+module.exports.createListing = async (req, res, next) => {
+
+    if (!req.file) {
+        req.flash("error", "Image is required!");
+        return res.redirect("/listings/new");
     }
-    else {
-        const filename =
-            "listing_" +
-            Date.now() +
-            path.extname(data.image.split("?")[0]);
-        await downloadImage(data.image, filename);
-        data.image = `/images/listings/${filename}`;
-    }
-    const listing = new Listing(data);
+
+    // 🔥 Upload buffer to Cloudinary (modern way)
+    const uploadStream = () =>
+        new Promise((resolve, reject) => {
+            const stream = cloudinary.uploader.upload_stream(
+                { folder: "Homekuti_DEV" },
+                (error, result) => {
+                    if (result) resolve(result);
+                    else reject(error);
+                }
+            );
+
+            streamifier.createReadStream(req.file.buffer).pipe(stream);
+        });
+
+    const result = await uploadStream();
+
+    const listing = new Listing(req.body.listing);
     listing.owner = req.user._id;
+
+    // ✅ Cloudinary response
+    listing.image = {
+        url: result.secure_url,
+        filename: result.public_id
+    };
+
     await listing.save();
 
     req.flash("success", "Successfully created a new listing!");
     res.redirect("/listings");
 };
+
+// ================= SHOW LISTING =================
 module.exports.showListing = async (req, res) => {
-    const listing = await Listing
-        .findById(req.params.id)
+
+    const listing = await Listing.findById(req.params.id)
         .populate("owner")
         .populate({
             path: "reviews",
@@ -42,67 +66,83 @@ module.exports.showListing = async (req, res) => {
 
     if (!listing) {
         req.flash("error", "Listing Not Found");
-        // throw new ExpressError(404, "Listing Not Found");
         return res.redirect("/listings");
     }
+
+    // Safety patch for old seeded listings
+    if (!listing.owner) {
+        listing.owner = { username: "Admin" };
+    }
+
     res.render("listings/show", { listing });
 };
+
+
+// ================= EDIT FORM =================
 module.exports.editListing = async (req, res) => {
+
     const listing = await Listing.findById(req.params.id);
+
     if (!listing) {
         req.flash("error", "Listing Not Found");
-        // throw new ExpressError(404, "Listing Not Found");
         return res.redirect("/listings");
     }
+
     res.render("listings/edit", { listing });
 };
+
+// ================= UPDATE LISTING =================
 module.exports.updateListing = async (req, res) => {
+
     const { id } = req.params;
-    let data = req.body.listing;
-    const listing = await Listing.findById(id);
+
+    let listing = await Listing.findByIdAndUpdate(
+        id,
+        { ...req.body.listing },
+        { new: true }
+    );
+
     if (!listing) {
         throw new ExpressError(404, "Listing Not Found");
     }
-    // Handle Image Update
-    if (data.image && data.image !== listing.image) {
-        if (listing.image !== "/images/listings/example.jpg") {
-            const oldPath = path.join(
-                __dirname,
-                "..",
-                "public",
-                listing.image
-            );
-            if (fs.existsSync(oldPath)) {
-                fs.unlinkSync(oldPath);
-            }
-        }
-        const filename =
-            "listing_" +
-            Date.now() +
-            path.extname(data.image.split("?")[0]);
-        await downloadImage(data.image, filename);
-        data.image = `/images/listings/${filename}`;
+
+    // If new image uploaded
+    if (req.file) {
+
+        const uploadStream = () =>
+            new Promise((resolve, reject) => {
+                const stream = cloudinary.uploader.upload_stream(
+                    { folder: "Homekuti_DEV" },
+                    (error, result) => {
+                        if (result) resolve(result);
+                        else reject(error);
+                    }
+                );
+
+                streamifier.createReadStream(req.file.buffer).pipe(stream);
+            });
+
+        const result = await uploadStream();
+
+        listing.image = {
+            url: result.secure_url,
+            filename: result.public_id
+        };
+
+        await listing.save();
     }
-    await Listing.findByIdAndUpdate(id, data);
+
+
+
     req.flash("success", "Listing updated successfully!");
     res.redirect(`/listings/${id}`);
 };
+
+// ================= DELETE LISTING =================
 module.exports.deleteListing = async (req, res) => {
-    const listing = await Listing.findById(req.params.id);
-    if (!listing) return res.redirect("/listings");
-    if (listing.image !== "/images/listings/example.jpg") {
-        const imgPath = path.join(
-            __dirname,
-            "..",
-            "public",
-            listing.image
-        );
-        if (fs.existsSync(imgPath)) {
-            fs.unlinkSync(imgPath);
-        }
-    }
-    await Listing.findByIdAndDelete(req.params.id);
-    console.log("Deleted Listing:", req.params.id);
+
+    const { id } = req.params;
+    await Listing.findByIdAndDelete(id);
     req.flash("success", "Successfully deleted the listing!");
     res.redirect("/listings");
 };
