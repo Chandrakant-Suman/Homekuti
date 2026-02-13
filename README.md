@@ -138,6 +138,9 @@ Project/
 ```
 ## 🖼️ Screenshots 📸
 
+### 🏠 Home Page
+![Homekuti Home Page](https://raw.githubusercontent.com/Chandrakant-Suman/Homekuti/main/public/images/demo-home.png)
+
 ### 🏠 Listing Page
 ![Homekuti Listing Page](https://raw.githubusercontent.com/Chandrakant-Suman/Homekuti/main/public/images/demo-listing.png)
 
