@@ -139,14 +139,11 @@ Project/
 ## 🖼️ Screenshots
 
 ### 🏠 Listing Page
-<p align="center">
-  <img src="https://raw.githubusercontent.com/Chandrakant-Suman/Homekuti/main/public/images/demo-listing.png" width="800"/>
-</p>
+![](https://raw.githubusercontent.com/Chandrakant-Suman/Homekuti/main/public/images/demo-listing.png)
 
 ### 🗺️ Map View
-<p align="center">
-  <img src="https://raw.githubusercontent.com/Chandrakant-Suman/Homekuti/main/public/images/demo-map.png" width="800"/>
-</p>
+![](https://raw.githubusercontent.com/Chandrakant-Suman/Homekuti/main/public/images/demo-map.png)
+
 
 
 🚀 Installation
