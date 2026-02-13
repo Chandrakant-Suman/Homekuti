@@ -5,6 +5,7 @@ module.exports.signinForm = (req, res) => {
     res.render("users/signin");
 };
 module.exports.signin = async (req, res) => {
+    req.flash("success", "Welcome back to Homekuti!");
     let redirectUrl = req.session.returnTo || "/listings";
     // Prevent bad redirects (forms / _method routes)
     if (

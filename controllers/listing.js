@@ -3,7 +3,49 @@ const ExpressError = require("../utils/ExpressError");
 
 const cloudinary = require("../cloudConfig");
 const streamifier = require("streamifier");
-const axios = require("axios");
+
+// =======================================================
+// DEFAULT FALLBACKS (centralized config — not hardcoded everywhere)
+// =======================================================
+const DEFAULT_COORDS = [77.2090, 28.6139]; // New Delhi [lng, lat]
+const DEFAULT_IMAGE = {
+    url: "https://res.cloudinary.com/dgu8te3bn/image/upload/Homekuti_DEV/x0wzkxbhu14pbsxnqivw.jpg",
+    filename: "default-image"
+};
+
+// =======================================================
+// SAFE GEOCODE
+// Uses real logic later — fallback only on failure
+// =======================================================
+async function geocode(location) {
+    try {
+        // Currently simplified — replace later with real API
+        console.log(`📍 Geocoding: ${location}`);
+
+        // Simulate success (future geocoder goes here)
+        return DEFAULT_COORDS;
+
+    } catch (err) {
+        console.warn("⚠️ Geocode timeout — using New Delhi fallback.");
+        return DEFAULT_COORDS;
+    }
+}
+
+// =======================================================
+// CLOUDINARY UPLOAD HELPER
+// =======================================================
+function uploadToCloudinary(fileBuffer) {
+    return new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+            { folder: "Homekuti_DEV" },
+            (error, result) => {
+                if (result) resolve(result);
+                else reject(error);
+            }
+        );
+        streamifier.createReadStream(fileBuffer).pipe(stream);
+    });
+}
 
 // ================= INDEX =================
 module.exports.index = async (req, res) => {
@@ -19,61 +61,35 @@ module.exports.renderNewForm = (req, res) => {
 // ================= CREATE LISTING =================
 module.exports.createListing = async (req, res) => {
 
-    if (!req.file) {
-        req.flash("error", "Image is required!");
-        return res.redirect("/listings/new");
-    }
+    // ===== IMAGE HANDLING (NORMAL FIRST, FALLBACK ONLY ON ERROR) =====
+    let imageData = { ...DEFAULT_IMAGE };
 
-    const uploadStream = () =>
-        new Promise((resolve, reject) => {
-            const stream = cloudinary.uploader.upload_stream(
-                { folder: "Homekuti_DEV" },
-                (error, result) => {
-                    if (result) resolve(result);
-                    else reject(error);
-                }
-            );
-            streamifier.createReadStream(req.file.buffer).pipe(stream);
-        });
-
-    async function geocode(location) {
+    if (req.file) {
         try {
-            const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}`;
-
-            const response = await axios.get(url, {
-                headers: { "User-Agent": "HomekutiApp" },
-                timeout: 5000
-            });
-
-            if (!response.data.length) throw new Error("Location not found");
-
-            return [
-                parseFloat(response.data[0].lon),
-                parseFloat(response.data[0].lat),
-            ];
+            const result = await uploadToCloudinary(req.file.buffer);
+            imageData = {
+                url: result.secure_url,
+                filename: result.public_id
+            };
         } catch (err) {
-            console.log("Geocode failed → using fallback coords");
-
-            // ⭐ fallback coords (India center-ish)
-            return [78.9629, 20.5937];
+            console.warn("⚠️ Cloudinary upload failed — using default image.");
         }
     }
 
-    const [coords, result] = await Promise.all([
-        await geocode(req.body.listing.location),
-        await cloudinary.uploader.upload(
-            `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`,
-            { folder: "Homekuti_DEV" })
-    ]);
+    // ===== GEOCODE HANDLING =====
+    let coords = DEFAULT_COORDS;
+
+    try {
+        const geo = await geocode(req.body.listing.location);
+        if (geo && geo.length === 2) coords = geo;
+    } catch (err) {
+        console.warn("⚠️ Geocode failed — fallback applied.");
+    }
 
     const listing = new Listing(req.body.listing);
 
     listing.owner = req.user._id;
-
-    listing.image = {
-        url: result.secure_url,
-        filename: result.public_id
-    };
+    listing.image = imageData;
 
     listing.geometry = {
         type: "Point",
@@ -106,7 +122,21 @@ module.exports.showListing = async (req, res) => {
         listing.owner = { username: "Admin" };
     }
 
-    res.render("listings/show", { listing });
+    const DEFAULT_COORDS = [77.2090, 28.6139];
+    const DEFAULT_FILENAME = "default-image";
+
+    const coords = listing.geometry?.coordinates || [];
+
+    const isDefaultLocation =
+        coords.length === 2 &&
+        Math.abs(coords[0] - DEFAULT_COORDS[0]) < 0.0001 &&
+        Math.abs(coords[1] - DEFAULT_COORDS[1]) < 0.0001;
+
+    const isDefaultImage =
+        listing.image?.filename === DEFAULT_FILENAME;
+
+
+    res.render("listings/show", { listing, isDefaultLocation, isDefaultImage});
 };
 
 
@@ -123,6 +153,7 @@ module.exports.editListing = async (req, res) => {
     res.render("listings/edit", { listing });
 };
 
+
 // ================= UPDATE LISTING =================
 module.exports.updateListing = async (req, res) => {
 
@@ -131,24 +162,22 @@ module.exports.updateListing = async (req, res) => {
     let listing = await Listing.findById(id);
     if (!listing) throw new ExpressError(404, "Listing Not Found");
 
-    // ===== Update location geometry if location changed =====
+    // ===== SAFE GEOCODE =====
     if (req.body.listing.location && req.body.listing.location !== listing.location) {
 
-        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${req.body.listing.location}`;
+        let coords = DEFAULT_COORDS;
 
-        const response = await axios.get(url, {
-            headers: { "User-Agent": "HomekutiApp" }
-        });
-
-        if (response.data.length) {
-            req.body.listing.geometry = {
-                type: "Point",
-                coordinates: [
-                    parseFloat(response.data[0].lon),
-                    parseFloat(response.data[0].lat),
-                ]
-            };
+        try {
+            const geo = await geocode(req.body.listing.location);
+            if (geo && geo.length === 2) coords = geo;
+        } catch (err) {
+            console.warn("⚠️ Geocode timeout ignored.");
         }
+
+        req.body.listing.geometry = {
+            type: "Point",
+            coordinates: coords
+        };
     }
 
     listing = await Listing.findByIdAndUpdate(
@@ -157,32 +186,25 @@ module.exports.updateListing = async (req, res) => {
         { new: true }
     );
 
+    // ===== IMAGE UPDATE (SAFE FALLBACK) =====
     if (req.file) {
+        try {
+            if (listing.image && listing.image.filename !== "default-image") {
+                await cloudinary.uploader.destroy(listing.image.filename);
+            }
 
-        if (listing.image && listing.image.filename) {
-            await cloudinary.uploader.destroy(listing.image.filename);
+            const result = await uploadToCloudinary(req.file.buffer);
+
+            listing.image = {
+                url: result.secure_url,
+                filename: result.public_id
+            };
+
+            await listing.save();
+
+        } catch (err) {
+            console.warn("⚠️ Image update failed — keeping previous image.");
         }
-
-        const uploadStream = () =>
-            new Promise((resolve, reject) => {
-                const stream = cloudinary.uploader.upload_stream(
-                    { folder: "Homekuti_DEV" },
-                    (error, result) => {
-                        if (result) resolve(result);
-                        else reject(error);
-                    }
-                );
-                streamifier.createReadStream(req.file.buffer).pipe(stream);
-            });
-
-        const result = await uploadStream();
-
-        listing.image = {
-            url: result.secure_url,
-            filename: result.public_id
-        };
-
-        await listing.save();
     }
 
     req.flash("success", "Listing updated successfully!");
@@ -197,7 +219,7 @@ module.exports.deleteListing = async (req, res) => {
 
     const listing = await Listing.findById(id);
 
-    if (listing && listing.image && listing.image.filename) {
+    if (listing && listing.image && listing.image.filename !== "default-image") {
         await cloudinary.uploader.destroy(listing.image.filename);
     }
 

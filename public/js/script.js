@@ -70,7 +70,7 @@
       if (!formIsValid) {
         event.preventDefault();
         event.stopPropagation();
-        
+
         // 🔥 IMPORTANT: Remove clicked class if validation fails
         if (submitButton) {
           submitButton.classList.remove('clicked');
@@ -150,10 +150,12 @@
   // AUTO CLOSE ALERTS
   // ===============================
   setTimeout(() => {
-    const alert = document.querySelector('.auto-close');
-    if (alert && window.bootstrap) {
+    if (!window.bootstrap) return;
+
+    document.querySelectorAll('.auto-close').forEach(alert => {
       bootstrap.Alert.getOrCreateInstance(alert).close();
-    }
+    });
+
   }, 5000);
 
 })();

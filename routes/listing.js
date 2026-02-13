@@ -9,42 +9,35 @@ const { validateListing } = require("../middlewares/validateListing");
 
 const listingController = require("../controllers/listing");
 
-// ✅ Modern multer setup (NO cloudinary storage adapter)
-const multer = require("multer");
-
-const upload = multer({
-  storage: multer.memoryStorage(), // 🚀 latest pattern
-  limits: { fileSize: 5 * 1024 * 1024 } // optional: 5MB limit
-});
+// ✅ Import centralized upload middleware
+const upload = require("../middlewares/upload");
 
 // ================= ROUTES =================
 
-router.route("/")
-.get(wrapAsync(listingController.index))
-.post(
-  isLoggedIn,
-  upload.single("listing[image]"), // multer parses multipart
-  validateListing,
-  wrapAsync(listingController.createListing)
-);
+router
+  .route("/")
+  .get(wrapAsync(listingController.index))
+  .post(
+    isLoggedIn,
+    upload.single("listing[image]"), // Multer with size & type validation
+    validateListing,
+    wrapAsync(listingController.createListing)
+  );
 
 // NEW
 router.get("/new", isLoggedIn, listingController.renderNewForm);
 
-router.route("/:id")
-.get(wrapAsync(listingController.showListing))
-.put(
-  isLoggedIn,
-  isOwner,
-  upload.single("listing[image]"),
-  validateListing,
-  wrapAsync(listingController.updateListing)
-)
-.delete(
-  isLoggedIn,
-  isOwner,
-  wrapAsync(listingController.deleteListing)
-);
+router
+  .route("/:id")
+  .get(wrapAsync(listingController.showListing))
+  .put(
+    isLoggedIn,
+    isOwner,
+    upload.single("listing[image]"),
+    validateListing,
+    wrapAsync(listingController.updateListing)
+  )
+  .delete(isLoggedIn, isOwner, wrapAsync(listingController.deleteListing));
 
 // EDIT
 router.get(

@@ -1,17 +1,25 @@
+<% if (!hideFlash) { %>
+
 <div class="container mt-3">
-    
+
   <% if (success && success.length > 0) { %>
-    <div class="alert alert-success auto-close alert-dismissible fade show w-100 shadow" role="alert">
-      <%= success[0] %>
-      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
+    <% success.forEach(msg => { %>
+      <div class="alert alert-success auto-close alert-dismissible fade show w-100 shadow" role="alert">
+        <%= msg %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    <% }) %>
   <% } %>
 
   <% if (error && error.length > 0) { %>
-    <div class="alert alert-danger alert-dismissible fade show w-100 shadow" role="alert">
-      <%= error[0] %>
-      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
+    <% error.forEach(msg => { %>
+      <div class="alert alert-danger alert-dismissible fade show w-100 shadow" role="alert">
+        <%= msg %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    <% }) %>
   <% } %>
 
 </div>
+
+<% } %>
