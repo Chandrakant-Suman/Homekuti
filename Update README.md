@@ -66,15 +66,17 @@ Project/
 ├── models/
 ├── node_modules/
 ├── public/
+├── routes
 ├── utils/
 ├── views/
 │
+├── .env
 ├── .gitignore
 ├── app.js
-├── package.json
+├── cloudConfig.js
 ├── package-lock.json
+├── package.json
 ├── README.md
-└── schema.js
 ```
 
 ## 🚀 Installation
