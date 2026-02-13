@@ -1,29 +1,29 @@
 const sampleListings = [
 
-  /* ===================== NORTH INDIA ===================== */
-
   {
     title: "Royal Haveli Heritage Stay",
     description: "Traditional Rajasthani haveli with heritage interiors and courtyard dining.",
     image: {
-      url: "https://res.cloudinary.com/dgu8te3bn/image/upload/v1770853699/Homekuti_DEV/etqpcoundh5k0vo7e16c.jpg",
-      filename: "etqpcoundh5k0vo7e16c.jpg"
+      url: "https://res.cloudinary.com/dgu8te3bn/image/upload/v1770986788/Homekuti_DEV/rlvai9wg4qeenmpbchqw.jpg",
+      filename: "Homekuti_DEV/rlvai9wg4qeenmpbchqw"
     },
     price: 2200,
     location: "Jaipur",
     country: "India",
+    geometry: { type: "Point", coordinates: [75.8189817, 26.9154576] },
   },
 
   {
     title: "Pink City Palace Inn",
     description: "Palace-style boutique hotel inspired by royal Jaipur architecture.",
     image: {
-      url: "https://res.cloudinary.com/dgu8te3bn/image/upload/v1770853739/Homekuti_DEV/afl2io5qa6mhlv5pqmsj.jpg",
-      filename: "afl2io5qa6mhlv5pqmsj.jpg"
+      url: "https://res.cloudinary.com/dgu8te3bn/image/upload/v1770986746/Homekuti_DEV/ca3czci1fqn4mdnz4m7u.jpg",
+      filename: "Homekuti_DEV/ca3czci1fqn4mdnz4m7u"
     },
     price: 2000,
     location: "Jaipur",
     country: "India",
+    geometry: { type: "Point", coordinates: [75.7873, 26.9124] },
   },
 
   {
@@ -36,6 +36,7 @@ const sampleListings = [
     price: 1800,
     location: "Manali",
     country: "India",
+    geometry: { type: "Point", coordinates: [77.1892, 32.2396] },
   },
 
   {
@@ -48,6 +49,7 @@ const sampleListings = [
     price: 1700,
     location: "Manali",
     country: "India",
+    geometry: { type: "Point", coordinates: [77.1892, 32.2396] },
   },
 
   {
@@ -60,6 +62,7 @@ const sampleListings = [
     price: 1500,
     location: "Shimla",
     country: "India",
+    geometry: { type: "Point", coordinates: [77.1734, 31.1048] },
   },
 
   {
@@ -72,6 +75,7 @@ const sampleListings = [
     price: 1650,
     location: "Shimla",
     country: "India",
+    geometry: { type: "Point", coordinates: [77.1734, 31.1048] },
   },
 
   {
@@ -84,6 +88,7 @@ const sampleListings = [
     price: 4500,
     location: "Udaipur",
     country: "India",
+    geometry: { type: "Point", coordinates: [73.7125, 24.5854] },
   },
 
   {
@@ -96,9 +101,8 @@ const sampleListings = [
     price: 3900,
     location: "Udaipur",
     country: "India",
+    geometry: { type: "Point", coordinates: [73.7125, 24.5854] },
   },
-
-  /* ===================== WEST INDIA ===================== */
 
   {
     title: "Goan Palm Beach Resort",
@@ -110,54 +114,59 @@ const sampleListings = [
     price: 2600,
     location: "Goa",
     country: "India",
+    geometry: { type: "Point", coordinates: [73.8278, 15.4909] },
   },
 
   {
     title: "Portuguese Villa Stay",
     description: "Private Goan villa with pool and garden.",
     image: {
-      url: "https://res.cloudinary.com/dgu8te3bn/image/upload/v1770853727/Homekuti_DEV/mbd1oqvgxo4pmpir8f5y.jpg",
-      filename: "mbd1oqvgxo4pmpir8f5y.jpg"
+      url: "https://res.cloudinary.com/dgu8te3bn/image/upload/v1770986708/Homekuti_DEV/qdwsj06sdenvnsqgiziz.jpg",
+      filename: "Homekuti_DEV/qdwsj06sdenvnsqgiziz"
     },
     price: 2800,
     location: "Goa",
     country: "India",
+    geometry: { type: "Point", coordinates: [73.8278, 15.4909] },
   },
 
   {
     title: "Marine Drive Sea View Hotel",
     description: "Luxury sea-facing hotel near Marine Drive.",
     image: {
-      url: "https://res.cloudinary.com/dgu8te3bn/image/upload/v1770853729/Homekuti_DEV/v6gv7ty7p54xmx8h4byd.jpg",
-      filename: "v6gv7ty7p54xmx8h4byd.jpg"
+      url: "https://res.cloudinary.com/dgu8te3bn/image/upload/v1770986671/Homekuti_DEV/eauolsjdvae7r1cgi1hd.jpg",
+      filename: "Homekuti_DEV/eauolsjdvae7r1cgi1hd"
     },
     price: 3500,
     location: "Mumbai",
     country: "India",
+    geometry: { type: "Point", coordinates: [72.8777, 19.076] },
   },
 
   {
     title: "BKC Business Suites",
     description: "Corporate-friendly hotel in Mumbai business district.",
     image: {
-      url: "https://res.cloudinary.com/dgu8te3bn/image/upload/v1770853731/Homekuti_DEV/bajeva0tbyzlhj83sdc5.jpg",
-      filename: "bajeva0tbyzlhj83sdc5.jpg"
+      url: "https://res.cloudinary.com/dgu8te3bn/image/upload/v1770986953/Homekuti_DEV/ccbwq3bd6tcnczsg6hxz.jpg",
+      filename: "Homekuti_DEV/ccbwq3bd6tcnczsg6hxz"
     },
     price: 3200,
     location: "Mumbai",
     country: "India",
+    geometry: { type: "Point", coordinates: [72.8777, 19.076] },
   },
 
   {
     title: "Pune Hillside Retreat",
     description: "Eco resort near Western Ghats hills.",
     image: {
-      url: "https://res.cloudinary.com/dgu8te3bn/image/upload/v1770853744/Homekuti_DEV/ktxzqxlktzmnpdmx1ufy.jpg",
-      filename: "ktxzqxlktzmnpdmx1ufy.jpg"
+      url: "https://res.cloudinary.com/dgu8te3bn/image/upload/v1770986909/Homekuti_DEV/fszm7pbiaydofnldcd5e.jpg",
+      filename: "Homekuti_DEV/fszm7pbiaydofnldcd5e"
     },
     price: 2100,
     location: "Pune",
     country: "India",
+    geometry: { type: "Point", coordinates: [73.8567, 18.5204] },
   },
 
   {
@@ -170,20 +179,20 @@ const sampleListings = [
     price: 1900,
     location: "Ahmedabad",
     country: "India",
+    geometry: { type: "Point", coordinates: [72.5714, 23.0225] },
   },
-
-  /* ===================== SOUTH INDIA ===================== */
 
   {
     title: "Kerala Backwater Houseboat",
     description: "Traditional houseboat stay in Alleppey backwaters.",
     image: {
-      url: "https://res.cloudinary.com/dgu8te3bn/image/upload/v1770853732/Homekuti_DEV/er5grg4xeawfhzxxpt2r.jpg",
-      filename: "er5grg4xeawfhzxxpt2r.jpg"
+      url: "https://res.cloudinary.com/dgu8te3bn/image/upload/v1770986548/Homekuti_DEV/lb7z4udpmxg3harimzl5.jpg",
+      filename: "Homekuti_DEV/lb7z4udpmxg3harimzl5"
     },
     price: 2400,
     location: "Alleppey",
     country: "India",
+    geometry: { type: "Point", coordinates: [76.3388, 9.4981] },
   },
 
   {
@@ -196,30 +205,33 @@ const sampleListings = [
     price: 2100,
     location: "Munnar",
     country: "India",
+    geometry: { type: "Point", coordinates: [77.0595, 10.0889] },
   },
 
   {
     title: "Ooty Hill Crest Resort",
     description: "Valley-facing resort in Nilgiri hills.",
     image: {
-      url: "https://res.cloudinary.com/dgu8te3bn/image/upload/v1770853737/Homekuti_DEV/kujdj9ego3b2jzltlgx7.jpg",
-      filename: "kujdj9ego3b2jzltlgx7.jpg"
+      url: "https://res.cloudinary.com/dgu8te3bn/image/upload/v1770986638/Homekuti_DEV/yntgzvtcwd85hvzrmkyl.jpg",
+      filename: "Homekuti_DEV/yntgzvtcwd85hvzrmkyl"
     },
     price: 1700,
     location: "Ooty",
     country: "India",
+    geometry: { type: "Point", coordinates: [76.695, 11.4064] },
   },
 
   {
     title: "Bangalore Tech Park Hotel",
     description: "Modern hotel near IT corridors.",
     image: {
-      url: "https://res.cloudinary.com/dgu8te3bn/image/upload/v1770853725/Homekuti_DEV/fgsvknlrmsmjsp8lweta.jpg",
-      filename: "fgsvknlrmsmjsp8lweta.jpg"
+      url: "https://res.cloudinary.com/dgu8te3bn/image/upload/v1770986842/Homekuti_DEV/xvkatphciwas7xzpkmt1.jpg",
+      filename: "Homekuti_DEV/xvkatphciwas7xzpkmt1"
     },
     price: 2600,
     location: "Bengaluru",
     country: "India",
+    geometry: { type: "Point", coordinates: [77.5946, 12.9716] },
   },
 
   {
@@ -232,9 +244,8 @@ const sampleListings = [
     price: 2300,
     location: "Pondicherry",
     country: "India",
+    geometry: { type: "Point", coordinates: [79.8083, 11.9416] },
   },
-
-  /* ===================== EAST & CENTRAL ===================== */
 
   {
     title: "Shillong Pinewood Retreat",
@@ -246,31 +257,8 @@ const sampleListings = [
     price: 1800,
     location: "Shillong",
     country: "India",
-  },
-
-  {
-    title: "Darjeeling Tea Lodge",
-    description: "Mountain lodge surrounded by tea gardens.",
-    image: {
-      url: "https://res.cloudinary.com/dgu8te3bn/image/upload/v1770853746/Homekuti_DEV/ortadqzdcyjzcuqw8uov.jpg",
-      filename: "ortadqzdcyjzcuqw8uov.jpg"
-    },
-    price: 1600,
-    location: "Darjeeling",
-    country: "India",
-  },
-
-  {
-    title: "Varanasi Ganga View Inn",
-    description: "Spiritual stay overlooking Ganga ghats.",
-    image: {
-      url: "https://res.cloudinary.com/dgu8te3bn/image/upload/v1770853745/Homekuti_DEV/vks7hqjhonleox00aro8.jpg",
-      filename: "vks7hqjhonleox00aro8.jpg"
-    },
-    price: 1500,
-    location: "Varanasi",
-    country: "India",
-  },
+    geometry: { type: "Point", coordinates: [91.8933, 25.5788] },
+  }
 
 ];
 

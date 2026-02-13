@@ -1,5 +1,9 @@
 <% layout('/layouts/boilerplate') -%>
 
+  <script>
+    const listing = <%- JSON.stringify(listing) %>;
+  </script>
+
   <main style="max-width:900px;margin:2rem auto;padding:1rem;font-family:Inter,sans-serif;">
 
     <!-- Title -->
@@ -49,7 +53,7 @@
 
         <hr style="margin:1rem 0;">
 
-       <!-- REVIEW FORM -->
+        <!-- REVIEW FORM -->
         <% if(currUser){ %>
 
           <h4 class="mb-3">Leave a Review</h4>
@@ -139,4 +143,10 @@
                       <% } %>
                   </div>
                   <% } %>
+                    <div class="mb-3">
+                      <h4 class="mb-3">Where you'll be </h4>
+                      <div id="map" style="height:400px; border-radius:12px; border: 1.5px solid black;"></div>
+                    </div>
   </main>
+
+  <script src="/js/map.js"></script>

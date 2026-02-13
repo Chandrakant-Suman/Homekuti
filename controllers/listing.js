@@ -3,6 +3,7 @@ const ExpressError = require("../utils/ExpressError");
 
 const cloudinary = require("../cloudConfig");
 const streamifier = require("streamifier");
+const axios = require("axios");
 
 // ================= INDEX =================
 module.exports.index = async (req, res) => {
@@ -16,14 +17,13 @@ module.exports.renderNewForm = (req, res) => {
 };
 
 // ================= CREATE LISTING =================
-module.exports.createListing = async (req, res, next) => {
+module.exports.createListing = async (req, res) => {
 
     if (!req.file) {
         req.flash("error", "Image is required!");
         return res.redirect("/listings/new");
     }
 
-    // 🔥 Upload buffer to Cloudinary (modern way)
     const uploadStream = () =>
         new Promise((resolve, reject) => {
             const stream = cloudinary.uploader.upload_stream(
@@ -33,26 +33,59 @@ module.exports.createListing = async (req, res, next) => {
                     else reject(error);
                 }
             );
-
             streamifier.createReadStream(req.file.buffer).pipe(stream);
         });
 
-    const result = await uploadStream();
+    async function geocode(location) {
+        try {
+            const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}`;
+
+            const response = await axios.get(url, {
+                headers: { "User-Agent": "HomekutiApp" },
+                timeout: 5000
+            });
+
+            if (!response.data.length) throw new Error("Location not found");
+
+            return [
+                parseFloat(response.data[0].lon),
+                parseFloat(response.data[0].lat),
+            ];
+        } catch (err) {
+            console.log("Geocode failed → using fallback coords");
+
+            // ⭐ fallback coords (India center-ish)
+            return [78.9629, 20.5937];
+        }
+    }
+
+    const [coords, result] = await Promise.all([
+        await geocode(req.body.listing.location),
+        await cloudinary.uploader.upload(
+            `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`,
+            { folder: "Homekuti_DEV" })
+    ]);
 
     const listing = new Listing(req.body.listing);
+
     listing.owner = req.user._id;
 
-    // ✅ Cloudinary response
     listing.image = {
         url: result.secure_url,
         filename: result.public_id
     };
 
+    listing.geometry = {
+        type: "Point",
+        coordinates: coords
+    };
+
     await listing.save();
 
     req.flash("success", "Successfully created a new listing!");
-    res.redirect("/listings");
+    res.redirect(`/listings/${listing._id}`);
 };
+
 
 // ================= SHOW LISTING =================
 module.exports.showListing = async (req, res) => {
@@ -69,7 +102,6 @@ module.exports.showListing = async (req, res) => {
         return res.redirect("/listings");
     }
 
-    // Safety patch for old seeded listings
     if (!listing.owner) {
         listing.owner = { username: "Admin" };
     }
@@ -96,18 +128,40 @@ module.exports.updateListing = async (req, res) => {
 
     const { id } = req.params;
 
-    let listing = await Listing.findByIdAndUpdate(
+    let listing = await Listing.findById(id);
+    if (!listing) throw new ExpressError(404, "Listing Not Found");
+
+    // ===== Update location geometry if location changed =====
+    if (req.body.listing.location && req.body.listing.location !== listing.location) {
+
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${req.body.listing.location}`;
+
+        const response = await axios.get(url, {
+            headers: { "User-Agent": "HomekutiApp" }
+        });
+
+        if (response.data.length) {
+            req.body.listing.geometry = {
+                type: "Point",
+                coordinates: [
+                    parseFloat(response.data[0].lon),
+                    parseFloat(response.data[0].lat),
+                ]
+            };
+        }
+    }
+
+    listing = await Listing.findByIdAndUpdate(
         id,
         { ...req.body.listing },
         { new: true }
     );
 
-    if (!listing) {
-        throw new ExpressError(404, "Listing Not Found");
-    }
-
-    // If new image uploaded
     if (req.file) {
+
+        if (listing.image && listing.image.filename) {
+            await cloudinary.uploader.destroy(listing.image.filename);
+        }
 
         const uploadStream = () =>
             new Promise((resolve, reject) => {
@@ -118,7 +172,6 @@ module.exports.updateListing = async (req, res) => {
                         else reject(error);
                     }
                 );
-
                 streamifier.createReadStream(req.file.buffer).pipe(stream);
             });
 
@@ -132,17 +185,24 @@ module.exports.updateListing = async (req, res) => {
         await listing.save();
     }
 
-
-
     req.flash("success", "Listing updated successfully!");
     res.redirect(`/listings/${id}`);
 };
+
 
 // ================= DELETE LISTING =================
 module.exports.deleteListing = async (req, res) => {
 
     const { id } = req.params;
+
+    const listing = await Listing.findById(id);
+
+    if (listing && listing.image && listing.image.filename) {
+        await cloudinary.uploader.destroy(listing.image.filename);
+    }
+
     await Listing.findByIdAndDelete(id);
+
     req.flash("success", "Successfully deleted the listing!");
     res.redirect("/listings");
 };
