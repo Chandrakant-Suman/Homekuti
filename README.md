@@ -155,28 +155,24 @@ cd Homekuti
 npm install
 npm start
 Server runs at:
-
 http://localhost:8000
+---
 ⚙️ Environment Variables
 Create .env file:
 
 DB_URL=mongodb://127.0.0.1:27017/homekuti
 SESSION_SECRET=your_secret
-
 CLOUDINARY_CLOUD_NAME=your_cloud
 CLOUDINARY_KEY=your_key
 CLOUDINARY_SECRET=your_secret
+---
 📈 Future Enhancements
 Real geocoding API integration
-
 Booking system with date selection
-
 Payment gateway support
-
 Admin dashboard
-
 Advanced filtering & search
-
+---
 👨‍💻 Author
 Chandrakant Suman
 GitHub: https://github.com/Chandrakant-Suman
