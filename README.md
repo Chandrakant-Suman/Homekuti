@@ -135,17 +135,16 @@ Project/
 ├── app.js
 ├── cloudConfig.js
 └── README.md
-
+```
 ## 🖼️ Screenshots 📸
 
 ### 🏠 Listing Page
-![](https://raw.githubusercontent.com/Chandrakant-Suman/Homekuti/main/public/images/demo-listing.png)
+![Homekuti Listing Page](https://raw.githubusercontent.com/Chandrakant-Suman/Homekuti/main/public/images/demo-listing.png)
 
 ### 🗺️ Map View
-![](https://raw.githubusercontent.com/Chandrakant-Suman/Homekuti/main/public/images/demo-map.png)
+![Homekuti Map View](https://raw.githubusercontent.com/Chandrakant-Suman/Homekuti/main/public/images/demo-map.png)
 
-
-
+```
 🚀 Installation
 
 git clone https://github.com/Chandrakant-Suman/Homekuti.git
