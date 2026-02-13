@@ -100,8 +100,6 @@ routes → request flow
 views → UI rendering
 utils → reusable helpers
 
-yaml
-Copy code
 
 ---
 
@@ -137,30 +135,31 @@ Project/
 ├── app.js
 ├── cloudConfig.js
 └── README.md
-🖼️ Screenshots
-Add your screenshots inside /public/images/
 
-🏠 Listing Page
+## 🖼️ Screenshots
 
-🗺️ Map View
+### 🏠 Listing Page
+<p align="center">
+  <img src="public/images/demo-listing.png" width="800"/>
+</p>
+
+### 🗺️ Map View
+<p align="center">
+  <img src="public/images/demo-map.png" width="800"/>
+</p>
 
 🚀 Installation
-sh
-Copy code
+
 git clone https://github.com/Chandrakant-Suman/Homekuti.git
 cd Homekuti
 npm install
 npm start
 Server runs at:
 
-arduino
-Copy code
 http://localhost:8000
 ⚙️ Environment Variables
 Create .env file:
 
-ini
-Copy code
 DB_URL=mongodb://127.0.0.1:27017/homekuti
 SESSION_SECRET=your_secret
 
@@ -180,5 +179,4 @@ Advanced filtering & search
 
 👨‍💻 Author
 Chandrakant Suman
-
 GitHub: https://github.com/Chandrakant-Suman
