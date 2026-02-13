@@ -136,7 +136,7 @@ Project/
 ├── cloudConfig.js
 └── README.md
 
-## 🖼️ Screenshots
+## 🖼️ Screenshots 📸
 
 ### 🏠 Listing Page
 ![](https://raw.githubusercontent.com/Chandrakant-Suman/Homekuti/main/public/images/demo-listing.png)
