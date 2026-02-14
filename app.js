@@ -41,11 +41,11 @@ const {
 setupProcessHandlers();
 
 // ================= DATABASE CONNECTION =================
-const MONGO_URL = process.env.MONGO_URL || "mongodb://127.0.0.1:27017/Homekuti";
+const dbUrl = process.env.ATLASDB_URL;
 
 mongoose
-  .connect(MONGO_URL)
-  .then(() => console.log("✓ Connected to MongoDB"))
+  .connect(dbUrl)
+  .then(() => console.log("✓ Connected to MongoDB Atlas"))
   .catch((err) => {
     console.error("❌ MongoDB Connection Error:", err);
     process.exit(1); // Exit if database connection fails
@@ -58,6 +58,10 @@ mongoose.connection.on("error", (err) => {
 
 mongoose.connection.on("disconnected", () => {
   console.warn("⚠️  MongoDB disconnected");
+});
+
+mongoose.connection.on("connected", () => {
+  console.log("✓ MongoDB reconnected");
 });
 
 // ================= VIEW ENGINE =================
@@ -77,32 +81,52 @@ app.use(methodOverride("_method"));
 app.set("trust proxy", 1);
 
 // MongoDB session store (connect-mongo v6)
+// In v6, the actual MongoStore class is at .default
 const MongoStore = require("connect-mongo").default;
 
 const store = MongoStore.create({
-  mongoUrl: MONGO_URL,
+  mongoUrl: dbUrl,
   crypto: {
-    secret: process.env.SESSION_SECRET || "fallback-secret-change-in-production",
+    secret: process.env.SESSION_SECRET,
   },
-  touchAfter: 24 * 3600,
+  touchAfter: 24 * 3600, // Lazy session update (24 hours)
+  collectionName: "sessions", // Explicitly set collection name
 });
 
-store.on("error", (e) => {
-  console.error("SESSION STORE ERROR:", e);
+// Session store event handlers
+store.on("error", (err) => {
+  console.error("❌ SESSION STORE ERROR:", err);
+});
+
+store.on("create", (sessionId) => {
+  console.log("✓ Session created in MongoDB:", sessionId);
+});
+
+store.on("touch", (sessionId) => {
+  console.log("✓ Session touched:", sessionId);
+});
+
+store.on("update", (sessionId) => {
+  console.log("✓ Session updated:", sessionId);
+});
+
+store.on("destroy", (sessionId) => {
+  console.log("✓ Session destroyed:", sessionId);
 });
 
 const sessionOptions = {
   name: "homekuti.sid",
   store,
-  secret: process.env.SESSION_SECRET || "fallback-secret-change-in-production",
+  secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
-  rolling: true, // extends session on activity
+  rolling: true, // Extends session on activity
   cookie: {
     httpOnly: true,
-    maxAge: 1000 * 60 * 60 * 3, // 3 hours
+    maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: false, // ✅ MUST be false for localhost development
+    path: "/",
   },
 };
 
@@ -132,6 +156,20 @@ app.use((req, res, next) => {
   next();
 });
 
+// ================= DEBUG MIDDLEWARE (REMOVE IN PRODUCTION) =================
+// app.use((req, res, next) => {
+//   console.log("\n--- Request Debug ---");
+//   console.log("Path:", req.path);
+//   console.log("Method:", req.method);
+//   console.log("Session ID:", req.sessionID);
+//   console.log("Has Session:", !!req.session);
+//   console.log("Authenticated:", req.isAuthenticated());
+//   console.log("User:", req.user ? req.user.username : "No user");
+//   console.log("Cookie Header:", req.headers.cookie ? "Present" : "Missing");
+//   console.log("-------------------\n");
+//   next();
+// });
+
 // ================= ROUTES =================
 
 // HOME PAGE
@@ -156,11 +194,42 @@ app.get("/terms", (req, res) => res.render("terms"));
 app.get("/privacy", (req, res) => res.render("privacy"));
 app.get("/maintenance", (req, res) => res.render("maintenance"));
 
-// Add BEFORE error handlers (for testing only)
+// ================= TEST ROUTES (REMOVE IN PRODUCTION) =================
+app.get("/test/auth", (req, res) => {
+  res.json({
+    isAuthenticated: req.isAuthenticated(),
+    sessionID: req.sessionID,
+    user: req.user,
+    session: req.session,
+    cookie: req.headers.cookie,
+  });
+});
+
+app.get("/test/session", (req, res) => {
+  if (!req.session.views) {
+    req.session.views = 1;
+  } else {
+    req.session.views++;
+  }
+
+  req.session.save((err) => {
+    if (err) {
+      return res.json({ error: err.message });
+    }
+    res.json({
+      message: "Session test - refresh to see views increment",
+      views: req.session.views,
+      sessionID: req.sessionID,
+      saved: true,
+    });
+  });
+});
+
 app.get("/test/validation", wrapAsync(async (req, res) => {
   const listing = new Listing({}); // Missing required fields
   await listing.save(); // Will trigger ValidationError
 }));
+
 // ================= ERROR HANDLING =================
 
 // 1. Transform Mongoose/MongoDB errors
@@ -184,11 +253,20 @@ const PORT = process.env.PORT || 8000;
 const server = app.listen(PORT, () => {
   console.log(`✓ Server running on port ${PORT}`);
   console.log(`✓ Environment: ${process.env.NODE_ENV || "development"}`);
-  console.log(`✓ Database: ${MONGO_URL.includes("127.0.0.1") ? "Local" : "Remote"}`);
+  console.log(`✓ Database: ${dbUrl.includes("127.0.0.1") ? "Local" : "Remote"}`);
 });
 
-// Store server reference for graceful shutdown
-// global.httpServer = server;
+// Graceful shutdown
+process.on("SIGTERM", () => {
+  console.log("SIGTERM signal received: closing HTTP server");
+  server.close(() => {
+    console.log("HTTP server closed");
+    mongoose.connection.close(false, () => {
+      console.log("MongoDB connection closed");
+      process.exit(0);
+    });
+  });
+});
 
 // Export for testing
 module.exports = app;

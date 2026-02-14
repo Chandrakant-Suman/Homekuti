@@ -6,7 +6,7 @@ const { required } = require("joi");
 // Default image constant
 const DEFAULT_IMAGE = {
   url: "https://res.cloudinary.com/dgu8te3bn/image/upload/v1771003245/Homekuti_DEV/kzjbrisg2uqssvvp99a3.jpg",
-  filename: "Homekuti_DEV/kzjbrisg2uqssvvp99a3"
+  filename: "Homekuti_DEV/DEFAULT"
 };
 
 const listingSchema = new Schema({
