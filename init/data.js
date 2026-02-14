@@ -1,11 +1,12 @@
+// data.js
 const sampleListings = [
 
   {
     title: "Royal Haveli Heritage Stay",
     description: "Traditional Rajasthani haveli with heritage interiors and courtyard dining.",
     image: {
-      url: "https://res.cloudinary.com/dgu8te3bn/image/upload/v1770986788/Homekuti_DEV/rlvai9wg4qeenmpbchqw.jpg",
-      filename: "Homekuti_DEV/rlvai9wg4qeenmpbchqw"
+      url: "https://res.cloudinary.com/dgu8te3bn/image/upload/v1771086037/Homekuti_DEV/pkrc2pivxsp5l56swdob.webp",
+      filename: "Homekuti_DEV/pkrc2pivxsp5l56swdob"
     },
     price: 2200,
     location: "Jaipur",
@@ -17,13 +18,13 @@ const sampleListings = [
     title: "Pink City Palace Inn",
     description: "Palace-style boutique hotel inspired by royal Jaipur architecture.",
     image: {
-      url: "https://res.cloudinary.com/dgu8te3bn/image/upload/v1770986746/Homekuti_DEV/ca3czci1fqn4mdnz4m7u.jpg",
-      filename: "Homekuti_DEV/ca3czci1fqn4mdnz4m7u"
+      url: "https://res.cloudinary.com/dgu8te3bn/image/upload/v1771086213/Homekuti_DEV/m1yqqivq2yjcggrsjaov.jpg",
+      filename: "Homekuti_DEV/m1yqqivq2yjcggrsjaov"
     },
     price: 2000,
     location: "Jaipur",
     country: "India",
-    geometry: { type: "Point", coordinates: [75.7873, 26.9124] },
+    geometry: { type: "Point", coordinates: [75.8189817, 26.9154576] },
   },
 
   {
@@ -121,13 +122,13 @@ const sampleListings = [
     title: "Portuguese Villa Stay",
     description: "Private Goan villa with pool and garden.",
     image: {
-      url: "https://res.cloudinary.com/dgu8te3bn/image/upload/v1770986708/Homekuti_DEV/qdwsj06sdenvnsqgiziz.jpg",
-      filename: "Homekuti_DEV/qdwsj06sdenvnsqgiziz"
+      url: "https://res.cloudinary.com/dgu8te3bn/image/upload/v1771085770/Homekuti_DEV/bxuvw28rolkg4r7qbftr.webp",
+      filename: "Homekuti_DEV/bxuvw28rolkg4r7qbftr"
     },
     price: 2800,
     location: "Goa",
     country: "India",
-    geometry: { type: "Point", coordinates: [73.8278, 15.4909] },
+    geometry: { type: "Point", coordinates: [74.0855134, 15.3004543] },
   },
 
   {
@@ -173,13 +174,13 @@ const sampleListings = [
     title: "Ahmedabad Heritage Inn",
     description: "Gujarati heritage hotel with traditional decor.",
     image: {
-      url: "https://res.cloudinary.com/dgu8te3bn/image/upload/v1770853736/Homekuti_DEV/pwrl7xckeuhit6ue0jji.jpg",
-      filename: "pwrl7xckeuhit6ue0jji.jpg"
+      url: "https://res.cloudinary.com/dgu8te3bn/image/upload/v1771085488/Homekuti_DEV/aqnqlxpbqsnrzd4ipy7j.jpg",
+      filename: "Homekuti_DEV/aqnqlxpbqsnrzd4ipy7j"
     },
     price: 1900,
     location: "Ahmedabad",
     country: "India",
-    geometry: { type: "Point", coordinates: [72.5714, 23.0225] },
+    geometry: { type: "Point", coordinates: [72.5800568, 23.0215374] },
   },
 
   {
@@ -238,13 +239,13 @@ const sampleListings = [
     title: "Pondicherry French Villa",
     description: "Colonial French-style villa stay.",
     image: {
-      url: "https://res.cloudinary.com/dgu8te3bn/image/upload/v1770853692/Homekuti_DEV/avfjtdvubslouer4ch0f.jpg",
-      filename: "avfjtdvubslouer4ch0f.jpg"
+      url: "https://res.cloudinary.com/dgu8te3bn/image/upload/v1771085594/Homekuti_DEV/o4wqsiugp3dkj2pprz9n.jpg",
+      filename: "Homekuti_DEV/o4wqsiugp3dkj2pprz9n"
     },
     price: 2300,
     location: "Pondicherry",
     country: "India",
-    geometry: { type: "Point", coordinates: [79.8083, 11.9416] },
+    geometry: { type: "Point", coordinates: [79.80694879844232, 10.91564885] },
   },
 
   {
@@ -258,7 +259,7 @@ const sampleListings = [
     location: "Shillong",
     country: "India",
     geometry: { type: "Point", coordinates: [91.8933, 25.5788] },
-  }
+  },
 
 ];
 
