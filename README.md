@@ -111,7 +111,7 @@ utils → reusable helpers
 | Backend | Node.js, Express.js |
 | Database | MongoDB + Mongoose |
 | Auth | Passport.js |
-| Maps | Leaflet.js |
+| Maps | Leaflet.js, LocationIQ |
 | Images | Cloudinary |
 | Sessions | express-session |
 

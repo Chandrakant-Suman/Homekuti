@@ -1,10 +1,11 @@
-if (typeof listing !== "undefined" && listing?.geometry?.coordinates) {
+// public/js/map.js - Using LocationIQ Map Tiles
 
+if (typeof listing !== "undefined" && listing?.geometry?.coordinates) {
   const coords = listing.geometry.coordinates;
   const lat = coords[1];
   const lng = coords[0];
 
-  const zoomLevel = isDefaultLocation ? 5 : 13;
+  const zoomLevel = isDefaultLocation ? 5 : 16;
 
   // Map init
   const map = L.map("map", {
@@ -14,11 +15,17 @@ if (typeof listing !== "undefined" && listing?.geometry?.coordinates) {
   // Enable scroll zoom after click
   map.on("click", () => map.scrollWheelZoom.enable());
 
-  // Tile layer
+  // ⭐ LOCATIONIQ TILE LAYER
+  // Get API key from a global variable (set in your EJS template)
+  const LOCATIONIQ_API_KEY = window.LOCATIONIQ_API_KEY || 'pk.YOUR_API_KEY_HERE';
+  
   L.tileLayer(
-    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    `https://{s}-tiles.locationiq.com/v3/streets/r/{z}/{x}/{y}.png?key=${LOCATIONIQ_API_KEY}`,
     {
-      attribution: "&copy; OpenStreetMap contributors",
+      attribution:
+        '&copy; <a href="https://locationiq.com/">LocationIQ</a> | &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 19,
+      subdomains: ['a', 'b', 'c'], // LocationIQ subdomains for load balancing
     }
   ).addTo(map);
 
@@ -36,11 +43,15 @@ if (typeof listing !== "undefined" && listing?.geometry?.coordinates) {
     ? "<br><span style='color:#c0392b;font-size:12px;'>Approximate location</span>"
     : "";
 
-  marker.bindPopup(`
+  marker
+    .bindPopup(
+      `
     <b>${listing.title}</b><br>
     ${listing.location}
     ${locationNote}
-  `).openPopup();
+  `
+    )
+    .openPopup();
 
   // ⭐ Optional badge for default location
   if (isDefaultLocation) {

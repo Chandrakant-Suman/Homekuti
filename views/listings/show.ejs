@@ -3,6 +3,9 @@
 <script>
   const listing = <%- JSON.stringify(listing) %>;
   const isDefaultLocation = <%- JSON.stringify(isDefaultLocation) %>;
+  
+  // ⭐ Pass LocationIQ API key to frontend for map tiles
+  window.LOCATIONIQ_API_KEY = '<%= process.env.LOCATIONIQ_API_KEY %>';
 </script>
 
 <main style="max-width:900px;margin:2rem auto;padding:1rem;font-family:Inter,sans-serif;">
@@ -12,11 +15,27 @@
     <%= listing.title %>
   </h1>
 
-  <!-- Image -->
+  <!-- Image with better error handling -->
   <div style="border-radius:12px;overflow:hidden;width:300px;height:200px;box-shadow:0 4px 18px rgba(0,0,0,0.12);">
-    <img src="<%= listing.image.url || listing.image %>" 
+    <% 
+      // Default fallback image from your Cloudinary
+      const DEFAULT_IMAGE_URL = 'https://res.cloudinary.com/dgu8te3bn/image/upload/v1771003245/Homekuti_DEV/kzjbrisg2uqssvvp99a3.jpg';
+      
+      // Determine the image URL to display
+      let imageUrl = DEFAULT_IMAGE_URL;
+      
+      if (listing.image) {
+        if (typeof listing.image === 'string') {
+          imageUrl = listing.image; // Old format: direct URL string
+        } else if (listing.image.url) {
+          imageUrl = listing.image.url; // New format: object with url property
+        }
+      }
+    %>
+    <img src="<%= imageUrl %>" 
          alt="<%= listing.title %>"
-         style="width:100%;height:100%;object-fit:cover;">
+         style="width:100%;height:100%;object-fit:cover;"
+         onerror="this.src='<%= DEFAULT_IMAGE_URL %>';">
   </div>
 
   <!-- Owner -->
@@ -47,7 +66,7 @@
       </form>
 
       <form method="POST" action="/listings/<%= listing._id %>?_method=DELETE"
-        onsubmit="return confirm('Delete this listing?');"
+        onsubmit="return confirm('Delete this listing? This will also remove the image from storage.');"
         class="form-no-card">
         <button type="submit" class="hk-btn">Delete</button>
       </form>

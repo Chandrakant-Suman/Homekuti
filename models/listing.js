@@ -1,6 +1,13 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const Review = require("./review.js");
+const { required } = require("joi");
+
+// Default image constant
+const DEFAULT_IMAGE = {
+  url: "https://res.cloudinary.com/dgu8te3bn/image/upload/v1771003245/Homekuti_DEV/kzjbrisg2uqssvvp99a3.jpg",
+  filename: "Homekuti_DEV/kzjbrisg2uqssvvp99a3"
+};
 
 const listingSchema = new Schema({
 
@@ -14,8 +21,14 @@ const listingSchema = new Schema({
   },
 
   image: {
-    url: String,
-    filename: String
+    url: {
+      type: String,
+      default: DEFAULT_IMAGE.url  // ✅ Default image URL
+    },
+    filename: {
+      type: String,
+      default: DEFAULT_IMAGE.filename  // ✅ Default filename
+    }
   },
 
   price: {
@@ -39,21 +52,24 @@ const listingSchema = new Schema({
       ref: "Review",
     }
   ],
+  
   owner: {
     type: Schema.Types.ObjectId,
     ref: "User",
     required: true
   },
+  
   geometry: {
     type: {
       type: String,
       enum: ["Point"],
       default: "Point"
     },
-    coordinates: [Number] // [lng, lat]
-  },
-  location: String
-
+    coordinates: {
+      type: [Number], // [lng, lat]
+      default: [78.9629, 20.5937]  // ✅ Default coordinates (center of India)
+    }
+  }
 
 });
 

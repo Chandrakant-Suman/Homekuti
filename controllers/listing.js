@@ -1,230 +1,243 @@
+// controllers/listing.js - Complete fixed version
+
 const Listing = require("../models/listing");
-const ExpressError = require("../utils/ExpressError");
+const { geocodeLocation } = require("../utils/geocoding");
+const { cloudinary } = require("../cloudConfig");
 
-const cloudinary = require("../cloudConfig");
-const streamifier = require("streamifier");
-
-// =======================================================
-// DEFAULT FALLBACKS (centralized config — not hardcoded everywhere)
-// =======================================================
-const DEFAULT_COORDS = [77.2090, 28.6139]; // New Delhi [lng, lat]
+// Default image from your Cloudinary
 const DEFAULT_IMAGE = {
-    url: "https://res.cloudinary.com/dgu8te3bn/image/upload/Homekuti_DEV/x0wzkxbhu14pbsxnqivw.jpg",
-    filename: "default-image"
+  url: "https://res.cloudinary.com/dgu8te3bn/image/upload/v1771003245/Homekuti_DEV/kzjbrisg2uqssvvp99a3.jpg",
+  filename: "Homekuti_DEV/kzjbrisg2uqssvvp99a3"
 };
 
-// =======================================================
-// SAFE GEOCODE
-// Uses real logic later — fallback only on failure
-// =======================================================
-async function geocode(location) {
-    try {
-        // Currently simplified — replace later with real API
-        console.log(`📍 Geocoding: ${location}`);
-
-        // Simulate success (future geocoder goes here)
-        return DEFAULT_COORDS;
-
-    } catch (err) {
-        console.warn("⚠️ Geocode timeout — using New Delhi fallback.");
-        return DEFAULT_COORDS;
-    }
-}
-
-// =======================================================
-// CLOUDINARY UPLOAD HELPER
-// =======================================================
-function uploadToCloudinary(fileBuffer) {
-    return new Promise((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream(
-            { folder: "Homekuti_DEV" },
-            (error, result) => {
-                if (result) resolve(result);
-                else reject(error);
-            }
-        );
-        streamifier.createReadStream(fileBuffer).pipe(stream);
-    });
-}
-
-// ================= INDEX =================
 module.exports.index = async (req, res) => {
-    const listings = await Listing.find({});
-    res.render("listings/index", { allListings: listings });
+  const allListings = await Listing.find({});
+  res.render("listings/index", { allListings });
 };
 
-// ================= NEW FORM =================
 module.exports.renderNewForm = (req, res) => {
-    res.render("listings/new");
+  res.render("listings/new");
 };
 
-// ================= CREATE LISTING =================
+module.exports.showListing = async (req, res) => {
+  const { id } = req.params;
+
+  const listing = await Listing.findById(id)
+    .populate({
+      path: "reviews",
+      populate: {
+        path: "author",
+      },
+    })
+    .populate("owner");
+
+  if (!listing) {
+    req.flash("error", "Listing not found!");
+    return res.redirect("/listings");
+  }
+
+  // Check if using default location
+  const isDefaultLocation =
+    listing.geometry &&
+    listing.geometry.coordinates &&
+    listing.geometry.coordinates[0] === 78.9629 &&
+    listing.geometry.coordinates[1] === 20.5937;
+
+  res.render("listings/show", { listing, isDefaultLocation });
+};
+
 module.exports.createListing = async (req, res) => {
+  try {
+    const newListing = new Listing(req.body.listing);
 
-    // ===== IMAGE HANDLING (NORMAL FIRST, FALLBACK ONLY ON ERROR) =====
-    let imageData = { ...DEFAULT_IMAGE };
-
-    if (req.file) {
-        try {
-            const result = await uploadToCloudinary(req.file.buffer);
-            imageData = {
-                url: result.secure_url,
-                filename: result.public_id
-            };
-        } catch (err) {
-            console.warn("⚠️ Cloudinary upload failed — using default image.");
-        }
+    // ✅ Handle image upload - ALWAYS set image field
+    if (req.file && req.file.path && req.file.filename) {
+      // User uploaded an image successfully
+      newListing.image = {
+        url: req.file.path,
+        filename: req.file.filename,
+      };
+      console.log("✓ Image uploaded:", req.file.filename);
+    } else {
+      // No upload or upload failed - use default
+      newListing.image = {
+        url: DEFAULT_IMAGE.url,
+        filename: DEFAULT_IMAGE.filename
+      };
+      console.log("⚠️  Using default image");
     }
 
-    // ===== GEOCODE HANDLING =====
-    let coords = DEFAULT_COORDS;
+    // Set owner
+    newListing.owner = req.user._id;
 
+    // ✅ Geocode with robust error handling
     try {
-        const geo = await geocode(req.body.listing.location);
-        if (geo && geo.length === 2) coords = geo;
-    } catch (err) {
-        console.warn("⚠️ Geocode failed — fallback applied.");
+      const locationString = `${newListing.location}, ${newListing.country}`;
+      console.log("🔍 Attempting to geocode:", locationString);
+      
+      const geoData = await geocodeLocation(locationString);
+      
+      if (geoData && geoData.coordinates) {
+        newListing.geometry = {
+          type: "Point",
+          coordinates: geoData.coordinates, // [lng, lat]
+        };
+
+        if (geoData.isDefault) {
+          console.warn("⚠️  Using default coordinates for:", locationString);
+        } else {
+          console.log("✓ Geocoded successfully:", geoData.coordinates);
+        }
+      } else {
+        // Fallback if geocoding returns invalid data
+        newListing.geometry = {
+          type: "Point",
+          coordinates: [78.9629, 20.5937],
+        };
+        console.warn("⚠️  Invalid geocode result, using default");
+      }
+    } catch (geoError) {
+      console.error("❌ Geocoding error:", geoError.message);
+      // Use default coordinates if geocoding fails
+      newListing.geometry = {
+        type: "Point",
+        coordinates: [78.9629, 20.5937], // Default: Center of India
+      };
     }
 
-    const listing = new Listing(req.body.listing);
+    // ✅ Save listing - This should ALWAYS succeed
+    const savedListing = await newListing.save();
 
-    listing.owner = req.user._id;
-    listing.image = imageData;
+    console.log("✅ Listing created successfully:", savedListing._id);
+    console.log("   - Image:", savedListing.image.filename);
+    console.log("   - Location:", savedListing.geometry.coordinates);
+    
+    req.flash("success", "New listing created successfully!");
+    res.redirect(`/listings/${savedListing._id}`);
+    
+  } catch (error) {
+    console.error("❌ Error creating listing:", error);
+    req.flash("error", "Failed to create listing. Please try again.");
+    res.redirect("/listings/new");
+  }
+};
 
-    listing.geometry = {
-        type: "Point",
-        coordinates: coords
-    };
+module.exports.editListing = async (req, res) => {
+  const { id } = req.params;
+  const listing = await Listing.findById(id);
+
+  if (!listing) {
+    req.flash("error", "Listing not found!");
+    return res.redirect("/listings");
+  }
+
+  res.render("listings/edit", { listing });
+};
+
+module.exports.updateListing = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const listing = await Listing.findByIdAndUpdate(id, { ...req.body.listing });
+
+    if (!listing) {
+      req.flash("error", "Listing not found!");
+      return res.redirect("/listings");
+    }
+
+    // ✅ Handle new image upload
+    if (req.file && req.file.path && req.file.filename) {
+      // Delete old image from Cloudinary (if not default)
+      if (listing.image && 
+          listing.image.filename && 
+          listing.image.filename !== DEFAULT_IMAGE.filename) {
+        try {
+          await cloudinary.uploader.destroy(listing.image.filename);
+          console.log("✓ Old image deleted from Cloudinary:", listing.image.filename);
+        } catch (deleteError) {
+          console.warn("⚠️  Failed to delete old image:", deleteError.message);
+        }
+      }
+
+      // Set new image
+      listing.image = {
+        url: req.file.path,
+        filename: req.file.filename,
+      };
+      console.log("✓ Image updated:", req.file.filename);
+    }
+    // If no new image uploaded, keep existing image (don't change it)
+
+    // ✅ Re-geocode if location or country changed
+    try {
+      if (req.body.listing.location || req.body.listing.country) {
+        const locationString = `${listing.location}, ${listing.country}`;
+        console.log("🔍 Re-geocoding:", locationString);
+        
+        const geoData = await geocodeLocation(locationString);
+
+        if (geoData && geoData.coordinates) {
+          listing.geometry = {
+            type: "Point",
+            coordinates: geoData.coordinates,
+          };
+          console.log("✓ Location updated:", geoData.coordinates);
+        }
+      }
+    } catch (geoError) {
+      console.error("❌ Geocoding error during update:", geoError.message);
+      // Keep existing coordinates on error
+    }
 
     await listing.save();
 
-    req.flash("success", "Successfully created a new listing!");
-    res.redirect(`/listings/${listing._id}`);
-};
-
-
-// ================= SHOW LISTING =================
-module.exports.showListing = async (req, res) => {
-
-    const listing = await Listing.findById(req.params.id)
-        .populate("owner")
-        .populate({
-            path: "reviews",
-            populate: { path: "author" }
-        });
-
-    if (!listing) {
-        req.flash("error", "Listing Not Found");
-        return res.redirect("/listings");
-    }
-
-    if (!listing.owner) {
-        listing.owner = { username: "Admin" };
-    }
-
-    const DEFAULT_COORDS = [77.2090, 28.6139];
-    const DEFAULT_FILENAME = "default-image";
-
-    const coords = listing.geometry?.coordinates || [];
-
-    const isDefaultLocation =
-        coords.length === 2 &&
-        Math.abs(coords[0] - DEFAULT_COORDS[0]) < 0.0001 &&
-        Math.abs(coords[1] - DEFAULT_COORDS[1]) < 0.0001;
-
-    const isDefaultImage =
-        listing.image?.filename === DEFAULT_FILENAME;
-
-
-    res.render("listings/show", { listing, isDefaultLocation, isDefaultImage});
-};
-
-
-// ================= EDIT FORM =================
-module.exports.editListing = async (req, res) => {
-
-    const listing = await Listing.findById(req.params.id);
-
-    if (!listing) {
-        req.flash("error", "Listing Not Found");
-        return res.redirect("/listings");
-    }
-
-    res.render("listings/edit", { listing });
-};
-
-
-// ================= UPDATE LISTING =================
-module.exports.updateListing = async (req, res) => {
-
-    const { id } = req.params;
-
-    let listing = await Listing.findById(id);
-    if (!listing) throw new ExpressError(404, "Listing Not Found");
-
-    // ===== SAFE GEOCODE =====
-    if (req.body.listing.location && req.body.listing.location !== listing.location) {
-
-        let coords = DEFAULT_COORDS;
-
-        try {
-            const geo = await geocode(req.body.listing.location);
-            if (geo && geo.length === 2) coords = geo;
-        } catch (err) {
-            console.warn("⚠️ Geocode timeout ignored.");
-        }
-
-        req.body.listing.geometry = {
-            type: "Point",
-            coordinates: coords
-        };
-    }
-
-    listing = await Listing.findByIdAndUpdate(
-        id,
-        { ...req.body.listing },
-        { new: true }
-    );
-
-    // ===== IMAGE UPDATE (SAFE FALLBACK) =====
-    if (req.file) {
-        try {
-            if (listing.image && listing.image.filename !== "default-image") {
-                await cloudinary.uploader.destroy(listing.image.filename);
-            }
-
-            const result = await uploadToCloudinary(req.file.buffer);
-
-            listing.image = {
-                url: result.secure_url,
-                filename: result.public_id
-            };
-
-            await listing.save();
-
-        } catch (err) {
-            console.warn("⚠️ Image update failed — keeping previous image.");
-        }
-    }
-
     req.flash("success", "Listing updated successfully!");
     res.redirect(`/listings/${id}`);
+    
+  } catch (error) {
+    console.error("❌ Error updating listing:", error);
+    req.flash("error", "Failed to update listing. Please try again.");
+    res.redirect(`/listings/${req.params.id}/edit`);
+  }
 };
 
-
-// ================= DELETE LISTING =================
 module.exports.deleteListing = async (req, res) => {
-
+  try {
     const { id } = req.params;
-
+    
+    // Find the listing first to get image info
     const listing = await Listing.findById(id);
-
-    if (listing && listing.image && listing.image.filename !== "default-image") {
-        await cloudinary.uploader.destroy(listing.image.filename);
+    
+    if (!listing) {
+      req.flash("error", "Listing not found!");
+      return res.redirect("/listings");
     }
 
+    // ✅ Delete image from Cloudinary (if not default)
+    if (listing.image && 
+        listing.image.filename && 
+        listing.image.filename !== DEFAULT_IMAGE.filename) {
+      try {
+        await cloudinary.uploader.destroy(listing.image.filename);
+        console.log("✓ Image deleted from Cloudinary:", listing.image.filename);
+      } catch (cloudinaryError) {
+        console.warn("⚠️  Failed to delete image from Cloudinary:", cloudinaryError.message);
+        // Continue with listing deletion even if Cloudinary deletion fails
+      }
+    } else {
+      console.log("ℹ️  Skipping default image deletion");
+    }
+
+    // Delete the listing (reviews will be auto-deleted via post middleware)
     await Listing.findByIdAndDelete(id);
 
-    req.flash("success", "Successfully deleted the listing!");
+    console.log("✅ Listing deleted successfully:", id);
+    req.flash("success", "Listing deleted!");
     res.redirect("/listings");
+    
+  } catch (error) {
+    console.error("❌ Error deleting listing:", error);
+    req.flash("error", "Failed to delete listing.");
+    res.redirect("/listings");
+  }
 };

@@ -1,13 +1,10 @@
-// middlewares/upload.js
-// Multer configuration with file size and type validation
+// middlewares/upload.js - Multer with Cloudinary storage
 
 const multer = require("multer");
+const { storage } = require("../cloudConfig");
 const ExpressError = require("../utils/ExpressError");
 
-// ================= MULTER CONFIGURATION =================
-
-const storage = multer.memoryStorage(); // Store in memory for Cloudinary upload
-
+// File filter for validation
 const fileFilter = (req, file, cb) => {
   // Allowed MIME types
   const allowedMimes = [
@@ -30,10 +27,11 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
+// Configure multer with Cloudinary storage
 const upload = multer({
-  storage: storage,
+  storage: storage, // ✅ Use Cloudinary storage (from cloudConfig.js)
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit (SERVER-SIDE VALIDATION)
+    fileSize: 5 * 1024 * 1024, // 5MB limit
     files: 1, // Only 1 file per upload
   },
   fileFilter: fileFilter,

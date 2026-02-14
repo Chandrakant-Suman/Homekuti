@@ -1,3 +1,4 @@
+const { image } = require("../cloudConfig");
 const ExpressError = require("../utils/ExpressError");
 
 // listing schema definition using Joi
