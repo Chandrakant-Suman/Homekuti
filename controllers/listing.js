@@ -67,6 +67,11 @@ module.exports.createListing = async (req, res) => {
       console.log("⚠️  Using default image");
     }
 
+    if (!req.user) {
+      req.flash("error", "You must be logged in");
+      return res.redirect("/user/signin");
+    }
+
     // Set owner
     newListing.owner = req.user._id;
 

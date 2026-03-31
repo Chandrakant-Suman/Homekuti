@@ -1,74 +1,86 @@
 <% layout('/layouts/boilerplate') -%>
 
-<div class="container mt-5">
-  <div class="row justify-content-center">
-    <div class="col-lg-6 col-md-8">
+  <div class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-6 col-md-8">
 
-      <h2 class="mb-4 text-center">Sign In</h2>
+        <h2 class="mb-4 text-center">Sign In</h2>
 
-      <form 
-        action="/user/signin" 
-        method="POST" 
-        class="needs-validation" 
-        novalidate
-      >
+        <form action="/user/signin" method="POST" class="needs-validation" novalidate>
 
-        <!-- Username -->
-        <div class="mb-3">
-          <label class="form-label">Username</label>
+          <!-- Username -->
+          <div class="mb-3">
+            <label class="form-label">Username</label>
 
-          <input
-            type="text"
-            class="form-control"
-            name="username"
-            required
-            placeholder="Enter username"
-          >
+            <input type="text" class="form-control" name="username" required placeholder="Enter username">
 
-          <div class="valid-feedback">Looks good!</div>
-          <div class="invalid-feedback">
-            Username is required.
+            <div class="valid-feedback">Looks good!</div>
+            <div class="invalid-feedback">
+              Username is required.
+            </div>
           </div>
-        </div>
 
 
-        <!-- Password -->
-        <div class="mb-3">
-          <label class="form-label">Password</label>
+          <!-- Password -->
+          <div class="mb-3">
+            <label class="form-label">Password</label>
 
-          <input
-            type="password"
-            class="form-control"
-            name="password"
-            required
-            placeholder="Enter password"
-          >
+            <input type="password" class="form-control" name="password" required placeholder="Enter password">
 
-          <div class="valid-feedback">Ok!</div>
-          <div class="invalid-feedback">
-            Password is required.
+            <div class="valid-feedback">Ok!</div>
+            <div class="invalid-feedback">
+              Password is required.
+            </div>
           </div>
-        </div>
 
 
-        <!-- Submit -->
-        <div class="d-grid mb-3">
-          <button class="hk-btn" type="submit">
-            Sign In
-          </button>
-        </div>
+          <!-- Submit -->
+          <div class="d-grid mb-3">
+            <button class="hk-btn" type="submit">
+              Sign In
+            </button>
+          </div>
 
-      </form>
+          <!-- 🔽 GOOGLE SIGN-IN UI START -->
+
+          <div style="text-align:center; margin: 15px 0;">
+            <p>──────── OR ────────</p>
+          </div>
+
+          <div style="display:flex; justify-content:center;">
+            <div id="g_id_onload" data-client_id="1047890067243-71vcp5bsql6fhm2hq3g8grh65pqf0855.apps.googleusercontent.com" data-callback="handleGoogleLogin">
+            </div>
+
+            <div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline"
+              data-text="continue_with" data-shape="rectangular">
+            </div>
+          </div>
+
+          <!-- 🔼 GOOGLE SIGN-IN UI END -->
+
+        </form>
 
 
-      <!-- Redirect -->
-      <p class="text-center text-muted">
-        Don’t have an account?
-        <a href="/user/signup" class="text-decoration-none">
-          Sign up here
-        </a>
-      </p>
 
+
+        <!-- Redirect -->
+        <p class="text-center text-muted">
+          Don’t have an account?
+          <a href="/user/signup" class="text-decoration-none">
+            Sign up here
+          </a>
+        </p>
+
+      </div>
     </div>
   </div>
-</div>
+
+  <!-- 🔽 GOOGLE SCRIPT -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+
+<script>
+function handleGoogleLogin(response) {
+  // Redirect instead of fetch
+  window.location.href = `/user/google?token=${response.credential}`;
+}
+</script>

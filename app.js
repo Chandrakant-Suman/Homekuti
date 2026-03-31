@@ -78,7 +78,7 @@ app.use(methodOverride("_method"));
 // ================= SESSION CONFIG =================
 
 // Trust proxy for production deployments
-app.set("trust proxy", 1);
+// app.set("trust proxy", 1);
 
 // MongoDB session store (connect-mongo v6)
 // In v6, the actual MongoStore class is at .default
@@ -125,7 +125,8 @@ const sessionOptions = {
     httpOnly: true,
     maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
     sameSite: "lax",
-    secure: false, // ✅ MUST be false for localhost development
+    // secure: false, // ✅ MUST be false for localhost development
+    secure: process.env.NODE_ENV === "production",
     path: "/",
   },
 };
@@ -143,8 +144,17 @@ app.use(passport.session());
 
 passport.use(new LocalStrategy(User.authenticate()));
 
-passport.serializeUser(User.serializeUser());
-passport.deserializeUser(User.deserializeUser());
+passport.serializeUser((user, done) => {
+  done(null, user._id); // ✅ use ID
+});
+passport.deserializeUser(async (id, done) => {
+  try {
+    const user = await User.findById(id);
+    done(null, user);
+  } catch (err) {
+    done(err, null);
+  }
+});
 
 // ================= GLOBAL TEMPLATE VARIABLES =================
 app.use((req, res, next) => {
@@ -153,6 +163,13 @@ app.use((req, res, next) => {
   res.locals.success = req.flash("success");
   res.locals.error = req.flash("error");
   res.locals.hideFlash = false;
+  next();
+});
+
+// temporary debug middleware to log session and user info on every request
+app.use((req, res, next) => {
+  console.log("Session ID:", req.sessionID);
+  console.log("User:", req.user ? req.user.username : "No user");
   next();
 });
 

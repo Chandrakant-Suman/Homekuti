@@ -32,11 +32,12 @@
             <div class="divider"></div>
           </div>
 
-          <% if(!currUser) { %>
-            <a href="/user/signup">Sign Up</a>
-            <a href="/user/signin">Sign In</a>
+          <% if(currUser) { %>
+            <span>Hi, <%= currUser.username %></span>
+            <a href="/user/logout">Logout</a>
             <% } else { %>
-              <a href="/user/logout" class="danger">Log Out</a>
+              <a href="/user/signin">Login</a>
+              <a href="/user/signup">Signup</a>
               <% } %>
 
         </div>

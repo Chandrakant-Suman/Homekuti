@@ -2,13 +2,14 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 // IMPORTANT: default export fix
-const passportLocalMongoose = require("passport-local-mongoose").default 
+const passportLocalMongoose = require("passport-local-mongoose").default
     || require("passport-local-mongoose");
 
 const userSchema = new Schema({
-    name: {
+    username: {
         type: String,
-        trim: true
+        trim: true,
+        required: true
     },
     email: {
         type: String,
@@ -19,10 +20,19 @@ const userSchema = new Schema({
     createdAt: {
         type: Date,
         default: Date.now
+    }, password: {
+        type: String,
+        required: false,
+    },
+
+    // (Google login support)
+    googleId: {
+        type: String,
+    },
+    avatar: {
+        type: String,
     }
 });
-
-// Do NOT add password field
 
 userSchema.plugin(passportLocalMongoose);
 
