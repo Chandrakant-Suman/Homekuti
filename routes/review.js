@@ -1,28 +1,26 @@
 const express = require("express");
 const router = express.Router({ mergeParams: true });
-const wrapAsync = require("../utils/wrapAsync");
 
-const { isLoggedIn } = require("../middlewares/authenicate");
-const { validateReview } = require("../middlewares/validateReview");
+const wrapAsync = require("../utils/wrapAsync");
+const { isLoggedIn } = require("../middlewares/authenticate");
 const { isReviewAuthor } = require("../middlewares/authorize");
 
+// ✅ Import correct controller
 const reviewController = require("../controllers/reviews");
 
-// ADD REVIEW
+// CREATE REVIEW
 router.post(
-    "/",
-    isLoggedIn,
-    validateReview,
-    wrapAsync(reviewController.addReview)
+  "/",
+  isLoggedIn,
+  wrapAsync(reviewController.createReview)
 );
 
 // DELETE REVIEW
 router.delete(
-    "/:reviewId",
-    isLoggedIn,
-    isReviewAuthor,
-    wrapAsync(reviewController.deleteReview)
+  "/:reviewId",
+  isLoggedIn,
+  isReviewAuthor,
+  wrapAsync(reviewController.deleteReview)
 );
-
 
 module.exports = router;

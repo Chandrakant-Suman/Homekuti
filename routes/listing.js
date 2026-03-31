@@ -3,7 +3,7 @@ const router = express.Router();
 
 const wrapAsync = require("../utils/wrapAsync");
 
-const { isLoggedIn } = require("../middlewares/authenicate");
+const { isLoggedIn } = require("../middlewares/authenticate");
 const { isOwner } = require("../middlewares/authorize");
 const { validateListing } = require("../middlewares/validateListing");
 
@@ -47,4 +47,9 @@ router.get(
   wrapAsync(listingController.editListing)
 );
 
+// console.log("isLoggedIn:", typeof isLoggedIn);
+// console.log("isOwner:", typeof isOwner);
+// console.log("validateListing:", typeof validateListing);
+// console.log("upload:", typeof upload);
+// console.log("wrapAsync:", typeof wrapAsync);
 module.exports = router;

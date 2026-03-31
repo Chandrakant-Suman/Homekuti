@@ -117,8 +117,23 @@
                   <p class="hk-stay-price">
                     <span>
                       ₹<%= listing.price ? Number(listing.price).toLocaleString("en-IN") : "N/A" %>
-                    </span>
-                    /night
+                    </span> /night
+                  </p>
+
+                  <!-- ✅ Rating Section -->
+                  <p>
+                    <% if (listing.totalReviews> 0) { %>
+                      <span class="hk-stay-rating">
+                        <i class="fas fa-star"></i>
+                        <%= listing.avgRating ? listing.avgRating.toFixed(1) : "0.0" %>
+                      </span>
+
+                      <span class="hk-stay-review-count">
+                        (<%= listing.totalReviews %> reviews)
+                      </span>
+                      <% } else { %>
+                        <span class="hk-stay-no-reviews">No reviews yet</span>
+                        <% } %>
                   </p>
                 </div>
             </div>

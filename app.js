@@ -78,7 +78,7 @@ app.use(methodOverride("_method"));
 // ================= SESSION CONFIG =================
 
 // Trust proxy for production deployments
-// app.set("trust proxy", 1);
+app.set("trust proxy", 1);
 
 // MongoDB session store (connect-mongo v6)
 // In v6, the actual MongoStore class is at .default
@@ -125,8 +125,8 @@ const sessionOptions = {
     httpOnly: true,
     maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
     sameSite: "lax",
-    // secure: false, // ✅ MUST be false for localhost development
-    secure: process.env.NODE_ENV === "production",
+    secure: false, // ✅ MUST be false for localhost development
+    // secure: process.env.NODE_ENV === "production",
     path: "/",
   },
 };
@@ -212,15 +212,15 @@ app.get("/privacy", (req, res) => res.render("privacy"));
 app.get("/maintenance", (req, res) => res.render("maintenance"));
 
 // ================= TEST ROUTES (REMOVE IN PRODUCTION) =================
-app.get("/test/auth", (req, res) => {
-  res.json({
-    isAuthenticated: req.isAuthenticated(),
-    sessionID: req.sessionID,
-    user: req.user,
-    session: req.session,
-    cookie: req.headers.cookie,
-  });
-});
+// app.get("/test/auth", (req, res) => {
+//   res.json({
+//     isAuthenticated: req.isAuthenticated(),
+//     sessionID: req.sessionID,
+//     user: req.user,
+//     session: req.session,
+//     cookie: req.headers.cookie,
+//   });
+// });
 
 app.get("/test/session", (req, res) => {
   if (!req.session.views) {

@@ -1,56 +1,92 @@
 <% layout('/layouts/boilerplate') -%>
 
-<body>
-  <main>
-    <div class="hk-section-header">
-      <h2>All Listings</h2>
-    </div>
+<main>
+  <div class="hk-section-header">
+    <h2>All Listings</h2>
+  </div>
 
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-2 row-cols-lg-3 row-cols-xl-3 g-3">
+  <div class="row row-cols-1 row-cols-sm-2 row-cols-md-2 row-cols-lg-3 row-cols-xl-3 g-3">
 
-      <% allListings.forEach(listing => { %>
+    <% allListings.forEach(listing => { %>
 
-        <div class="col">
-          <a href="/listings/<%= listing._id %>" class="hk-listing-link" style="text-decoration: none;">
+      <% 
+        // ✅ Safe image handling
+        let imageUrl = "/images/placeholder.jpg";
+        if (listing.image) {
+          if (typeof listing.image === "string") {
+            imageUrl = listing.image;
+          } else if (listing.image.url) {
+            imageUrl = listing.image.url;
+          }
+        }
+      %>
 
-            <article class="hk-stay-card">
+      <div class="col">
+        <a href="/listings/<%= listing._id %>" class="hk-listing-link text-decoration-none">
 
-              <!-- Image -->
-              <div 
-                class="hk-stay-image"
-                style="background-image: url('<%= listing.image.url || listing.image %>');">
-              </div>
+          <article class="hk-stay-card">
 
-              <!-- Content -->
-              <div class="hk-stay-body">
-                <p class="hk-stay-location">
-                  <%= listing.location || "Unknown location" %>
-                </p>
+            <!-- Image -->
+            <div 
+              class="hk-stay-image"
+              style="background-image: url('<%= imageUrl %>');">
+            </div>
 
-                <p class="hk-stay-title">
-                  <%= listing.title %>
-                </p>
+            <!-- Content -->
+            <div class="hk-stay-body">
 
-                <p class="hk-stay-meta">
-                  <% if(listing.guests) { %><%= listing.guests %> guests<% } %>
-                  <% if(listing.bedrooms) { %> · <%= listing.bedrooms %> bedrooms <% } %>
-                  <% if(listing.amenities && listing.amenities.length) { %>
-                    · <%= listing.amenities[0] %>
-                  <% } %>
-                </p>
+              <p class="hk-stay-location">
+                <%= listing.location || "Unknown location" %>
+              </p>
 
-                <p class="hk-stay-price">
-                  <span>₹<%= listing.price.toLocaleString("en-IN") %></span> /night
-                </p>
-              </div>
+              <p class="hk-stay-title">
+                <%= listing.title || "Untitled listing" %>
+              </p>
 
-            </article>
+              <p class="hk-stay-meta">
+                <% if (listing.guests) { %>
+                  <%= listing.guests %> guests
+                <% } %>
 
-          </a>
-        </div>
+                <% if (listing.bedrooms) { %>
+                  · <%= listing.bedrooms %> bedrooms
+                <% } %>
 
-      <% }) %>
+                <% if (listing.amenities?.length) { %>
+                  · <%= listing.amenities[0] %>
+                <% } %>
+              </p>
+              
+              <p class="hk-stay-price">
+                <span>
+                  ₹<%= listing.price ? Number(listing.price).toLocaleString("en-IN") : "N/A" %>
+                </span> /night
+              </p>
 
-    </div>
-  </main>
-</body>
+              <!-- ✅ Rating Section -->
+              <p>
+                <% if (listing.totalReviews > 0) { %>
+                  <span class="hk-stay-rating">
+                    <i class="fas fa-star"></i>
+                    <%= listing.avgRating ? listing.avgRating.toFixed(1) : "0.0" %>
+                  </span>
+
+                  <span class="hk-stay-review-count">
+                    (<%= listing.totalReviews %> reviews)
+                  </span>
+                <% } else { %>
+                  <span class="hk-stay-no-reviews">No reviews yet</span>
+                <% } %>
+              </p>
+
+            </div>
+
+          </article>
+
+        </a>
+      </div>
+
+    <% }) %>
+
+  </div>
+</main>

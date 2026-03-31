@@ -1,5 +1,5 @@
 const User = require("../models/user");
-const { saveRedirectUrl } = require("../middlewares/authenicate");
+const { isAuthenticated } = require("../middlewares/authenticate");
 
 module.exports.signinForm = (req, res) => {
     res.render("users/signin");

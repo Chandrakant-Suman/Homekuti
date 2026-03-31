@@ -1,54 +1,50 @@
-const mongoose = require("mongoose");
-const Listing = require("../models/listing");
 const Review = require("../models/review");
+const Listing = require("../models/listing");
 
-module.exports.addReview = async (req, res) => {
-    const listing = await Listing.findById(req.params.id);
-    if (!listing) {
-        req.flash("error", "Listing not found");
-        return res.redirect("/listings");
-    }
-    const review = new Review(req.body.review);
-    if (!req.user) {
-        req.flash("error", "Login required");
-        return res.redirect("/user/signin");
-    }
+module.exports.createReview = async (req, res) => {
+  const listing = await Listing.findById(req.params.id);
+  if (!listing) {
+    req.flash("error", "Listing not found");
+    return res.redirect("/listings");
+  }
 
-    review.author = req.user._id;
-    await review.save(); // Save review first
-    listing.reviews.push(review._id); // Push ONLY the ID
-    await listing.save();
-    req.flash("success", "Review added successfully!");
-    res.redirect(`/listings/${listing._id}`);
+  const newReview = new Review(req.body.review);
+  newReview.author = req.user._id;
+  await newReview.save();
+
+  listing.reviews.push(newReview._id);
+
+  // Recalculate avgRating
+  const allReviews = await Review.find({ _id: { $in: listing.reviews } });
+  const avg = allReviews.reduce((acc, r) => acc + r.rating, 0) / allReviews.length;
+  listing.avgRating = Math.round(avg * 10) / 10;
+  listing.totalReviews = allReviews.length;
+
+  await listing.save();
+  req.flash("success", "Review added!");
+  res.redirect(`/listings/${listing._id}`);
 };
 
 module.exports.deleteReview = async (req, res) => {
   const { id, reviewId } = req.params;
 
-  const session = await mongoose.startSession();
-  session.startTransaction();
+  await Listing.findByIdAndUpdate(id, { $pull: { reviews: reviewId } });
+  await Review.findByIdAndDelete(reviewId);
 
-  try {
-    await Review.findByIdAndDelete(reviewId, { session });
-
-    await Listing.findByIdAndUpdate(
-      id,
-      { $pull: { reviews: reviewId } },
-      { session }
-    );
-
-    await session.commitTransaction();
-    session.endSession();
-
-    req.flash("success", "Review deleted successfully!");
-    res.redirect(`/listings/${id}`);
-
-  } catch (err) {
-    await session.abortTransaction();
-    session.endSession();
-
-    console.error(err);
-    req.flash("error", "Failed to delete review");
-    res.redirect(`/listings/${id}`);
+  // Recalculate avgRating
+  const listing = await Listing.findById(id).populate("reviews");
+  if (listing) {
+    if (listing.reviews.length === 0) {
+      listing.avgRating = 0;
+      listing.totalReviews = 0;
+    } else {
+      const avg = listing.reviews.reduce((acc, r) => acc + r.rating, 0) / listing.reviews.length;
+      listing.avgRating = Math.round(avg * 10) / 10;
+      listing.totalReviews = listing.reviews.length;
+    }
+    await listing.save();
   }
+
+  req.flash("success", "Review deleted.");
+  res.redirect(`/listings/${id}`);
 };
