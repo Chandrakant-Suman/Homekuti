@@ -1,128 +1,153 @@
 <% layout('/layouts/boilerplate') -%>
 
 <style>
-  .bookings-header { margin: 2rem 0 1.5rem; }
-  .bookings-header h2 { font-size: 1.8rem; font-weight: 700; color: #1f2933; }
-  .bookings-header p { color: #6b7280; font-size: 0.95rem; }
+  .mb-header { margin:2rem 0 1.5rem; }
+  .mb-header h2 { font-size:1.7rem;font-weight:700;color:#1f2933; }
+  .mb-header p  { color:#6b7280;font-size:0.9rem;margin:0; }
 
-  .booking-card {
-    background: #fff;
-    border-radius: 16px;
-    border: 1.5px solid #e3e5ec;
-    padding: 1.4rem 1.6rem;
-    margin-bottom: 1rem;
-    display: flex;
-    gap: 1.4rem;
-    align-items: flex-start;
-    transition: box-shadow 0.18s;
+  /* Filter tabs */
+  .filter-tabs { display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.4rem; }
+  .ftab { padding:6px 16px;border-radius:999px;border:1.5px solid #e3e5ec;background:#fff;font-size:0.83rem;font-weight:600;color:#4b5563;cursor:pointer;text-decoration:none;transition:all 0.15s;white-space:nowrap; }
+  .ftab:hover { border-color:var(--primary);color:var(--primary);text-decoration:none; }
+  .ftab.active { background:var(--primary);color:#fff;border-color:var(--primary); }
+
+  /* Booking card */
+  .bk-card { background:#fff;border-radius:16px;border:1.5px solid #e3e5ec;padding:1.3rem 1.5rem;margin-bottom:1rem;display:flex;gap:1.2rem;align-items:flex-start;transition:box-shadow 0.15s; }
+  .bk-card:hover { box-shadow:0 6px 28px rgba(15,23,42,0.08); }
+  .bk-thumb { width:110px;height:88px;border-radius:12px;object-fit:cover;flex-shrink:0; }
+
+  .bk-info { flex:1;min-width:0; }
+  .bk-title { font-size:1rem;font-weight:700;color:#1f2933;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+  .bk-loc   { font-size:0.82rem;color:#6b7280;margin-bottom:6px; }
+  .bk-dates { font-size:0.85rem;color:#374151;margin-bottom:7px; }
+
+  .bk-row   { display:flex;align-items:center;gap:8px;flex-wrap:wrap; }
+
+  /* Status & payment badges */
+  .sbadge { display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:999px;font-size:0.75rem;font-weight:700; }
+  .sb-upcoming    { background:#eff6ff;color:#1d4ed8; }
+  .sb-cancelled   { background:#f3f4f6;color:#6b7280; }
+  .sb-unavailable { background:#fef2f2;color:#b91c1c; }
+  .sb-completed   { background:#f3f4f6;color:#374151; }
+  .sb-paid        { background:#f0fdf4;color:#15803d; }
+  .sb-refund_initiated { background:#fffbeb;color:#d97706; }
+  .sb-refunded    { background:#f0fdf4;color:#15803d; }
+  .sb-refund_failed { background:#fef2f2;color:#b91c1c; }
+
+  /* Refund alert stripe */
+  .refund-stripe {
+    display:flex;align-items:center;gap:8px;margin-top:8px;
+    padding:6px 10px;border-radius:8px;font-size:0.8rem;font-weight:600;
   }
-  .booking-card:hover { box-shadow: 0 8px 30px rgba(15,23,42,0.08); }
+  .rs-pending { background:#fffbeb;color:#92400e; }
+  .rs-done    { background:#f0fdf4;color:#15803d; }
+  .rs-fail    { background:#fef2f2;color:#b91c1c; }
 
-  .booking-thumb {
-    width: 110px;
-    height: 90px;
-    border-radius: 12px;
-    object-fit: cover;
-    flex-shrink: 0;
-  }
+  .bk-amount { font-size:1rem;font-weight:700;color:#1f2933; }
+  .bk-actions { display:flex;gap:8px;margin-top:10px;flex-wrap:wrap; }
 
-  .booking-info { flex: 1; min-width: 0; }
-  .booking-title { font-size: 1.05rem; font-weight: 700; color: #1f2933; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .booking-location { font-size: 0.85rem; color: #6b7280; margin-bottom: 8px; }
-  .booking-dates { font-size: 0.88rem; color: #374151; margin-bottom: 6px; }
-  .booking-meta { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .btn-outline { padding:5px 14px;border-radius:8px;font-size:0.82rem;font-weight:600;border:1.5px solid #e3e5ec;background:#fff;color:#374151;cursor:pointer;text-decoration:none;display:inline-block;transition:all 0.15s; }
+  .btn-outline:hover { border-color:var(--primary);color:var(--primary);text-decoration:none; }
+  .btn-cancel { border-color:#fca5a5;color:#ef4444; }
+  .btn-cancel:hover { background:#ef4444;color:#fff;border-color:#ef4444; }
 
-  .status-badge {
-    display: inline-block;
-    padding: 3px 12px;
-    border-radius: 999px;
-    font-size: 0.78rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-  }
-  .status-upcoming { background: #eff6ff; color: #1d4ed8; }
-  .status-paid { background: #f0fdf4; color: #15803d; }
-  .status-completed { background: #f3f4f6; color: #374151; }
-  .status-cancelled { background: #fef2f2; color: #b91c1c; }
-  .status-failed { background: #fef2f2; color: #b91c1c; }
-
-  .booking-price { font-size: 1rem; font-weight: 700; color: #1f2933; }
-  .booking-actions { display: flex; gap: 8px; margin-top: 10px; }
-  .btn-sm-outline {
-    padding: 5px 14px; border-radius: 8px; font-size: 0.82rem; font-weight: 600;
-    border: 1.5px solid #e3e5ec; background: #fff; color: #374151; cursor: pointer;
-    text-decoration: none; display: inline-block; transition: all 0.15s;
-  }
-  .btn-sm-outline:hover { border-color: var(--primary); color: var(--primary); text-decoration: none; }
-  .btn-sm-danger {
-    padding: 5px 14px; border-radius: 8px; font-size: 0.82rem; font-weight: 600;
-    border: 1.5px solid #fca5a5; background: #fff; color: #ef4444; cursor: pointer;
-    transition: all 0.15s;
-  }
-  .btn-sm-danger:hover { background: #ef4444; color: #fff; }
-
-  .empty-state { text-align: center; padding: 5rem 0; }
-  .empty-state i { font-size: 3.5rem; color: #e3e5ec; margin-bottom: 1rem; }
-  .empty-state h3 { color: #4b5563; font-size: 1.2rem; margin-bottom: 0.5rem; }
-  .empty-state p { color: #9ca3af; font-size: 0.9rem; }
+  /* Empty state */
+  .empty-state { text-align:center;padding:5rem 0; }
+  .empty-state i { font-size:3rem;color:#e3e5ec;margin-bottom:1rem; }
+  .empty-state h3 { color:#4b5563;margin-bottom:0.4rem; }
+  .empty-state p  { color:#9ca3af;font-size:0.88rem; }
 </style>
 
-<div class="bookings-header">
+<div class="mb-header">
   <h2>My Bookings</h2>
-  <p>Manage your upcoming and past stays</p>
+  <p>Manage all your stays and refunds</p>
 </div>
 
-<% if (bookings.length === 0) { %>
+<!-- Filter tabs -->
+<%
+  const activeFilter = query?.filter || 'all';
+  const tabs = [
+    { key: 'all',       label: '🏠 All' },
+    { key: 'upcoming',  label: '📅 Upcoming' },
+    { key: 'cancelled', label: '❌ Cancelled' },
+    { key: 'refund',    label: '💰 Refunds' },
+  ];
+%>
+<div class="filter-tabs">
+  <% tabs.forEach(t => { %>
+    <a href="/bookings/my?filter=<%= t.key %>"
+       class="ftab <%= activeFilter === t.key ? 'active' : '' %>">
+      <%= t.label %>
+    </a>
+  <% }) %>
+</div>
+
+<% if (!bookings || bookings.length === 0) { %>
   <div class="empty-state">
     <i class="fa-regular fa-calendar-xmark"></i>
-    <h3>No bookings yet</h3>
+    <h3>No bookings here</h3>
     <p>Start exploring and book your first stay!</p>
     <a href="/listings" class="hk-btn" style="display:inline-block;margin-top:1.2rem;">Explore Stays</a>
   </div>
 <% } else { %>
-  <% bookings.forEach(booking => { %>
+  <% bookings.forEach(b => { %>
     <%
-      const ci = new Date(booking.checkIn);
-      const co = new Date(booking.checkOut);
-      const ciStr = ci.toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
-      const coStr = co.toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
-      const imgUrl = booking.listing?.image?.url || booking.listing?.image || '/images/placeholder.jpg';
+      const ci    = new Date(b.checkIn);
+      const co    = new Date(b.checkOut);
+      const ciStr = ci.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+      const coStr = co.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+      const img   = b.listing?.image?.url || b.listing?.image || '/images/placeholder.jpg';
     %>
-    <div class="booking-card">
-      <img src="<%= imgUrl %>" class="booking-thumb" alt="<%= booking.listing?.title %>"
+    <div class="bk-card">
+      <img src="<%= img %>" class="bk-thumb" alt=""
         onerror="this.src='/images/placeholder.jpg'">
 
-      <div class="booking-info">
-        <div class="booking-title">
-          <a href="/listings/<%= booking.listing?._id %>" style="color:inherit;text-decoration:none;">
-            <%= booking.listing?.title || 'Listing unavailable' %>
+      <div class="bk-info">
+        <div class="bk-title">
+          <a href="/listings/<%= b.listing?._id %>" style="color:inherit;text-decoration:none;">
+            <%= b.listing?.title || 'Listing unavailable' %>
           </a>
         </div>
-        <div class="booking-location">
-          <i class="fa-solid fa-location-dot" style="color:var(--primary);font-size:0.75rem;"></i>
-          <%= booking.listing?.location %>, <%= booking.listing?.country %>
+        <div class="bk-loc">
+          <i class="fa-solid fa-location-dot" style="color:var(--primary);font-size:0.72rem;"></i>
+          <%= b.listing?.location %>, <%= b.listing?.country %>
         </div>
-        <div class="booking-dates">
-          <i class="fa-regular fa-calendar" style="color:#6b7280;margin-right:4px;"></i>
-          <%= ciStr %> → <%= coStr %>
-          &nbsp;·&nbsp; <%= booking.nights %> night<%= booking.nights !== 1 ? 's' : '' %>
-          &nbsp;·&nbsp; <%= booking.guests %> guest<%= booking.guests !== 1 ? 's' : '' %>
-        </div>
-        <div class="booking-meta">
-          <span class="status-badge status-<%= booking.paymentStatus === 'paid' ? (booking.status || 'upcoming') : booking.paymentStatus %>">
-            <%= booking.paymentStatus === 'paid' ? (booking.status || 'upcoming') : booking.paymentStatus %>
-          </span>
-          <span class="booking-price">₹<%= booking.totalPrice?.toLocaleString('en-IN') %></span>
+        <div class="bk-dates">
+          <i class="fa-regular fa-calendar" style="color:#6b7280;margin-right:3px;"></i>
+          <%= ciStr %> → <%= coStr %> &nbsp;·&nbsp;
+          <%= b.nights %> night<%= b.nights!==1?'s':'' %> &nbsp;·&nbsp;
+          <%= b.guests %> guest<%= b.guests!==1?'s':'' %>
         </div>
 
-        <div class="booking-actions">
-          <a href="/bookings/<%= booking._id %>" class="btn-sm-outline">View Details</a>
-          <% if (booking.status === 'upcoming' && booking.paymentStatus === 'paid') { %>
-            <form method="POST" action="/bookings/<%= booking._id %>/cancel"
-              onsubmit="return confirm('Cancel this booking?');" style="display:inline;">
-              <button type="submit" class="btn-sm-danger">Cancel</button>
-            </form>
+        <div class="bk-row">
+          <span class="sbadge sb-<%= b.status %>"><%= b.status %></span>
+          <span class="sbadge sb-<%= b.paymentStatus %>"><%= b.paymentStatus.replace(/_/g,' ') %></span>
+          <span class="bk-amount">₹<%= b.totalPrice?.toLocaleString('en-IN') %></span>
+        </div>
+
+        <!-- Refund status stripe -->
+        <% if (b.refund?.amount) { %>
+          <div class="refund-stripe <%= b.refund.status === 'processed' ? 'rs-done' : b.refund.status === 'failed' ? 'rs-fail' : 'rs-pending' %>">
+            <% if (b.refund.status === 'processed') { %>
+              <i class="fa-solid fa-circle-check"></i>
+              ₹<%= b.refund.amount.toLocaleString('en-IN') %> refunded
+            <% } else if (b.refund.status === 'failed') { %>
+              <i class="fa-solid fa-triangle-exclamation"></i>
+              Refund failed — manual processing in progress
+            <% } else { %>
+              <i class="fa-solid fa-clock"></i>
+              ₹<%= b.refund.amount.toLocaleString('en-IN') %> refund in progress (5–7 business days)
+            <% } %>
+          </div>
+        <% } %>
+
+        <div class="bk-actions">
+          <a href="/bookings/<%= b._id %>" class="btn-outline">View Details</a>
+
+          <% if (b.status === 'upcoming' && b.paymentStatus === 'paid') { %>
+            <a href="/bookings/<%= b._id %>/cancel-preview" class="btn-outline btn-cancel">
+              Cancel & Refund
+            </a>
           <% } %>
         </div>
       </div>

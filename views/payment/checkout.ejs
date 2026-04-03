@@ -1,0 +1,341 @@
+<% layout('/layouts/boilerplate') -%>
+
+<style>
+  .checkout-wrapper {
+    max-width: 900px;
+    margin: 2rem auto 4rem;
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 2rem;
+    align-items: start;
+  }
+  @media (max-width: 768px) { .checkout-wrapper { grid-template-columns: 1fr; } }
+
+  .back-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: #6b7280; font-size: 0.88rem; text-decoration: none;
+    margin-bottom: 1.5rem; transition: color 0.15s;
+  }
+  .back-link:hover { color: var(--primary); text-decoration: none; }
+
+  /* ── Left: Trip Details ── */
+  .trip-card {
+    background: #fff; border-radius: 20px; padding: 1.8rem;
+    box-shadow: 0 4px 24px rgba(15,23,42,0.07); border: 1.5px solid #f1f5f9;
+  }
+  .trip-card h2 { font-size: 1.4rem; font-weight: 700; color: #1f2933; margin-bottom: 1.5rem; }
+
+  .listing-thumb { display: flex; gap: 1rem; align-items: center; padding-bottom: 1.4rem; border-bottom: 1px solid #f1f5f9; margin-bottom: 1.4rem; }
+  .lt-img { width: 90px; height: 70px; border-radius: 12px; object-fit: cover; flex-shrink: 0; }
+  .lt-info h4 { font-size: 0.97rem; font-weight: 700; color: #1f2933; margin-bottom: 3px; }
+  .lt-info p  { font-size: 0.82rem; color: #6b7280; margin: 0; }
+
+  .trip-detail-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.9rem 0; border-bottom: 1px solid #f9fafb; font-size: 0.9rem;
+  }
+  .trip-detail-row:last-child { border-bottom: none; }
+  .td-label { color: #6b7280; font-weight: 500; }
+  .td-value { font-weight: 700; color: #1f2933; text-align: right; }
+  .td-dates { font-size: 0.83rem; color: #6b7280; font-weight: 400; }
+
+  /* ── Right: Price + Pay ── */
+  .pay-card {
+    background: #fff; border-radius: 20px; padding: 1.8rem;
+    box-shadow: 0 4px 24px rgba(15,23,42,0.07); border: 1.5px solid #f1f5f9;
+    position: sticky; top: 84px;
+  }
+  .pay-card h3 { font-size: 1.1rem; font-weight: 700; color: #1f2933; margin-bottom: 1.2rem; }
+
+  .pr-row { display: flex; justify-content: space-between; font-size: 0.9rem; color: #374151; margin-bottom: 0.55rem; }
+  .pr-row.fee { color: #059669; }
+  .pr-row.total {
+    font-size: 1.05rem; font-weight: 700; color: #1f2933;
+    border-top: 1.5px solid #e3e5ec; padding-top: 0.9rem; margin-top: 0.6rem; margin-bottom: 0;
+  }
+
+  .pay-divider { border: none; border-top: 1px solid #f1f5f9; margin: 1.2rem 0; }
+
+  .pay-btn {
+    width: 100%; height: 52px; background: var(--primary); color: #fff;
+    border: none; border-radius: 14px; font-size: 1rem; font-weight: 700;
+    cursor: pointer; transition: background 0.2s; letter-spacing: 0.02em;
+    margin-bottom: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .pay-btn:hover   { background: var(--primary-dark); }
+  .pay-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .pay-note { text-align: center; font-size: 0.8rem; color: #9ca3af; margin-bottom: 0.4rem; }
+  .pay-secure { display: flex; align-items: center; justify-content: center; gap: 5px; font-size: 0.78rem; color: #6b7280; }
+  .pay-secure i { color: #059669; }
+
+  /* Loading spinner overlay */
+  .pay-loading {
+    display: none; position: fixed; inset: 0;
+    background: rgba(15,23,42,0.55); z-index: 9999;
+    align-items: center; justify-content: center; flex-direction: column; gap: 1rem;
+  }
+  .pay-loading.active { display: flex; }
+  .spinner {
+    width: 48px; height: 48px; border: 4px solid rgba(255,255,255,0.3);
+    border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .pay-loading p { color: #fff; font-size: 0.95rem; font-weight: 600; }
+
+  /* Razorpay branding */
+  .rzp-logo { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 1rem; opacity: 0.55; }
+  .rzp-logo img { height: 18px; }
+  .rzp-logo span { font-size: 0.75rem; color: #6b7280; }
+</style>
+
+<!-- Loading overlay -->
+<div class="pay-loading" id="payLoading">
+  <div class="spinner"></div>
+  <p>Opening payment…</p>
+</div>
+
+<a href="/listings/<%= listing._id %>" class="back-link">
+  <i class="fa-solid fa-arrow-left"></i> Back to listing
+</a>
+
+<div class="checkout-wrapper">
+
+  <!-- ── LEFT: Trip Summary ── -->
+  <div class="trip-card">
+    <h2>Your trip summary</h2>
+
+    <!-- Listing thumbnail -->
+    <div class="listing-thumb">
+      <%
+        const DIMG = 'https://res.cloudinary.com/dgu8te3bn/image/upload/v1771003245/Homekuti_DEV/kzjbrisg2uqssvvp99a3.jpg';
+        const tImg = listing.image?.url || listing.image || DIMG;
+      %>
+      <img src="<%= tImg %>" class="lt-img" alt="<%= listing.title %>"
+        onerror="this.src='<%= DIMG %>'">
+      <div class="lt-info">
+        <h4><%= listing.title %></h4>
+        <p>📍 <%= listing.location %>, <%= listing.country %></p>
+        <% if (listing.genre) { %>
+          <p style="margin-top:3px;"><span style="background:var(--primary);color:#fff;padding:1px 9px;border-radius:999px;font-size:0.72rem;font-weight:600;"><%= listing.genre %></span></p>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- Trip details -->
+    <div class="trip-detail-row">
+      <span class="td-label">Check-in</span>
+      <div class="td-value">
+        <%= checkInDate.toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'long', year:'numeric' }) %>
+        <div class="td-dates">After 2:00 PM</div>
+      </div>
+    </div>
+
+    <div class="trip-detail-row">
+      <span class="td-label">Check-out</span>
+      <div class="td-value">
+        <%= checkOutDate.toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'long', year:'numeric' }) %>
+        <div class="td-dates">Before 11:00 AM</div>
+      </div>
+    </div>
+
+    <div class="trip-detail-row">
+      <span class="td-label">Duration</span>
+      <span class="td-value"><%= nights %> night<%= nights !== 1 ? 's' : '' %></span>
+    </div>
+
+    <div class="trip-detail-row">
+      <span class="td-label">Guests</span>
+      <span class="td-value"><%= guests %> guest<%= guests !== 1 ? 's' : '' %></span>
+    </div>
+
+    <div class="trip-detail-row">
+      <span class="td-label">Hosted by</span>
+      <span class="td-value"><%= listing.owner.username %></span>
+    </div>
+
+    <!-- Free cancellation note -->
+    <div style="margin-top:1.2rem;padding:0.9rem 1rem;background:#f0fdf4;border-radius:12px;border:1px solid #bbf7d0;">
+      <p style="margin:0;font-size:0.85rem;color:#15803d;font-weight:600;">
+        <i class="fa-solid fa-circle-check"></i> Free cancellation
+      </p>
+      <p style="margin:4px 0 0;font-size:0.8rem;color:#166534;">
+        Cancel before check-in for a full refund.
+      </p>
+    </div>
+  </div>
+
+  <!-- ── RIGHT: Price & Pay ── -->
+  <div class="pay-card">
+    <h3>Price breakdown</h3>
+
+    <div class="pr-row">
+      <span>₹<%= pricePerNight.toLocaleString('en-IN') %> × <%= nights %> night<%= nights !== 1 ? 's' : '' %></span>
+      <span>₹<%= totalPrice.toLocaleString('en-IN') %></span>
+    </div>
+    <div class="pr-row fee">
+      <span><i class="fa-solid fa-circle-info" style="font-size:0.75rem;"></i> Service fee (5%)</span>
+      <span>₹<%= serviceFee.toLocaleString('en-IN') %></span>
+    </div>
+    <div class="pr-row total">
+      <span>Total (INR)</span>
+      <span>₹<%= grandTotal.toLocaleString('en-IN') %></span>
+    </div>
+
+    <hr class="pay-divider">
+
+    <button class="pay-btn" id="payBtn">
+      <i class="fa-solid fa-lock"></i>
+      Pay ₹<%= grandTotal.toLocaleString('en-IN') %>
+    </button>
+
+    <p class="pay-note">You'll be redirected to Razorpay's secure payment page</p>
+
+    <div class="pay-secure">
+      <i class="fa-solid fa-shield-halved"></i>
+      256-bit SSL encryption · PCI DSS compliant
+    </div>
+
+    <div class="rzp-logo">
+      <span>Secured by Razorpay</span>
+    </div>
+  </div>
+</div>
+
+<!-- Razorpay SDK -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+const RZPKEY   = '<%= RAZORPAY_KEY_ID %>';
+const bookData = {
+  listingId:  '<%= listing._id %>',
+  checkIn:    '<%= checkIn %>',
+  checkOut:   '<%= checkOut %>',
+  guests:     '<%= guests %>',
+  nights:     '<%= nights %>',
+  grandTotal: '<%= grandTotal %>',
+};
+const currentUser = {
+  name:  '<%= currUser.username %>',
+  email: '<%= currUser.email %>',
+};
+const listingTitle = '<%= listing.title.replace(/'/g, "\\'") %>';
+
+const payBtn     = document.getElementById("payBtn");
+const payLoading = document.getElementById("payLoading");
+
+payBtn.addEventListener("click", async () => {
+  payBtn.disabled = true;
+  payBtn.innerHTML = '<div style="width:20px;height:20px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite;"></div> Creating order…';
+  payLoading.classList.add("active");
+
+  try {
+    // ── STEP 1: Create Razorpay order ──────────────────
+    const res = await fetch("/api/payment/create-order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        listingId: bookData.listingId,
+        checkIn:   bookData.checkIn,
+        checkOut:  bookData.checkOut,
+        guests:    bookData.guests,
+      }),
+    });
+
+    const order = await res.json();
+    payLoading.classList.remove("active");
+
+    if (!order.success) {
+      alert("❌ " + (order.message || "Could not create order. Please try again."));
+      payBtn.disabled = false;
+      payBtn.innerHTML = '<i class="fa-solid fa-lock"></i> Pay ₹<%= grandTotal.toLocaleString("en-IN") %>';
+      return;
+    }
+
+    // ── STEP 2: Open Razorpay checkout ─────────────────
+    const rzp = new Razorpay({
+      key:         RZPKEY,
+      amount:      order.amount,
+      currency:    order.currency,
+      name:        "Homekuti",
+      description: `${listingTitle} — ${order.nights} night${order.nights > 1 ? "s" : ""}`,
+      order_id:    order.orderId,
+      prefill: {
+        name:  currentUser.name,
+        email: currentUser.email,
+      },
+      theme:  { color: "#ff4b6b" },
+      notes:  {
+        listing: listingTitle,
+        checkIn: bookData.checkIn,
+        checkOut: bookData.checkOut,
+      },
+
+      // ── STEP 3: On payment success → verify ──────────
+      handler: async function (response) {
+        payLoading.classList.add("active");
+        document.querySelector("#payLoading p").textContent = "Verifying payment…";
+
+        try {
+          const vRes = await fetch("/api/payment/verify", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              razorpay_order_id:   response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature:  response.razorpay_signature,
+              listingId:   bookData.listingId,
+              checkIn:     bookData.checkIn,
+              checkOut:    bookData.checkOut,
+              guests:      bookData.guests,
+              nights:      bookData.nights,
+              grandTotal:  bookData.grandTotal,
+            }),
+          });
+
+          const result = await vRes.json();
+
+          if (result.success) {
+            document.querySelector("#payLoading p").textContent = "Booking confirmed! Redirecting…";
+            // ── STEP 4: Redirect to confirmation page ──
+            window.location.href = result.confirmationUrl;
+          } else {
+            payLoading.classList.remove("active");
+            alert("⚠️ Payment received but verification failed.\nPayment ID: " + response.razorpay_payment_id + "\nPlease contact support.");
+            payBtn.disabled = false;
+            payBtn.innerHTML = '<i class="fa-solid fa-lock"></i> Pay ₹<%= grandTotal.toLocaleString("en-IN") %>';
+          }
+        } catch (e) {
+          payLoading.classList.remove("active");
+          alert("Network error during verification. Your payment ID is: " + response.razorpay_payment_id + ". Please contact support.");
+          payBtn.disabled = false;
+          payBtn.innerHTML = '<i class="fa-solid fa-lock"></i> Pay ₹<%= grandTotal.toLocaleString("en-IN") %>';
+        }
+      },
+
+      modal: {
+        ondismiss: function () {
+          payBtn.disabled = false;
+          payBtn.innerHTML = '<i class="fa-solid fa-lock"></i> Pay ₹<%= grandTotal.toLocaleString("en-IN") %>';
+          payLoading.classList.remove("active");
+        },
+      },
+    });
+
+    rzp.on("payment.failed", function (resp) {
+      payLoading.classList.remove("active");
+      alert("Payment failed: " + (resp.error.description || "Unknown error") + "\nCode: " + resp.error.code);
+      payBtn.disabled = false;
+      payBtn.innerHTML = '<i class="fa-solid fa-lock"></i> Pay ₹<%= grandTotal.toLocaleString("en-IN") %>';
+    });
+
+    rzp.open();
+
+  } catch (err) {
+    payLoading.classList.remove("active");
+    console.error("Payment error:", err);
+    alert("Something went wrong. Please try again.");
+    payBtn.disabled = false;
+    payBtn.innerHTML = '<i class="fa-solid fa-lock"></i> Pay ₹<%= grandTotal.toLocaleString("en-IN") %>';
+  }
+});
+</script>

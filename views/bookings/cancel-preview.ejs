@@ -1,0 +1,220 @@
+<% layout('/layouts/boilerplate') -%>
+
+<style>
+  .cp-wrapper { max-width: 620px; margin: 2rem auto 4rem; }
+  .back-link { display:inline-flex;align-items:center;gap:6px;color:#6b7280;font-size:0.88rem;text-decoration:none;margin-bottom:1.5rem;transition:color 0.15s; }
+  .back-link:hover { color:var(--primary);text-decoration:none; }
+
+  /* Policy banner — changes colour by refund amount */
+  .policy-banner {
+    border-radius: 16px; padding: 1.5rem 1.6rem; margin-bottom: 1.4rem;
+    display: flex; align-items: flex-start; gap: 1rem;
+  }
+  .policy-banner.full    { background:#f0fdf4; border:1.5px solid #bbf7d0; }
+  .policy-banner.partial { background:#fffbeb; border:1.5px solid #fde68a; }
+  .policy-banner.none    { background:#fef2f2; border:1.5px solid #fecaca; }
+
+  .pb-icon {
+    width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 1.3rem;
+  }
+  .policy-banner.full    .pb-icon { background:#dcfce7; color:#16a34a; }
+  .policy-banner.partial .pb-icon { background:#fef3c7; color:#d97706; }
+  .policy-banner.none    .pb-icon { background:#fee2e2; color:#ef4444; }
+
+  .pb-label  { font-size: 1.05rem; font-weight: 800; margin-bottom: 3px; }
+  .policy-banner.full    .pb-label  { color: #14532d; }
+  .policy-banner.partial .pb-label  { color: #78350f; }
+  .policy-banner.none    .pb-label  { color: #7f1d1d; }
+  .pb-desc { font-size: 0.87rem; }
+  .policy-banner.full    .pb-desc { color: #166534; }
+  .policy-banner.partial .pb-desc { color: #92400e; }
+  .policy-banner.none    .pb-desc { color: #b91c1c; }
+
+  /* Summary card */
+  .sum-card { background:#fff; border-radius:18px; padding:1.6rem; box-shadow:0 4px 20px rgba(15,23,42,0.07); border:1.5px solid #f1f5f9; margin-bottom:1.2rem; }
+  .sum-card h3 { font-size:1rem; font-weight:700; color:#1f2933; margin-bottom:1.2rem; }
+
+  .sum-thumb { display:flex;gap:1rem;align-items:center;padding-bottom:1.1rem;border-bottom:1px solid #f1f5f9;margin-bottom:1.1rem; }
+  .st-img { width:78px;height:62px;border-radius:10px;object-fit:cover;flex-shrink:0; }
+  .st-name { font-size:0.95rem;font-weight:700;color:#1f2933;margin-bottom:3px; }
+  .st-loc  { font-size:0.8rem;color:#6b7280; }
+
+  .sr { display:flex;justify-content:space-between;font-size:0.88rem;padding:0.6rem 0;border-bottom:1px solid #f9fafb; }
+  .sr:last-child { border-bottom:none; }
+  .sr-l { color:#6b7280; }
+  .sr-v { font-weight:600;color:#1f2933; }
+
+  /* Refund breakdown */
+  .refund-box { background:#f9fafb; border-radius:12px; padding:1.1rem 1.3rem; margin-top:1rem; }
+  .rb-row { display:flex;justify-content:space-between;font-size:0.88rem;color:#374151;margin-bottom:0.45rem; }
+  .rb-row.total { font-weight:800;font-size:1.05rem;color:#1f2933;border-top:1px solid #e3e5ec;padding-top:0.7rem;margin-top:0.4rem;margin-bottom:0; }
+  .rb-strike { text-decoration:line-through;color:#9ca3af; }
+
+  /* Reason textarea */
+  .reason-wrap { margin-bottom:1.2rem; }
+  .reason-wrap label { display:block;font-size:0.87rem;font-weight:600;color:#374151;margin-bottom:6px; }
+  .reason-wrap textarea { width:100%;border:1.5px solid #e3e5ec;border-radius:10px;padding:10px 14px;font-family:inherit;font-size:0.88rem;resize:vertical;outline:none;box-sizing:border-box; }
+  .reason-wrap textarea:focus { border-color:var(--primary); }
+
+  /* Action buttons */
+  .cp-actions { display:flex;gap:10px;flex-wrap:wrap; }
+  .cp-actions a, .cp-actions button { flex:1;min-width:140px; }
+  .cancel-confirm-btn { height:48px;background:#ef4444;border:none;border-radius:12px;color:#fff;font-size:0.95rem;font-weight:700;cursor:pointer;transition:background 0.2s; }
+  .cancel-confirm-btn:hover { background:#dc2626; }
+  .keep-btn { height:48px;background:#fff;border:1.5px solid #e3e5ec;border-radius:12px;color:#374151;font-size:0.95rem;font-weight:600;cursor:pointer;text-align:center;display:flex;align-items:center;justify-content:center;text-decoration:none;transition:all 0.15s; }
+  .keep-btn:hover { border-color:var(--primary);color:var(--primary);text-decoration:none; }
+
+  /* Timeline */
+  .timeline { margin-bottom:1.4rem; }
+  .timeline h4 { font-size:0.9rem;font-weight:700;color:#374151;margin-bottom:0.9rem; }
+  .tl-item { display:flex;gap:12px;margin-bottom:0.9rem; }
+  .tl-dot { width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:4px; }
+  .tl-dot.green  { background:#16a34a; }
+  .tl-dot.yellow { background:#d97706; }
+  .tl-dot.red    { background:#ef4444; }
+  .tl-content strong { font-size:0.85rem;color:#1f2933;display:block;margin-bottom:1px; }
+  .tl-content span   { font-size:0.8rem;color:#6b7280; }
+</style>
+
+<div class="cp-wrapper">
+  <a href="/bookings/<%= booking._id %>" class="back-link">
+    <i class="fa-solid fa-arrow-left"></i> Back to booking
+  </a>
+
+  <h2 style="font-size:1.5rem;font-weight:800;color:#1f2933;margin-bottom:0.4rem;">Cancel Booking</h2>
+  <p style="color:#6b7280;font-size:0.9rem;margin-bottom:1.5rem;">Review the refund you'll receive before confirming.</p>
+
+  <!-- Policy banner -->
+  <div class="policy-banner <%= refundPolicy.percentage === 100 ? 'full' : refundPolicy.percentage === 50 ? 'partial' : 'none' %>">
+    <div class="pb-icon">
+      <% if (refundPolicy.percentage === 100) { %>
+        <i class="fa-solid fa-circle-check"></i>
+      <% } else if (refundPolicy.percentage === 50) { %>
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      <% } else { %>
+        <i class="fa-solid fa-circle-xmark"></i>
+      <% } %>
+    </div>
+    <div>
+      <div class="pb-label"><%= refundPolicy.label %></div>
+      <div class="pb-desc"><%= refundPolicy.description %></div>
+      <% if (refundAmount > 0) { %>
+        <div style="margin-top:6px;font-size:1rem;font-weight:800;">
+          ₹<%= refundAmount.toLocaleString('en-IN') %> will be refunded to your original payment method
+        </div>
+      <% } else { %>
+        <div style="margin-top:6px;font-size:0.9rem;font-weight:700;">No refund will be processed</div>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Booking summary -->
+  <div class="sum-card">
+    <h3>Booking Summary</h3>
+    <div class="sum-thumb">
+      <%
+        const DIMG = 'https://res.cloudinary.com/dgu8te3bn/image/upload/v1771003245/Homekuti_DEV/kzjbrisg2uqssvvp99a3.jpg';
+        const bImg = booking.listing?.image?.url || booking.listing?.image || DIMG;
+      %>
+      <img src="<%= bImg %>" class="st-img" alt="" onerror="this.src='<%= DIMG %>'">
+      <div>
+        <div class="st-name"><%= booking.listing?.title %></div>
+        <div class="st-loc">📍 <%= booking.listing?.location %>, <%= booking.listing?.country %></div>
+      </div>
+    </div>
+    <div class="sr"><span class="sr-l">Check-in</span>  <span class="sr-v"><%= new Date(booking.checkIn).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) %></span></div>
+    <div class="sr"><span class="sr-l">Check-out</span> <span class="sr-v"><%= new Date(booking.checkOut).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) %></span></div>
+    <div class="sr"><span class="sr-l">Duration</span>  <span class="sr-v"><%= booking.nights %> night<%= booking.nights!==1?'s':'' %></span></div>
+    <div class="sr"><span class="sr-l">Guests</span>    <span class="sr-v"><%= booking.guests %> guest<%= booking.guests!==1?'s':'' %></span></div>
+
+    <!-- Refund breakdown -->
+    <div class="refund-box">
+      <div class="rb-row">
+        <span>Amount paid</span>
+        <span>₹<%= booking.totalPrice.toLocaleString('en-IN') %></span>
+      </div>
+      <% if (refundPolicy.percentage < 100) { %>
+        <div class="rb-row">
+          <span>Cancellation fee (<%= 100 - refundPolicy.percentage %>%)</span>
+          <span style="color:#ef4444;">– ₹<%= (booking.totalPrice - refundAmount).toLocaleString('en-IN') %></span>
+        </div>
+      <% } %>
+      <div class="rb-row total">
+        <span>Your refund</span>
+        <span style="color:<%= refundAmount > 0 ? '#15803d' : '#ef4444' %>;">
+          ₹<%= refundAmount.toLocaleString('en-IN') %>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cancellation policy timeline -->
+  <div class="sum-card">
+    <div class="timeline">
+      <h4>Cancellation Policy</h4>
+      <div class="tl-item">
+        <div class="tl-dot green"></div>
+        <div class="tl-content">
+          <strong>Full Refund (100%)</strong>
+          <span>Cancel more than 48 hours before check-in</span>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot yellow"></div>
+        <div class="tl-content">
+          <strong>50% Refund</strong>
+          <span>Cancel between 24–48 hours before check-in</span>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot red"></div>
+        <div class="tl-content">
+          <strong>No Refund</strong>
+          <span>Cancel within 24 hours of check-in</span>
+        </div>
+      </div>
+    </div>
+    <p style="font-size:0.8rem;color:#6b7280;margin:0;">
+      <i class="fa-solid fa-clock"></i>
+      Refunds are processed within <strong>5–7 business days</strong> to your original payment method via Razorpay.
+    </p>
+  </div>
+
+  <!-- Confirm cancellation form -->
+  <div class="sum-card">
+    <h3>Confirm Cancellation</h3>
+    <form method="POST" action="/bookings/<%= booking._id %>/cancel"
+      onsubmit="return confirmCancel()">
+      <div class="reason-wrap">
+        <label for="reason">Reason for cancellation (optional)</label>
+        <textarea id="reason" name="reason" rows="3"
+          placeholder="e.g. Change of plans, emergency, etc."></textarea>
+      </div>
+
+      <div class="cp-actions">
+        <a href="/bookings/<%= booking._id %>" class="keep-btn">
+          <i class="fa-solid fa-arrow-left" style="margin-right:6px;"></i> Keep Booking
+        </a>
+        <button type="submit" class="cancel-confirm-btn" id="cancelBtn">
+          <i class="fa-solid fa-xmark"></i>
+          Confirm Cancellation<% if (refundAmount > 0) { %> & Refund<% } %>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <p style="font-size:0.78rem;color:#9ca3af;text-align:center;margin-top:0.5rem;">
+    <i class="fa-solid fa-shield-halved"></i>
+    Refunds are processed securely via Razorpay. For disputes, contact support with your Booking ID: <strong><%= booking._id.toString().slice(-8).toUpperCase() %></strong>
+  </p>
+</div>
+
+<script>
+function confirmCancel() {
+  const btn = document.getElementById("cancelBtn");
+  btn.disabled = true;
+  btn.textContent = "Processing…";
+  return true;
+}
+</script>

@@ -1,92 +1,275 @@
 <% layout('/layouts/boilerplate') -%>
 
-<main>
-  <div class="hk-section-header">
-    <h2>All Listings</h2>
-  </div>
+  <style>
+    .genre-bar {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 0.5rem 0 1rem;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
 
-  <div class="row row-cols-1 row-cols-sm-2 row-cols-md-2 row-cols-lg-3 row-cols-xl-3 g-3">
+    .genre-bar::-webkit-scrollbar {
+      display: none;
+    }
 
-    <% allListings.forEach(listing => { %>
+    .genre-chip {
+      flex-shrink: 0;
+      padding: 7px 16px;
+      border-radius: 999px;
+      border: 1.5px solid #e3e5ec;
+      background: #fff;
+      font-size: 0.83rem;
+      font-weight: 600;
+      color: #4b5563;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
 
-      <% 
-        // ✅ Safe image handling
-        let imageUrl = "/images/placeholder.jpg";
-        if (listing.image) {
-          if (typeof listing.image === "string") {
-            imageUrl = listing.image;
-          } else if (listing.image.url) {
-            imageUrl = listing.image.url;
-          }
-        }
-      %>
+    .genre-chip:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      text-decoration: none;
+    }
 
-      <div class="col">
-        <a href="/listings/<%= listing._id %>" class="hk-listing-link text-decoration-none">
+    .genre-chip.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
 
-          <article class="hk-stay-card">
+    .search-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 1rem;
+    }
 
-            <!-- Image -->
-            <div 
-              class="hk-stay-image"
-              style="background-image: url('<%= imageUrl %>');">
-            </div>
+    .search-bar input {
+      flex: 1;
+      border: 1.5px solid #e3e5ec;
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-size: 0.92rem;
+      font-family: inherit;
+      outline: none;
+    }
 
-            <!-- Content -->
-            <div class="hk-stay-body">
+    .search-bar input:focus {
+      border-color: var(--primary);
+    }
 
-              <p class="hk-stay-location">
-                <%= listing.location || "Unknown location" %>
-              </p>
+    .search-bar button {
+      padding: 10px 20px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.92rem;
+      transition: background 0.2s;
+    }
 
-              <p class="hk-stay-title">
-                <%= listing.title || "Untitled listing" %>
-              </p>
+    .search-bar button:hover {
+      background: var(--primary-dark);
+    }
 
-              <p class="hk-stay-meta">
-                <% if (listing.guests) { %>
-                  <%= listing.guests %> guests
-                <% } %>
+    .result-count {
+      font-size: 0.88rem;
+      color: #6b7280;
+      margin-bottom: 0.8rem;
+    }
 
-                <% if (listing.bedrooms) { %>
-                  · <%= listing.bedrooms %> bedrooms
-                <% } %>
+    .rating-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #1f2933;
+    }
 
-                <% if (listing.amenities?.length) { %>
-                  · <%= listing.amenities[0] %>
-                <% } %>
-              </p>
-              
-              <p class="hk-stay-price">
-                <span>
-                  ₹<%= listing.price ? Number(listing.price).toLocaleString("en-IN") : "N/A" %>
-                </span> /night
-              </p>
+    .rating-chip i {
+      color: #f59e0b;
+      font-size: 0.72rem;
+    }
 
-              <!-- ✅ Rating Section -->
-              <p>
-                <% if (listing.totalReviews > 0) { %>
-                  <span class="hk-stay-rating">
-                    <i class="fas fa-star"></i>
-                    <%= listing.avgRating ? listing.avgRating.toFixed(1) : "0.0" %>
-                  </span>
+    .hk-stay-image {
+      position: relative;
+    }
 
-                  <span class="hk-stay-review-count">
-                    (<%= listing.totalReviews %> reviews)
-                  </span>
-                <% } else { %>
-                  <span class="hk-stay-no-reviews">No reviews yet</span>
-                <% } %>
-              </p>
+    .genre-label {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(0, 0, 0, 0.52);
+      color: #fff;
+      padding: 2px 9px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      backdrop-filter: blur(4px);
+      z-index: 1;
+    }
+  </style>
 
-            </div>
+  <div style="margin-top:1.5rem;">
+    <h2 style="font-size:1.7rem;font-weight:700;color:#1f2933;margin-bottom:1rem;">All Listings</h2>
 
-          </article>
+    <!-- Search -->
+    <form action="/listings" method="GET" class="hk-search-pill">
 
-        </a>
+      <!-- WHERE (title + location search) -->
+      <div class="hk-search-item">
+        <label class="hk-search-label">Search</label>
+        <input type="text" name="search" placeholder="Search homestay, location…" value="<%= search %>"
+          class="hk-search-input">
+        <button type="button" id="clearSearch" class="hk-clear-icon">
+          ✕
+        </button>
       </div>
 
-    <% }) %>
+      <div class="hk-search-divider"></div>
 
+      <!-- GENRE (optional hidden if already selected) -->
+      <div class="hk-search-item">
+        <label class="hk-search-label">Genre</label>
+        <select name="genre" class="hk-search-input">
+          <option value="">Any type</option>
+          <% genres.forEach(g=> { %>
+            <option value="<%= g %>" <%=activeGenre===g ? "selected" : "" %>>
+              <%= g %>
+            </option>
+            <% }) %>
+        </select>
+      </div>
+
+      <!-- BUTTON + CLEAR -->
+      <div class="hk-search-end">
+
+        <!-- SEARCH -->
+        <button type="submit" class="hk-search-btn">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+
+        <!-- CLEAR -->
+        <% if (search || (activeGenre && activeGenre !=='all' )) { %>
+          <a href="/listings" class="hk-clear-btn" style="color: #ff4b6b;text-decoration: none;">Clear <i
+              class="fa-solid fa-filter-circle-xmark"></i></a>
+          <% } %>
+
+      </div>
+
+    </form>
+
+    <!-- Genre filter -->
+    <div class="genre-bar">
+      <a href="/listings<%= search ? '?search='+encodeURIComponent(search) : '' %>"
+        class="genre-chip <%= activeGenre === 'all' ? 'active' : '' %>">🏠 All</a>
+      <% const
+        icons={Beach:'🏖️',Mountain:'⛰️',City:'🏙️',Luxury:'💎',Budget:'💰',Heritage:'🏰',Forest:'🌲',Countryside:'🌾',Island:'🏝️',Desert:'🏜️'};
+        %>
+        <% genres.forEach(g=> { %>
+          <a href="/listings?genre=<%= g %><%= search ? '&search='+encodeURIComponent(search) : '' %>"
+            class="genre-chip <%= activeGenre === g ? 'active' : '' %>">
+            <%= icons[g] || '🏠' %>
+              <%= g %>
+          </a>
+          <% }) %>
+    </div>
+
+    <p class="result-count">
+      <% if (search || (activeGenre && activeGenre !=='all' )) { %>
+        <strong>
+          <%= allListings.length %>
+        </strong> result<%= allListings.length !==1 ? 's' : '' %>
+          <% if (search) { %> for "<em>
+              <%= search %>
+            </em>"<% } %>
+              <% if (activeGenre && activeGenre !=='all' ) { %> in <strong>
+                  <%= activeGenre %>
+                </strong>
+                <% } %>
+                  <% } else { %>
+                    <strong>
+                      <%= allListings.length %>
+                    </strong> stays available
+                    <% } %>
+    </p>
+
+    <% if (allListings.length===0) { %>
+      <div style="text-align:center;padding:4rem 0;">
+        <div style="font-size:3rem;margin-bottom:1rem;">🔍</div>
+        <h3 style="color:#4b5563;margin-bottom:0.5rem;">No listings found</h3>
+        <p style="color:#9ca3af;margin-bottom:1.5rem;">Try a different search or explore all listings.</p>
+        <a href="/listings" class="hk-btn">View All Listings</a>
+      </div>
+      <% } else { %>
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4 mb-5">
+          <% allListings.forEach(listing=> { %>
+            <div class="col">
+              <a href="/listings/<%= listing._id %>"
+                style="text-decoration:none;color:inherit;display:block;height:100%;">
+                <article class="hk-stay-card" style="height:100%;cursor:pointer;">
+                  <div class="hk-stay-image"
+                    style="background-image:url('<%= listing.image?.url || listing.image || '/images/placeholder.jpg' %>');">
+                    <% if (listing.genre) { %>
+                      <span class="genre-label">
+                        <%= listing.genre %>
+                      </span>
+                      <% } %>
+                  </div>
+                  <div class="hk-stay-body">
+                    <p class="hk-stay-location">
+                      <%= listing.location %>, <%= listing.country %>
+                    </p>
+                    <p class="hk-stay-title">
+                      <%= listing.title %>
+                    </p>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:auto;">
+                      <p class="hk-stay-price" style="margin:0;">
+                        <span>₹<%= listing.price.toLocaleString("en-IN") %></span>/night
+                      </p>
+                      <% if (listing.avgRating> 0) { %>
+                        <span class="rating-chip">
+                          <i class="fa-solid fa-star"></i>
+                          <%= listing.avgRating.toFixed(1) %>
+                            <span style="color:#9ca3af;font-weight:400;">(<%= listing.totalReviews %>)</span>
+                        </span>
+                        <% } %>
+                    </div>
+                  </div>
+                </article>
+              </a>
+            </div>
+            <% }) %>
+        </div>
+        <% } %>
   </div>
-</main>
+
+  <script>
+    const input = document.getElementById("searchInput");
+    const clearBtn = document.getElementById("clearSearch");
+
+    function toggleClear() {
+      if (input.value.trim() !== "") {
+        clearBtn.classList.add("show");
+      } else {
+        clearBtn.classList.remove("show");
+      }
+    }
+
+    clearBtn.addEventListener("click", () => {
+      input.value = "";
+      input.focus();
+      toggleClear();
+    });
+
+    input.addEventListener("input", toggleClear);
+
+    // initial state
+    toggleClear();
+  </script>

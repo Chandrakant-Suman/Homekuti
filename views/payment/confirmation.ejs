@@ -1,0 +1,211 @@
+<% layout('/layouts/boilerplate') -%>
+
+<style>
+  .conf-wrapper {
+    max-width: 640px;
+    margin: 2.5rem auto 5rem;
+  }
+
+  /* Success header */
+  .conf-hero {
+    text-align: center;
+    padding: 2.5rem 1.5rem 2rem;
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    border-radius: 20px;
+    margin-bottom: 1.5rem;
+    border: 1.5px solid #bbf7d0;
+  }
+  .conf-icon {
+    width: 72px; height: 72px;
+    background: #16a34a; color: #fff;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem; margin: 0 auto 1rem;
+    box-shadow: 0 4px 20px rgba(22,163,74,0.3);
+  }
+  .conf-hero h1 { font-size: 1.7rem; font-weight: 800; color: #14532d; margin-bottom: 0.4rem; }
+  .conf-hero p  { color: #166534; font-size: 0.95rem; margin: 0; }
+
+  /* Booking ID badge */
+  .conf-id {
+    display: inline-block;
+    background: #fff;
+    border: 1.5px solid #bbf7d0;
+    border-radius: 999px;
+    padding: 4px 16px;
+    font-size: 0.78rem;
+    color: #15803d;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    margin-top: 0.8rem;
+  }
+
+  /* Details card */
+  .conf-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 1.8rem;
+    box-shadow: 0 4px 24px rgba(15,23,42,0.07);
+    border: 1.5px solid #f1f5f9;
+    margin-bottom: 1.2rem;
+  }
+  .conf-card h3 {
+    font-size: 1rem; font-weight: 700; color: #1f2933;
+    margin-bottom: 1.2rem; display: flex; align-items: center; gap: 8px;
+  }
+
+  /* Listing row */
+  .conf-listing {
+    display: flex; gap: 1rem; align-items: center;
+    padding-bottom: 1.2rem; border-bottom: 1px solid #f1f5f9; margin-bottom: 1.2rem;
+  }
+  .cl-img { width: 84px; height: 66px; border-radius: 12px; object-fit: cover; flex-shrink: 0; }
+  .cl-name { font-size: 0.97rem; font-weight: 700; color: #1f2933; margin-bottom: 3px; }
+  .cl-loc  { font-size: 0.82rem; color: #6b7280; }
+
+  /* Detail rows */
+  .dr { display: flex; justify-content: space-between; padding: 0.7rem 0; border-bottom: 1px solid #f9fafb; font-size: 0.88rem; }
+  .dr:last-child { border-bottom: none; }
+  .dr-label { color: #6b7280; }
+  .dr-value { font-weight: 600; color: #1f2933; text-align: right; }
+
+  /* Amount highlight */
+  .amount-row {
+    background: #f0fdf4; border-radius: 12px; padding: 1rem 1.2rem;
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 0.5rem;
+  }
+  .amount-label { font-size: 0.9rem; font-weight: 600; color: #166534; }
+  .amount-value { font-size: 1.3rem; font-weight: 800; color: #15803d; }
+
+  /* Payment ID */
+  .pay-id { font-size: 0.75rem; color: #9ca3af; word-break: break-all; font-family: monospace; }
+
+  /* CTA buttons */
+  .conf-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .conf-actions a { flex: 1; min-width: 140px; text-align: center; }
+
+  /* What's next */
+  .next-card {
+    background: #fffbeb; border-radius: 16px; padding: 1.4rem 1.6rem;
+    border: 1.5px solid #fde68a; margin-bottom: 1.2rem;
+  }
+  .next-card h3 { font-size: 0.95rem; font-weight: 700; color: #92400e; margin-bottom: 0.9rem; }
+  .next-item { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 0.7rem; font-size: 0.85rem; color: #78350f; }
+  .next-item:last-child { margin-bottom: 0; }
+  .next-item i { flex-shrink: 0; margin-top: 2px; color: #d97706; }
+</style>
+
+<div class="conf-wrapper">
+
+  <!-- ── Success Hero ── -->
+  <div class="conf-hero">
+    <div class="conf-icon"><i class="fa-solid fa-check"></i></div>
+    <h1>Booking Confirmed! 🎉</h1>
+    <p>Your stay has been successfully booked. Check your email for details.</p>
+    <div class="conf-id">Booking #<%= booking._id.toString().slice(-8).toUpperCase() %></div>
+  </div>
+
+  <!-- ── Booking Details ── -->
+  <div class="conf-card">
+    <h3><i class="fa-solid fa-house" style="color:var(--primary);"></i> Your Stay</h3>
+
+    <!-- Listing thumb -->
+    <div class="conf-listing">
+      <%
+        const DIMG = 'https://res.cloudinary.com/dgu8te3bn/image/upload/v1771003245/Homekuti_DEV/kzjbrisg2uqssvvp99a3.jpg';
+        const bImg = booking.listing?.image?.url || booking.listing?.image || DIMG;
+      %>
+      <img src="<%= bImg %>" class="cl-img" alt="<%= booking.listing?.title %>"
+        onerror="this.src='<%= DIMG %>'">
+      <div>
+        <div class="cl-name"><%= booking.listing?.title %></div>
+        <div class="cl-loc">📍 <%= booking.listing?.location %>, <%= booking.listing?.country %></div>
+      </div>
+    </div>
+
+    <!-- Dates & info -->
+    <div class="dr">
+      <span class="dr-label">Check-in</span>
+      <span class="dr-value"><%= new Date(booking.checkIn).toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'long', year:'numeric' }) %></span>
+    </div>
+    <div class="dr">
+      <span class="dr-label">Check-out</span>
+      <span class="dr-value"><%= new Date(booking.checkOut).toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'long', year:'numeric' }) %></span>
+    </div>
+    <div class="dr">
+      <span class="dr-label">Duration</span>
+      <span class="dr-value"><%= booking.nights %> night<%= booking.nights !== 1 ? 's' : '' %></span>
+    </div>
+    <div class="dr">
+      <span class="dr-label">Guests</span>
+      <span class="dr-value"><%= booking.guests %> guest<%= booking.guests !== 1 ? 's' : '' %></span>
+    </div>
+
+    <!-- Amount -->
+    <div class="amount-row">
+      <span class="amount-label"><i class="fa-solid fa-circle-check"></i> Total Paid</span>
+      <span class="amount-value">₹<%= booking.totalPrice?.toLocaleString('en-IN') %></span>
+    </div>
+  </div>
+
+  <!-- ── Payment Info ── -->
+  <div class="conf-card">
+    <h3><i class="fa-solid fa-receipt" style="color:#6b7280;"></i> Payment Details</h3>
+    <div class="dr">
+      <span class="dr-label">Payment Status</span>
+      <span class="dr-value" style="color:#15803d;">
+        <i class="fa-solid fa-circle-check"></i> Paid
+      </span>
+    </div>
+    <div class="dr">
+      <span class="dr-label">Booking Status</span>
+      <span class="dr-value" style="color:#1d4ed8;">Upcoming</span>
+    </div>
+    <div class="dr">
+      <span class="dr-label">Payment ID</span>
+      <span class="dr-value"><span class="pay-id"><%= booking.razorpayPaymentId %></span></span>
+    </div>
+    <div class="dr">
+      <span class="dr-label">Booked on</span>
+      <span class="dr-value"><%= new Date(booking.createdAt).toLocaleDateString('en-IN', { day:'numeric', month:'long', year:'numeric' }) %></span>
+    </div>
+  </div>
+
+  <!-- ── What's next ── -->
+  <div class="next-card">
+    <h3>📋 What's next?</h3>
+    <div class="next-item">
+      <i class="fa-solid fa-envelope"></i>
+      <span>A confirmation has been recorded for your booking. Note your Payment ID for any disputes.</span>
+    </div>
+    <div class="next-item">
+      <i class="fa-solid fa-clock"></i>
+      <span>Check-in time is after 2:00 PM. Check-out is before 11:00 AM.</span>
+    </div>
+    <div class="next-item">
+      <i class="fa-solid fa-phone"></i>
+      <span>The host will reach out to you before your stay with check-in instructions.</span>
+    </div>
+    <div class="next-item">
+      <i class="fa-solid fa-rotate-left"></i>
+      <span>To cancel, go to My Bookings. Free cancellation applies before check-in date.</span>
+    </div>
+  </div>
+
+  <!-- ── Actions ── -->
+  <div class="conf-actions">
+    <a href="/bookings/my" class="hk-btn">
+      <i class="fa-solid fa-calendar"></i> My Bookings
+    </a>
+    <a href="/listings/<%= booking.listing?._id %>" class="hk-btn"
+      style="background:#fff;color:var(--primary);border-color:var(--primary);">
+      <i class="fa-solid fa-house"></i> View Listing
+    </a>
+    <a href="/listings" class="hk-btn"
+      style="background:#fff;color:#374151;border-color:#e3e5ec;">
+      <i class="fa-solid fa-magnifying-glass"></i> Explore More
+    </a>
+  </div>
+
+</div>

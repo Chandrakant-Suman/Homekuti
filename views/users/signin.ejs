@@ -1,86 +1,223 @@
 <% layout('/layouts/boilerplate') -%>
 
-  <div class="container mt-5">
-    <div class="row justify-content-center">
-      <div class="col-lg-6 col-md-8">
+<style>
+  .signin-wrapper {
+    min-height: calc(100vh - 72px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at top, #ffffff 0%, #f5f4f8 55%, #f1f5f9 100%);
+    padding: 2rem 1rem;
+  }
+  .signin-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 2.5rem 2.2rem;
+    width: 100%;
+    max-width: 480px;
+    box-shadow: 0 20px 60px rgba(15, 23, 42, 0.08);
+  }
+  .signin-title {
+    font-size: 2rem;
+    font-weight: 700;
+    text-align: center;
+    color: #1f2933;
+    margin-bottom: 2rem;
+  }
+  .signin-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 6px;
+    display: block;
+  }
+  .signin-input {
+    width: 100%;
+    border: 1.5px solid #e3e5ec;
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    color: #1f2933;
+    background: #fff;
+    outline: none;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+  }
+  .signin-input::placeholder { color: #9ca3af; }
+  .signin-input:focus { border-color: var(--primary); }
+  .signin-input.is-invalid { border-color: #ef4444; }
+  .mb-form { margin-bottom: 1.2rem; }
+  .signin-btn {
+    width: 100%;
+    height: 50px;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+    transition: background 0.2s;
+    margin-top: 0.5rem;
+  }
+  .signin-btn:hover { background: var(--primary-dark); }
+  .or-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 1.4rem 0;
+    color: #9ca3af;
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+  .or-divider::before, .or-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: #e3e5ec;
+  }
+  /* Google One Tap styled button */
+  .google-btn-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1rem;
+  }
+  .google-pill {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1.5px solid #e3e5ec;
+    border-radius: 10px;
+    padding: 10px 22px;
+    cursor: pointer;
+    background: #fff;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #374151;
+    transition: box-shadow 0.2s, border-color 0.2s;
+    min-width: 260px;
+    justify-content: center;
+  }
+  .google-pill:hover {
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    border-color: #bbb;
+  }
+  .google-icon {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+  }
+  .signin-footer {
+    text-align: center;
+    margin-top: 1.4rem;
+    font-size: 0.9rem;
+    color: #6b7280;
+  }
+  .signin-footer a {
+    color: var(--primary);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .signin-footer a:hover { text-decoration: underline; }
+  .invalid-msg {
+    font-size: 0.8rem;
+    color: #ef4444;
+    margin-top: 4px;
+    display: none;
+  }
+  .was-validated .signin-input:invalid + .invalid-msg { display: block; }
+</style>
 
-        <h2 class="mb-4 text-center">Sign In</h2>
+<div class="signin-wrapper">
+  <div class="signin-card">
+    <h2 class="signin-title">Sign In</h2>
 
-        <form action="/user/signin" method="POST" class="needs-validation" novalidate>
+    <form action="/user/signin" method="POST" id="signinForm" novalidate>
+      <!-- Username -->
+      <div class="mb-form">
+        <label class="signin-label" for="username">Username</label>
+        <input
+          type="text"
+          class="signin-input"
+          id="username"
+          name="username"
+          placeholder="Enter username"
+          required
+          autocomplete="username"
+        />
+        <div class="invalid-msg">Username is required.</div>
+      </div>
 
-          <!-- Username -->
-          <div class="mb-3">
-            <label class="form-label">Username</label>
+      <!-- Password -->
+      <div class="mb-form">
+        <label class="signin-label" for="password">Password</label>
+        <input
+          type="password"
+          class="signin-input"
+          id="password"
+          name="password"
+          placeholder="Enter password"
+          required
+          autocomplete="current-password"
+        />
+        <div class="invalid-msg">Password is required.</div>
+      </div>
 
-            <input type="text" class="form-control" name="username" required placeholder="Enter username">
+      <button type="submit" class="signin-btn">Sign In</button>
+    </form>
 
-            <div class="valid-feedback">Looks good!</div>
-            <div class="invalid-feedback">
-              Username is required.
-            </div>
-          </div>
+    <div class="or-divider">OR</div>
 
-
-          <!-- Password -->
-          <div class="mb-3">
-            <label class="form-label">Password</label>
-
-            <input type="password" class="form-control" name="password" required placeholder="Enter password">
-
-            <div class="valid-feedback">Ok!</div>
-            <div class="invalid-feedback">
-              Password is required.
-            </div>
-          </div>
-
-
-          <!-- Submit -->
-          <div class="d-grid mb-3">
-            <button class="hk-btn" type="submit">
-              Sign In
-            </button>
-          </div>
-
-          <!-- 🔽 GOOGLE SIGN-IN UI START -->
-
-          <div style="text-align:center; margin: 15px 0;">
-            <p>──────── OR ────────</p>
-          </div>
-
-          <div style="display:flex; justify-content:center;">
-            <div id="g_id_onload" data-client_id="1047890067243-71vcp5bsql6fhm2hq3g8grh65pqf0855.apps.googleusercontent.com" data-callback="handleGoogleLogin">
-            </div>
-
-            <div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline"
-              data-text="continue_with" data-shape="rectangular">
-            </div>
-          </div>
-
-          <!-- 🔼 GOOGLE SIGN-IN UI END -->
-
-        </form>
-
-
-
-
-        <!-- Redirect -->
-        <p class="text-center text-muted">
-          Don’t have an account?
-          <a href="/user/signup" class="text-decoration-none">
-            Sign up here
-          </a>
-        </p>
-
+    <!-- Google One Tap -->
+    <div class="google-btn-wrapper">
+      <div id="g_id_onload"
+        data-client_id="<%= process.env.GOOGLE_CLIENT_ID %>"
+        data-callback="handleGoogleLogin"
+        data-auto_select="false">
+      </div>
+      <div class="g_id_signin"
+        data-type="standard"
+        data-size="large"
+        data-theme="outline"
+        data-text="continue_with"
+        data-shape="rectangular"
+        data-width="300">
       </div>
     </div>
+
+    <div class="signin-footer">
+      Don't have an account?
+      <a href="/user/signup">Sign up here</a>
+    </div>
   </div>
+</div>
 
-  <!-- 🔽 GOOGLE SCRIPT -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-
 <script>
 function handleGoogleLogin(response) {
-  // Redirect instead of fetch
   window.location.href = `/user/google?token=${response.credential}`;
 }
+
+// Client-side validation
+document.getElementById("signinForm").addEventListener("submit", function(e) {
+  const form = this;
+  const username = document.getElementById("username");
+  const password = document.getElementById("password");
+  let valid = true;
+
+  [username, password].forEach(input => {
+    if (!input.value.trim()) {
+      input.classList.add("is-invalid");
+      input.nextElementSibling.style.display = "block";
+      valid = false;
+    } else {
+      input.classList.remove("is-invalid");
+      if (input.nextElementSibling) input.nextElementSibling.style.display = "none";
+    }
+  });
+
+  if (!valid) e.preventDefault();
+});
 </script>

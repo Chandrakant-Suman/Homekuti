@@ -1,64 +1,137 @@
 <% layout('/layouts/boilerplate') -%>
 
 <script>
-  const listing = <%- JSON.stringify(listing) %>;
+  const listing        = <%- JSON.stringify(listing) %>;
   const isDefaultLocation = <%- JSON.stringify(isDefaultLocation) %>;
-  
-  // ⭐ Pass LocationIQ API key to frontend for map tiles
-  window.LOCATIONIQ_API_KEY = '<%= process.env.LOCATIONIQ_API_KEY %>';
+  const isWishlisted   = <%- JSON.stringify(isWishlisted) %>;
 </script>
 
-<main style="max-width:900px;margin:2rem auto;padding:1rem;font-family:Inter,sans-serif;">
+<style>
+  .show-layout {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 2.5rem;
+    align-items: start;
+    margin-top: 1.5rem;
+    margin-bottom: 3rem;
+  }
+  @media (max-width: 920px) { .show-layout { grid-template-columns: 1fr; } }
 
-  <!-- Title -->
-  <h1 style="margin-top:1.2rem;font-size:2rem;font-weight:700;">
-    <%= listing.title %>
-  </h1>
+  .listing-title { font-size: 1.85rem; font-weight: 700; color: #1f2933; margin: 0; }
+  .listing-meta  { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 0.6rem 0 1.2rem; }
+  .lbadge        { padding: 4px 12px; border-radius: 999px; background: #f3f4f7; font-size: 0.78rem; font-weight: 600; color: #374151; }
+  .lbadge.genre  { background: var(--primary); color: #fff; }
 
-  <!-- Image with better error handling -->
-  <div style="border-radius:12px;overflow:hidden;width:300px;height:200px;box-shadow:0 4px 18px rgba(0,0,0,0.12);">
-    <% 
-      // Default fallback image from your Cloudinary
-      const DEFAULT_IMAGE_URL = 'https://res.cloudinary.com/dgu8te3bn/image/upload/v1771003245/Homekuti_DEV/kzjbrisg2uqssvvp99a3.jpg';
-      
-      // Determine the image URL to display
-      let imageUrl = DEFAULT_IMAGE_URL;
-      
+  .listing-img   { width: 100%; height: 380px; object-fit: cover; border-radius: 16px; display: block; box-shadow: 0 6px 28px rgba(0,0,0,0.1); margin-bottom: 1.6rem; }
+
+  .owner-row     { display: flex; align-items: center; gap: 12px; padding: 1rem 1.2rem; background: #f9fafb; border-radius: 12px; margin-bottom: 1.5rem; }
+  .o-avatar      { width: 44px; height: 44px; border-radius: 50%; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem; flex-shrink: 0; }
+  .o-info p      { margin: 0; font-size: 0.82rem; color: #6b7280; }
+  .o-info strong { font-size: 0.94rem; color: #1f2933; }
+
+  .section-title { font-size: 1.05rem; font-weight: 700; color: #1f2933; margin: 0 0 0.9rem; }
+  .section-block { margin-bottom: 1.8rem; }
+
+  .listing-actions { display: flex; gap: 10px; margin-bottom: 1.4rem; }
+
+  /* ── Booking Widget ── */
+  .bw {
+    background: #fff; border: 1.5px solid #e3e5ec; border-radius: 22px;
+    padding: 1.6rem; box-shadow: 0 8px 40px rgba(15,23,42,0.1);
+    position: sticky; top: 84px;
+  }
+  .bw-price      { font-size: 1.6rem; font-weight: 700; color: #1f2933; margin-bottom: 0.3rem; }
+  .bw-price span { font-size: 1rem; font-weight: 400; color: #6b7280; }
+  .bw-rating     { display: flex; align-items: center; gap: 5px; font-size: 0.88rem; color: #4b5563; margin-bottom: 1.3rem; }
+  .bw-rating i   { color: #f59e0b; }
+
+  /* date + guests inputs */
+  .date-grid     { display: grid; grid-template-columns: 1fr 1fr; border: 1.5px solid #e3e5ec; border-radius: 12px; overflow: hidden; margin-bottom: 0.75rem; }
+  .dc            { padding: 10px 14px; }
+  .dc:first-child { border-right: 1px solid #e3e5ec; }
+  .dc label      { display: block; font-size: 0.68rem; font-weight: 800; color: #374151; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .dc input      { border: none; outline: none; font-size: 0.88rem; font-family: inherit; color: #1f2933; width: 100%; background: transparent; cursor: pointer; }
+  .dc input::-webkit-calendar-picker-indicator { cursor: pointer; opacity: 0.6; }
+
+  .g-select      { width: 100%; border: 1.5px solid #e3e5ec; border-radius: 12px; padding: 12px 14px; font-size: 0.9rem; font-family: inherit; outline: none; color: #1f2933; background: #fff; margin-bottom: 0.9rem; cursor: pointer; }
+  .g-select:focus { border-color: var(--primary); }
+
+  /* Price breakdown */
+  .pb            { background: #f9fafb; border-radius: 12px; padding: 1rem 1.1rem; margin-bottom: 0.9rem; display: none; }
+  .pb-row        { display: flex; justify-content: space-between; font-size: 0.87rem; color: #374151; margin-bottom: 0.4rem; }
+  .pb-row.total  { font-weight: 700; font-size: 0.97rem; color: #1f2933; border-top: 1px solid #e3e5ec; padding-top: 0.6rem; margin-top: 0.4rem; margin-bottom: 0; }
+  .pb-green      { color: #059669; font-weight: 600; }
+
+  /* Reserve button */
+  .reserve-btn   { width: 100%; height: 52px; background: var(--primary); color: #fff; border: none; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: background 0.2s, opacity 0.2s; margin-bottom: 0.7rem; letter-spacing: 0.02em; }
+  .reserve-btn:hover   { background: var(--primary-dark); }
+  .reserve-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .bw-hint       { text-align: center; font-size: 0.8rem; color: #9ca3af; margin-bottom: 0.35rem; }
+  .bw-cancel     { text-align: center; font-size: 0.8rem; color: #059669; font-weight: 600; }
+
+  .bw-validation { font-size: 0.8rem; color: #ef4444; margin-bottom: 0.6rem; display: none; padding: 0.5rem 0.8rem; background: #fef2f2; border-radius: 8px; }
+
+  /* Wishlist btn */
+  .wl-btn        { background: none; border: none; cursor: pointer; font-size: 1.4rem; color: #9ca3af; transition: color 0.2s, transform 0.15s; padding: 4px; line-height: 1; }
+  .wl-btn.active { color: var(--primary); }
+  .wl-btn:hover  { transform: scale(1.2); }
+
+  /* Reviews */
+  .rv-card       { background: #f9fafb; border-radius: 14px; padding: 1rem 1.2rem; margin-bottom: 0.85rem; }
+  .rv-head       { display: flex; align-items: center; gap: 10px; margin-bottom: 0.5rem; }
+  .rv-av         { width: 36px; height: 36px; border-radius: 50%; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0; }
+</style>
+
+<div class="show-layout">
+
+  <!-- ══════════ LEFT ══════════ -->
+  <div>
+    <!-- Title row -->
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;">
+      <h1 class="listing-title"><%= listing.title %></h1>
+      <% if (currUser) { %>
+        <button class="wl-btn <%= isWishlisted ? 'active' : '' %>" id="wlBtn"
+          title="<%= isWishlisted ? 'Remove from wishlist' : 'Save' %>">
+          <i class="fa-<%= isWishlisted ? 'solid' : 'regular' %> fa-heart"></i>
+        </button>
+      <% } %>
+    </div>
+
+    <!-- Badges -->
+    <div class="listing-meta">
+      <span class="lbadge">📍 <%= listing.location %>, <%= listing.country %></span>
+      <% if (listing.genre) { %><span class="lbadge genre"><%= listing.genre %></span><% } %>
+      <% if (listing.avgRating > 0) { %>
+        <span class="lbadge">⭐ <%= listing.avgRating.toFixed(1) %> · <%= listing.totalReviews %> review<%= listing.totalReviews !== 1 ? 's' : '' %></span>
+      <% } %>
+    </div>
+
+    <!-- Hero image -->
+    <%
+      const DIMG = 'https://res.cloudinary.com/dgu8te3bn/image/upload/v1771003245/Homekuti_DEV/kzjbrisg2uqssvvp99a3.jpg';
+      let imgSrc = DIMG;
       if (listing.image) {
-        if (typeof listing.image === 'string') {
-          imageUrl = listing.image; // Old format: direct URL string
-        } else if (listing.image.url) {
-          imageUrl = listing.image.url; // New format: object with url property
-        }
+        imgSrc = typeof listing.image === 'string' ? listing.image : (listing.image.url || DIMG);
       }
     %>
-    <img src="<%= imageUrl %>" 
-         alt="<%= listing.title %>"
-         style="width:100%;height:100%;object-fit:cover;"
-         onerror="this.src='<%= DEFAULT_IMAGE_URL %>';">
-  </div>
+    <img src="<%= imgSrc %>" alt="<%= listing.title %>" class="listing-img" onerror="this.src='<%= DIMG %>'">
 
-  <!-- Owner -->
-  <p><i>Owned by <%= listing.owner.username || "Admin" %></i></p>
+    <!-- Owner -->
+    <div class="owner-row">
+      <div class="o-avatar"><%= listing.owner.username.charAt(0).toUpperCase() %></div>
+      <div class="o-info">
+        <strong>Hosted by <%= listing.owner.username %></strong>
+        <p>Owner · Member since <%= new Date(listing.owner.createdAt || Date.now()).getFullYear() %></p>
+      </div>
+    </div>
 
-  <!-- Description -->
-  <p style="margin-top:1rem;line-height:1.6;color:#444;">
-    <strong>Description:</strong>
-    <%= listing.description || "No description provided." %>
-  </p>
+    <!-- Description -->
+    <div class="section-block">
+      <h3 class="section-title">About this stay</h3>
+      <p style="color:#4b5563;line-height:1.75;font-size:0.95rem;"><%= listing.description || "No description provided." %></p>
+    </div>
 
-  <!-- Location -->
-  <p style="margin-top:1rem;color:#444;">
-    <strong>Location:</strong>
-    <%= listing.location %>, <%= listing.country %>
-  </p>
-
-  <!-- Price -->
-  <p style="font-size:1.2rem;margin:0.4rem 0;">
-    <strong>Price:</strong> ₹<%= listing.price %> / night
-  </p>
-
-  <!-- Edit/Delete -->
+    <!-- Edit/Delete -->
   <% if(currUser && currUser._id.equals(listing.owner._id)) { %>
     <div class="edit-delete-btn">
       <form method="GET" action="/listings/<%= listing._id %>/edit" class="form-no-card">
@@ -73,101 +146,276 @@
     </div>
   <% } %>
 
-  <hr style="margin:1rem 0;">
+    <hr style="border-color:#f1f5f9;margin:1.8rem 0;">
 
-  <!-- REVIEW FORM -->
-  <% if(currUser){ %>
+    <!-- Reviews -->
+    <div class="section-block">
+      <h3 class="section-title">
+        Reviews
+        <% if (listing.avgRating > 0) { %>
+          <span style="font-size:0.88rem;font-weight:400;color:#6b7280;"> · ⭐ <%= listing.avgRating.toFixed(1) %> average</span>
+        <% } %>
+      </h3>
 
-    <h4 class="mb-3">Leave a Review</h4>
+      <% if (currUser && !currUser._id.equals(listing.owner._id)) { %>
+        <form action="/listings/<%= listing._id %>/reviews" method="POST"
+          style="background:#f9fafb;padding:1.2rem;border-radius:14px;margin-bottom:1.5rem;">
+          <fieldset class="starability-coinFlip" style="border:none;padding:0;margin-bottom:0.8rem;">
+            <legend style="font-size:0.78rem;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px;">Your Rating</legend>
+            <input type="radio" id="no-rate" class="input-no-rate" name="review[rating]" value="1" checked aria-label="no rating">
+            <input type="radio" id="r1" name="review[rating]" value="1"><label for="r1">1 star</label>
+            <input type="radio" id="r2" name="review[rating]" value="2"><label for="r2">2 stars</label>
+            <input type="radio" id="r3" name="review[rating]" value="3"><label for="r3">3 stars</label>
+            <input type="radio" id="r4" name="review[rating]" value="4"><label for="r4">4 stars</label>
+            <input type="radio" id="r5" name="review[rating]" value="5"><label for="r5">5 stars</label>
+          </fieldset>
+          <textarea name="review[comment]" rows="3" required placeholder="Share your experience…"
+            style="width:100%;border:1.5px solid #e3e5ec;border-radius:10px;padding:10px 14px;font-family:inherit;font-size:0.9rem;resize:vertical;outline:none;box-sizing:border-box;margin-bottom:0.8rem;"></textarea>
+          <button type="submit" class="hk-btn" style="width:fit-content;">Submit Review</button>
+        </form>
+      <% } else if (!currUser) { %>
+        <p style="color:#6b7280;margin-bottom:1.2rem;"><a href="/user/signin">Sign in</a> to leave a review.</p>
+      <% } %>
 
-    <form action="/listings/<%= listing._id %>/reviews" method="POST" novalidate class="needs-validation">
-
-      <div class="mb-3">
-        <fieldset class="starability-coinFlip">
-          <legend class="form-label">Rating (1–5)</legend>
-
-          <input type="radio" id="no-rate" class="input-no-rate" name="review[rating]" value="1" checked>
-
-          <input type="radio" id="first-rate1" name="review[rating]" value="1">
-          <label for="first-rate1">1 star</label>
-
-          <input type="radio" id="first-rate2" name="review[rating]" value="2">
-          <label for="first-rate2">2 stars</label>
-
-          <input type="radio" id="first-rate3" name="review[rating]" value="3">
-          <label for="first-rate3">3 stars</label>
-
-          <input type="radio" id="first-rate4" name="review[rating]" value="4">
-          <label for="first-rate4">4 stars</label>
-
-          <input type="radio" id="first-rate5" name="review[rating]" value="5">
-          <label for="first-rate5">5 stars</label>
-        </fieldset>
-      </div>
-
-      <div class="mb-3">
-        <label for="comment" class="form-label">Comment</label>
-        <textarea name="review[comment]" id="comment" rows="4" class="form-control" required></textarea>
-        <div class="invalid-feedback">Please enter a comment.</div>
-      </div>
-
-      <button type="submit" class="hk-btn">Submit Review</button>
-    </form>
-
-  <% } else { %>
-    <p><a href="/user/signin">Log in</a> to leave a review.</p>
-  <% } %>
-
-  <hr style="margin:1.5rem 0;">
-
-  <!-- REVIEWS -->
-  <h4 class="mb-3">Reviews: <%= listing.reviews.length %></h4>
-
-  <% if (listing.reviews.length === 0) { %>
-    <p style="color:#777;font-style:italic;">
-      No reviews yet. Be the first to review.
-    </p>
-  <% } else { %>
-    <div class="row">
-      <% for (let review of listing.reviews) { %>
-        <div class="card col-md-5 ms-3 mb-3">
-          <div class="card-body">
-            <h5 class="card-title"><%= review.author.username %></h5>
-
-            <p class="starability-result card-text" data-rating="<%= review.rating %>">
-              Rated: <%= review.rating %> stars
-            </p>
-
-            <p class="card-text mb-1"><%= review.comment %></p>
-
-            <% if(currUser && currUser._id.equals(review.author._id)){ %>
-              <form method="POST"
-                action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE"
-                class="form-no-card mt-2">
-                <button type="submit" class="hk-btn" style="width:fit-content">
-                  Delete
+      <% if (listing.reviews.length === 0) { %>
+        <p style="color:#9ca3af;font-style:italic;">No reviews yet — be the first!</p>
+      <% } else { %>
+        <% for (let rv of listing.reviews) { %>
+          <div class="rv-card">
+            <div class="rv-head">
+              <div class="rv-av"><%= rv.author.username.charAt(0).toUpperCase() %></div>
+              <div>
+                <strong style="font-size:0.9rem;"><%= rv.author.username %></strong>
+                <div class="starability-result" data-rating="<%= rv.rating %>">Rated: <%= rv.rating %> stars</div>
+              </div>
+            </div>
+            <p style="color:#4b5563;font-size:0.88rem;margin:0;line-height:1.65;"><%= rv.comment %></p>
+            <% if (currUser && (currUser._id.equals(rv.author._id) || currUser.role === 'admin')) { %>
+              <form method="POST" action="/listings/<%= listing._id %>/reviews/<%= rv._id %>?_method=DELETE" style="margin-top:0.6rem;">
+                <button type="submit" style="background:none;border:none;color:#ef4444;font-size:0.8rem;font-weight:600;cursor:pointer;padding:0;" data-no-disable="true">
+                  <i class="fa-solid fa-trash-can"></i> Delete
                 </button>
               </form>
             <% } %>
           </div>
-        </div>
+        <% } %>
       <% } %>
     </div>
-  <% } %>
 
-  <!-- MAP -->
-  <div class="mb-3">
-    <h4 class="mb-1">Where you'll be</h4>
-
-    <% if(isDefaultLocation){ %>
-      <p style="font-size:0.85rem;color:#888;margin:0;">
-        📍 Approximate location shown — exact address available after booking.
-      </p>
-    <% } %>
-
-    <div id="map" style="height:400px; border-radius:12px; border: 1.5px solid black;"></div>
+    <!-- Map -->
+    <div class="section-block">
+      <h3 class="section-title">Where you'll be</h3>
+      <% if (isDefaultLocation) { %>
+        <p style="font-size:0.8rem;color:#9ca3af;margin-bottom:8px;">📍 Approximate location — exact address shared after booking.</p>
+      <% } %>
+      <div id="map" style="height:380px;border-radius:14px;border:1.5px solid #e3e5ec;"></div>
+    </div>
   </div>
 
-</main>
+  <!-- ══════════ RIGHT — BOOKING WIDGET ══════════ -->
+  <div>
+    <div class="bw">
+      <div class="bw-price">
+        ₹<%= listing.price.toLocaleString("en-IN") %> <span>/ night</span>
+      </div>
+      <% if (listing.avgRating > 0) { %>
+        <div class="bw-rating">
+          <i class="fa-solid fa-star"></i>
+          <strong><%= listing.avgRating.toFixed(1) %></strong>
+          &nbsp;·&nbsp; <%= listing.totalReviews %> review<%= listing.totalReviews !== 1 ? 's' : '' %>
+        </div>
+      <% } %>
+
+      <% if (currUser) { %>
+
+        <!-- Validation message -->
+        <div class="bw-validation" id="bwError"></div>
+
+        <!-- Date Picker -->
+        <div class="date-grid">
+          <div class="dc">
+            <label for="checkIn">Check-in</label>
+            <input type="date" id="checkIn"
+              min="<%= new Date().toISOString().split('T')[0] %>"
+              placeholder="Add date">
+          </div>
+          <div class="dc">
+            <label for="checkOut">Check-out</label>
+            <input type="date" id="checkOut"
+              min="<%= new Date().toISOString().split('T')[0] %>"
+              placeholder="Add date">
+          </div>
+        </div>
+
+        <!-- Guests -->
+        <select class="g-select" id="guestsSelect">
+          <option value="">Add guests</option>
+          <option value="1">1 guest</option>
+          <option value="2">2 guests</option>
+          <option value="3">3 guests</option>
+          <option value="4">4 guests</option>
+        </select>
+
+        <!-- Price breakdown (shown when dates selected) -->
+        <div class="pb" id="priceBox">
+          <div class="pb-row">
+            <span id="pb-nights-label">—</span>
+            <span id="pb-nights-amt">—</span>
+          </div>
+          <div class="pb-row pb-green">
+            <span>Service fee (5%)</span>
+            <span id="pb-fee">—</span>
+          </div>
+          <div class="pb-row total">
+            <span>Total</span>
+            <span id="pb-total">—</span>
+          </div>
+        </div>
+
+        <!-- Reserve button → redirects to /checkout -->
+        <button class="reserve-btn" id="reserveBtn" disabled>Reserve</button>
+        <p class="bw-hint">You won't be charged yet</p>
+        <p class="bw-cancel">✓ Free cancellation</p>
+
+      <% } else { %>
+
+        <div style="text-align:center;padding:0.5rem 0 1rem;">
+          <p style="font-size:0.88rem;color:#6b7280;margin-bottom:1rem;">Sign in to check availability & book</p>
+        </div>
+        <a href="/user/signin" class="reserve-btn"
+          style="display:flex;align-items:center;justify-content:center;text-decoration:none;">
+          Sign in to Book
+        </a>
+        <p class="bw-hint" style="margin-top:0.7rem;">Free to create an account</p>
+
+      <% } %>
+    </div>
+  </div>
+
+</div>
 
 <script src="/js/map.js"></script>
+<script>
+// ── Wishlist ─────────────────────────────────────────────
+const wlBtn = document.getElementById("wlBtn");
+if (wlBtn) {
+  wlBtn.addEventListener("click", async () => {
+    try {
+      const r    = await fetch(`/user/wishlist/${listing._id}`, { method: "POST" });
+      const data = await r.json();
+      if (data.success) {
+        wlBtn.classList.toggle("active", data.wishlisted);
+        wlBtn.querySelector("i").className = data.wishlisted ? "fa-solid fa-heart" : "fa-regular fa-heart";
+        wlBtn.title = data.wishlisted ? "Remove from wishlist" : "Save";
+      }
+    } catch (e) { console.error(e); }
+  });
+}
+
+// ── Booking Widget ───────────────────────────────────────
+const ciEl      = document.getElementById("checkIn");
+const coEl      = document.getElementById("checkOut");
+const gEl       = document.getElementById("guestsSelect");
+const priceBox  = document.getElementById("priceBox");
+const reserveBtn = document.getElementById("reserveBtn");
+const bwError   = document.getElementById("bwError");
+
+if (ciEl) {
+  const ppp = listing.price;   // price per night
+
+  function fmt(n) { return "₹" + n.toLocaleString("en-IN"); }
+
+  function showError(msg) {
+    bwError.textContent = msg;
+    bwError.style.display = "block";
+  }
+  function clearError() {
+    bwError.style.display = "none";
+    bwError.textContent = "";
+  }
+
+  function updateWidget() {
+    clearError();
+    const ci = ciEl.value, co = coEl.value, guests = gEl.value;
+
+    if (!ci || !co) {
+      priceBox.style.display = "none";
+      reserveBtn.disabled = true;
+      reserveBtn.textContent = "Reserve";
+      return;
+    }
+
+    const ciD = new Date(ci), coD = new Date(co);
+
+    if (coD <= ciD) {
+      showError("Check-out must be after check-in.");
+      priceBox.style.display = "none";
+      reserveBtn.disabled = true;
+      return;
+    }
+
+    const nights = Math.ceil((coD - ciD) / 86400000);
+
+    if (nights > 7) {
+      showError("Maximum stay is 7 nights.");
+      priceBox.style.display = "none";
+      reserveBtn.disabled = true;
+      return;
+    }
+
+    // Show breakdown
+    const base  = nights * ppp;
+    const fee   = Math.round(base * 0.05);
+    const total = base + fee;
+
+    document.getElementById("pb-nights-label").textContent = `${fmt(ppp)} × ${nights} night${nights > 1 ? "s" : ""}`;
+    document.getElementById("pb-nights-amt").textContent   = fmt(base);
+    document.getElementById("pb-fee").textContent          = fmt(fee);
+    document.getElementById("pb-total").textContent        = fmt(total);
+    priceBox.style.display = "block";
+
+    reserveBtn.disabled = !guests;
+    reserveBtn.textContent = guests ? "Reserve" : "Select guests";
+  }
+
+  ciEl.addEventListener("change", () => {
+    // Auto-set checkout min to day after checkin
+    const next = new Date(ciEl.value);
+    next.setDate(next.getDate() + 1);
+    coEl.min = next.toISOString().split("T")[0];
+    // Clear checkout if it's now invalid
+    if (coEl.value && new Date(coEl.value) <= new Date(ciEl.value)) {
+      coEl.value = "";
+    }
+    updateWidget();
+  });
+
+  coEl.addEventListener("change", updateWidget);
+  gEl.addEventListener("change", updateWidget);
+
+  // ── Reserve: redirect to /checkout page ──────────────
+  reserveBtn.addEventListener("click", () => {
+    const ci = ciEl.value, co = coEl.value, g = gEl.value;
+
+    if (!ci || !co || !g) {
+      showError("Please fill in all fields above.");
+      return;
+    }
+
+    const nights = Math.ceil((new Date(co) - new Date(ci)) / 86400000);
+    if (nights < 1 || nights > 7) {
+      showError("Stay must be between 1 and 7 nights.");
+      return;
+    }
+
+    // Redirect to dedicated checkout page
+    const params = new URLSearchParams({
+      listingId: listing._id,
+      checkIn:   ci,
+      checkOut:  co,
+      guests:    g,
+    });
+    window.location.href = `/api/payment/checkout?${params}`;
+  });
+}
+</script>

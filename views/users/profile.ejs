@@ -1,0 +1,126 @@
+<% layout('/layouts/boilerplate') -%>
+
+<style>
+  .profile-layout { display: grid; grid-template-columns: 280px 1fr; gap: 2rem; margin-top: 2rem; }
+  @media (max-width: 768px) { .profile-layout { grid-template-columns: 1fr; } }
+
+  .profile-sidebar {
+    background: #fff; border-radius: 20px; padding: 2rem;
+    box-shadow: 0 8px 30px rgba(15,23,42,0.07); text-align: center; height: fit-content;
+  }
+  .profile-avatar {
+    width: 80px; height: 80px; border-radius: 50%;
+    background: var(--primary); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem; font-weight: 700; margin: 0 auto 1rem;
+  }
+  .profile-name { font-size: 1.2rem; font-weight: 700; color: #1f2933; margin-bottom: 4px; }
+  .profile-email { font-size: 0.85rem; color: #6b7280; margin-bottom: 1rem; }
+  .profile-role { display: inline-block; padding: 4px 14px; border-radius: 999px; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1.2rem; }
+  .role-user { background: #eff6ff; color: #1d4ed8; }
+  .role-owner { background: #f0fdf4; color: #15803d; }
+  .role-admin { background: #fef3c7; color: #92400e; }
+  .profile-stat { display: flex; justify-content: space-around; border-top: 1px solid #f1f5f9; padding-top: 1rem; margin-top: 0.5rem; }
+  .stat-item { text-align: center; }
+  .stat-num { font-size: 1.4rem; font-weight: 700; color: #1f2933; }
+  .stat-label { font-size: 0.78rem; color: #6b7280; }
+
+  .profile-main { display: flex; flex-direction: column; gap: 1.5rem; }
+  .section-card { background: #fff; border-radius: 20px; padding: 1.8rem; box-shadow: 0 8px 30px rgba(15,23,42,0.07); }
+  .section-card h3 { font-size: 1.1rem; font-weight: 700; color: #1f2933; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 8px; }
+
+  .wishlist-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; }
+  .wishlist-item { border-radius: 12px; overflow: hidden; border: 1.5px solid #e3e5ec; transition: box-shadow 0.15s; text-decoration: none; color: inherit; display: block; }
+  .wishlist-item:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.08); text-decoration: none; }
+  .wishlist-img { width: 100%; height: 110px; object-fit: cover; }
+  .wishlist-body { padding: 0.7rem; }
+  .wishlist-title { font-size: 0.85rem; font-weight: 600; color: #1f2933; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .wishlist-price { font-size: 0.8rem; color: #6b7280; }
+
+  .empty-msg { color: #9ca3af; font-size: 0.9rem; font-style: italic; }
+</style>
+
+<div class="profile-layout">
+  <!-- Sidebar -->
+  <div class="profile-sidebar">
+    <% if (user.avatar) { %>
+      <img src="<%= user.avatar %>" alt="Avatar" style="width:80px;height:80px;border-radius:50%;object-fit:cover;margin:0 auto 1rem;display:block;">
+    <% } else { %>
+      <div class="profile-avatar"><%= user.username.charAt(0).toUpperCase() %></div>
+    <% } %>
+    <div class="profile-name"><%= user.username %></div>
+    <div class="profile-email"><%= user.email %></div>
+    <span class="profile-role role-<%= user.role %>"><%= user.role %></span>
+
+    <div class="profile-stat">
+      <div class="stat-item">
+        <div class="stat-num"><%= user.bookings?.length || 0 %></div>
+        <div class="stat-label">Bookings</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num"><%= user.wishlist?.length || 0 %></div>
+        <div class="stat-label">Saved</div>
+      </div>
+    </div>
+
+    <div style="margin-top:1.5rem;display:flex;flex-direction:column;gap:8px;">
+      <a href="/bookings/my" class="hk-btn" style="width:100%;text-align:center;">My Bookings</a>
+      <a href="/listings/new" class="hk-btn" style="width:100%;text-align:center;background:#fff;color:var(--primary);">Add a Listing</a>
+      <% if (user.role === 'admin') { %>
+        <a href="/admin/dashboard" class="hk-btn" style="width:100%;text-align:center;background:#fef3c7;color:#92400e;border-color:#fcd34d;">Admin Panel</a>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <div class="profile-main">
+    <!-- Wishlist -->
+    <div class="section-card">
+      <h3><i class="fa-solid fa-heart" style="color:var(--primary);"></i> Saved Stays</h3>
+      <% if (!user.wishlist || user.wishlist.length === 0) { %>
+        <p class="empty-msg">No saved stays yet. Heart a listing to save it!</p>
+      <% } else { %>
+        <div class="wishlist-grid">
+          <% user.wishlist.forEach(listing => { %>
+            <% if (listing && listing._id) { %>
+              <a href="/listings/<%= listing._id %>" class="wishlist-item">
+                <img src="<%= listing.image?.url || listing.image || '/images/placeholder.jpg' %>"
+                  class="wishlist-img" alt="<%= listing.title %>"
+                  onerror="this.src='/images/placeholder.jpg'">
+                <div class="wishlist-body">
+                  <div class="wishlist-title"><%= listing.title %></div>
+                  <div class="wishlist-price">₹<%= listing.price?.toLocaleString('en-IN') %>/night</div>
+                </div>
+              </a>
+            <% } %>
+          <% }) %>
+        </div>
+      <% } %>
+    </div>
+
+    <!-- Account info -->
+    <div class="section-card">
+      <h3><i class="fa-solid fa-circle-info" style="color:#6b7280;"></i> Account Info</h3>
+      <div style="display:flex;flex-direction:column;gap:0.8rem;">
+        <div style="display:flex;justify-content:space-between;padding:0.6rem 0;border-bottom:1px solid #f1f5f9;">
+          <span style="color:#6b7280;font-size:0.9rem;">Username</span>
+          <span style="font-weight:600;color:#1f2933;font-size:0.9rem;"><%= user.username %></span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:0.6rem 0;border-bottom:1px solid #f1f5f9;">
+          <span style="color:#6b7280;font-size:0.9rem;">Email</span>
+          <span style="font-weight:600;color:#1f2933;font-size:0.9rem;"><%= user.email %></span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:0.6rem 0;border-bottom:1px solid #f1f5f9;">
+          <span style="color:#6b7280;font-size:0.9rem;">Role</span>
+          <span style="font-weight:600;color:#1f2933;font-size:0.9rem;text-transform:capitalize;"><%= user.role %></span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:0.6rem 0;">
+          <span style="color:#6b7280;font-size:0.9rem;">Member since</span>
+          <span style="font-weight:600;color:#1f2933;font-size:0.9rem;">
+            <%= new Date(user.createdAt).toLocaleDateString('en-IN', {month:'long', year:'numeric'}) %>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

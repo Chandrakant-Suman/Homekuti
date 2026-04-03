@@ -1,105 +1,206 @@
 <% layout('/layouts/boilerplate') -%>
 
 <style>
-  .detail-card {
-    background: #fff; border-radius: 20px; padding: 2.5rem;
-    box-shadow: 0 8px 40px rgba(15,23,42,0.08); max-width: 680px; margin: 2rem auto;
+  .bd-wrapper { max-width: 680px; margin: 2rem auto 4rem; }
+  .back-link { display:inline-flex;align-items:center;gap:6px;color:#6b7280;font-size:0.88rem;text-decoration:none;margin-bottom:1.4rem;transition:color 0.15s; }
+  .back-link:hover { color:var(--primary);text-decoration:none; }
+
+  .bd-card { background:#fff;border-radius:20px;padding:1.8rem;box-shadow:0 4px 24px rgba(15,23,42,0.07);border:1.5px solid #f1f5f9;margin-bottom:1.2rem; }
+  .bd-card h3 { font-size:1rem;font-weight:700;color:#1f2933;margin-bottom:1.2rem;display:flex;align-items:center;gap:8px; }
+
+  .listing-banner { display:flex;gap:1rem;align-items:center;margin-bottom:1.2rem;padding-bottom:1.2rem;border-bottom:1px solid #f1f5f9; }
+  .lb-img { width:88px;height:70px;border-radius:12px;object-fit:cover;flex-shrink:0; }
+  .lb-title { font-size:1rem;font-weight:700;color:#1f2933;margin-bottom:3px; }
+  .lb-loc   { font-size:0.82rem;color:#6b7280; }
+
+  .dr { display:flex;justify-content:space-between;padding:0.75rem 0;border-bottom:1px solid #f9fafb;font-size:0.9rem; }
+  .dr:last-child { border-bottom:none; }
+  .dr-l { color:#6b7280; }
+  .dr-v { font-weight:600;color:#1f2933;text-align:right; }
+
+  /* Status badges */
+  .sbadge { display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:999px;font-size:0.78rem;font-weight:700; }
+  .sb-upcoming  { background:#eff6ff;color:#1d4ed8; }
+  .sb-cancelled { background:#f9fafb;color:#6b7280; }
+  .sb-unavailable { background:#fef2f2;color:#b91c1c; }
+  .sb-completed { background:#f3f4f6;color:#374151; }
+  .sb-paid      { background:#f0fdf4;color:#15803d; }
+  .sb-refund_initiated { background:#fffbeb;color:#d97706; }
+  .sb-refunded  { background:#f0fdf4;color:#15803d; }
+  .sb-refund_failed { background:#fef2f2;color:#b91c1c; }
+
+  /* Refund status card */
+  .refund-status {
+    border-radius: 14px; padding: 1.2rem 1.4rem; margin-top: 0.5rem;
+    display: flex; gap: 12px; align-items: flex-start;
   }
-  .detail-title { font-size: 1.6rem; font-weight: 700; color: #1f2933; margin-bottom: 1.5rem; }
-  .detail-row { display: flex; justify-content: space-between; padding: 0.8rem 0; border-bottom: 1px solid #f1f5f9; font-size: 0.95rem; }
-  .detail-row:last-child { border-bottom: none; }
-  .detail-label { color: #6b7280; font-weight: 500; }
-  .detail-value { font-weight: 600; color: #1f2933; text-align: right; }
-  .status-badge { display: inline-block; padding: 4px 14px; border-radius: 999px; font-size: 0.8rem; font-weight: 700; }
-  .status-paid { background: #f0fdf4; color: #15803d; }
-  .status-upcoming { background: #eff6ff; color: #1d4ed8; }
-  .status-cancelled { background: #fef2f2; color: #b91c1c; }
-  .listing-preview { border-radius: 14px; overflow: hidden; margin-bottom: 1.5rem; position: relative; }
-  .listing-preview img { width: 100%; height: 180px; object-fit: cover; }
-  .listing-preview-overlay { position: absolute; bottom: 0; left: 0; right: 0; padding: 1rem; background: linear-gradient(transparent, rgba(0,0,0,0.6)); color: #fff; }
-  .razorpay-id { font-size: 0.75rem; color: #9ca3af; word-break: break-all; }
+  .rs-processing { background:#fffbeb;border:1.5px solid #fde68a; }
+  .rs-done       { background:#f0fdf4;border:1.5px solid #bbf7d0; }
+  .rs-failed     { background:#fef2f2;border:1.5px solid #fecaca; }
+  .rs-icon { font-size:1.4rem;flex-shrink:0;margin-top:2px; }
+  .rs-title  { font-size:0.9rem;font-weight:700;margin-bottom:3px; }
+  .rs-desc   { font-size:0.82rem; }
+  .rs-processing .rs-title { color:#92400e; }
+  .rs-processing .rs-desc  { color:#a16207; }
+  .rs-done .rs-title       { color:#14532d; }
+  .rs-done .rs-desc        { color:#166534; }
+  .rs-failed .rs-title     { color:#7f1d1d; }
+  .rs-failed .rs-desc      { color:#b91c1c; }
+
+  /* Action buttons */
+  .bd-actions { display:flex;gap:10px;flex-wrap:wrap;margin-top:0.5rem; }
+  .bd-actions a, .bd-actions button { flex:1;min-width:130px;text-align:center; }
+  .danger-btn { height:42px;background:none;border:1.5px solid #fca5a5;border-radius:10px;color:#ef4444;font-weight:600;font-size:0.88rem;cursor:pointer;transition:all 0.15s;flex:1; }
+  .danger-btn:hover { background:#ef4444;color:#fff; }
+
+  /* Payment ID */
+  .pay-id { font-size:0.75rem;color:#9ca3af;font-family:monospace;word-break:break-all; }
 </style>
 
-<div class="detail-card">
-  <a href="/bookings/my" style="color:#6b7280;font-size:0.88rem;display:inline-flex;align-items:center;gap:6px;margin-bottom:1.2rem;text-decoration:none;">
-    <i class="fa-solid fa-arrow-left"></i> Back to My Bookings
+<div class="bd-wrapper">
+  <a href="/bookings/my" class="back-link">
+    <i class="fa-solid fa-arrow-left"></i> My Bookings
   </a>
 
-  <h2 class="detail-title">Booking Details</h2>
-
-  <!-- Listing preview -->
-  <% if (booking.listing) { %>
-    <div class="listing-preview">
-      <img src="<%= booking.listing.image?.url || booking.listing.image || '/images/placeholder.jpg' %>"
-        alt="<%= booking.listing.title %>">
-      <div class="listing-preview-overlay">
-        <a href="/listings/<%= booking.listing._id %>" style="color:#fff;font-weight:700;font-size:1.05rem;text-decoration:none;">
-          <%= booking.listing.title %>
+  <!-- Listing + key info -->
+  <div class="bd-card">
+    <div class="listing-banner">
+      <%
+        const DIMG = 'https://res.cloudinary.com/dgu8te3bn/image/upload/v1771003245/Homekuti_DEV/kzjbrisg2uqssvvp99a3.jpg';
+        const bImg = booking.listing?.image?.url || booking.listing?.image || DIMG;
+      %>
+      <img src="<%= bImg %>" class="lb-img" alt="" onerror="this.src='<%= DIMG %>'">
+      <div>
+        <a href="/listings/<%= booking.listing?._id %>" style="text-decoration:none;">
+          <div class="lb-title"><%= booking.listing?.title %></div>
         </a>
-        <p style="margin:2px 0 0;font-size:0.85rem;opacity:0.85;">
-          <%= booking.listing.location %>, <%= booking.listing.country %>
-        </p>
+        <div class="lb-loc">📍 <%= booking.listing?.location %>, <%= booking.listing?.country %></div>
       </div>
+    </div>
+
+    <div class="dr"><span class="dr-l">Check-in</span>  <span class="dr-v"><%= new Date(booking.checkIn).toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'long',year:'numeric'}) %></span></div>
+    <div class="dr"><span class="dr-l">Check-out</span> <span class="dr-v"><%= new Date(booking.checkOut).toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'long',year:'numeric'}) %></span></div>
+    <div class="dr"><span class="dr-l">Duration</span>  <span class="dr-v"><%= booking.nights %> night<%= booking.nights!==1?'s':'' %></span></div>
+    <div class="dr"><span class="dr-l">Guests</span>    <span class="dr-v"><%= booking.guests %> guest<%= booking.guests!==1?'s':'' %></span></div>
+    <div class="dr">
+      <span class="dr-l">Booking Status</span>
+      <span class="dr-v"><span class="sbadge sb-<%= booking.status %>"><%= booking.status %></span></span>
+    </div>
+  </div>
+
+  <!-- Payment & Refund card -->
+  <div class="bd-card">
+    <h3><i class="fa-solid fa-receipt" style="color:#6b7280;"></i> Payment & Refund</h3>
+
+    <div class="dr">
+      <span class="dr-l">Amount Paid</span>
+      <span class="dr-v" style="font-size:1.05rem;">₹<%= booking.totalPrice.toLocaleString('en-IN') %></span>
+    </div>
+    <div class="dr">
+      <span class="dr-l">Payment Status</span>
+      <span class="dr-v"><span class="sbadge sb-<%= booking.paymentStatus %>"><%= booking.paymentStatus.replace(/_/g,' ') %></span></span>
+    </div>
+
+    <% if (booking.razorpayPaymentId) { %>
+      <div class="dr">
+        <span class="dr-l">Payment ID</span>
+        <span class="dr-v"><span class="pay-id"><%= booking.razorpayPaymentId %></span></span>
+      </div>
+    <% } %>
+
+    <!-- Refund status block -->
+    <% if (booking.refund && booking.refund.amount) { %>
+      <div class="refund-status <%= booking.refund.status === 'processed' ? 'rs-done' : booking.refund.status === 'failed' ? 'rs-failed' : 'rs-processing' %>">
+        <div class="rs-icon">
+          <% if (booking.refund.status === 'processed') { %>🎉
+          <% } else if (booking.refund.status === 'failed') { %>⚠️
+          <% } else { %>⏳<% } %>
+        </div>
+        <div>
+          <div class="rs-title">
+            <% if (booking.refund.status === 'processed') { %>
+              Refund Completed — ₹<%= booking.refund.amount.toLocaleString('en-IN') %> returned
+            <% } else if (booking.refund.status === 'failed') { %>
+              Refund Failed — Manual processing in progress
+            <% } else { %>
+              Refund Initiated — ₹<%= booking.refund.amount.toLocaleString('en-IN') %>
+            <% } %>
+          </div>
+          <div class="rs-desc">
+            <% if (booking.refund.status === 'processed') { %>
+              Refunded on <%= new Date(booking.refund.processedAt).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'}) %>.
+              Refund ID: <span style="font-family:monospace;font-size:0.78rem;"><%= booking.refund.razorpayRefundId %></span>
+            <% } else if (booking.refund.status === 'failed') { %>
+              Our team has been notified and will process your refund manually within 3–5 business days.
+              Contact support with Booking ID: <strong><%= booking._id.toString().slice(-8).toUpperCase() %></strong>
+            <% } else { %>
+              Initiated <%= new Date(booking.refund.initiatedAt).toLocaleDateString('en-IN',{day:'numeric',month:'long'}) %>.
+              Expect the amount in your account within 5–7 business days via Razorpay.
+              Refund ID: <span style="font-family:monospace;font-size:0.78rem;"><%= booking.refund.razorpayRefundId || 'Pending' %></span>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- Cancellation details (if cancelled) -->
+  <% if (booking.cancellation?.cancelledAt) { %>
+    <div class="bd-card">
+      <h3><i class="fa-solid fa-xmark-circle" style="color:#ef4444;"></i> Cancellation Details</h3>
+      <div class="dr"><span class="dr-l">Cancelled by</span>    <span class="dr-v" style="text-transform:capitalize;"><%= booking.cancellation.cancelledBy %></span></div>
+      <div class="dr"><span class="dr-l">Cancelled on</span>    <span class="dr-v"><%= new Date(booking.cancellation.cancelledAt).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'}) %></span></div>
+      <div class="dr"><span class="dr-l">Policy applied</span>  <span class="dr-v" style="text-transform:capitalize;"><%= booking.cancellation.policyApplied %> refund</span></div>
+      <% if (booking.cancellation.reason) { %>
+        <div class="dr"><span class="dr-l">Reason</span><span class="dr-v" style="max-width:300px;word-break:break-word;"><%= booking.cancellation.reason %></span></div>
+      <% } %>
     </div>
   <% } %>
 
-  <!-- Booking info -->
-  <div>
-    <div class="detail-row">
-      <span class="detail-label">Booking ID</span>
-      <span class="detail-value razorpay-id"><%= booking._id %></span>
+  <!-- Actions -->
+  <div class="bd-card">
+    <div class="bd-actions">
+      <a href="/listings/<%= booking.listing?._id %>" class="hk-btn" style="background:#fff;color:var(--primary);border-color:var(--primary);">
+        <i class="fa-solid fa-house"></i> View Listing
+      </a>
+      <% if (booking.status === 'upcoming' && booking.paymentStatus === 'paid') { %>
+        <a href="/bookings/<%= booking._id %>/cancel-preview" class="danger-btn" style="display:flex;align-items:center;justify-content:center;text-decoration:none;">
+          <i class="fa-solid fa-xmark" style="margin-right:5px;"></i> Cancel & Get Refund
+        </a>
+      <% } %>
     </div>
-    <div class="detail-row">
-      <span class="detail-label">Check-in</span>
-      <span class="detail-value"><%= new Date(booking.checkIn).toLocaleDateString('en-IN', {weekday:'short', day:'numeric', month:'long', year:'numeric'}) %></span>
-    </div>
-    <div class="detail-row">
-      <span class="detail-label">Check-out</span>
-      <span class="detail-value"><%= new Date(booking.checkOut).toLocaleDateString('en-IN', {weekday:'short', day:'numeric', month:'long', year:'numeric'}) %></span>
-    </div>
-    <div class="detail-row">
-      <span class="detail-label">Duration</span>
-      <span class="detail-value"><%= booking.nights %> night<%= booking.nights !== 1 ? 's' : '' %></span>
-    </div>
-    <div class="detail-row">
-      <span class="detail-label">Guests</span>
-      <span class="detail-value"><%= booking.guests %> guest<%= booking.guests !== 1 ? 's' : '' %></span>
-    </div>
-    <div class="detail-row">
-      <span class="detail-label">Total Paid</span>
-      <span class="detail-value" style="font-size:1.15rem;color:var(--primary);">₹<%= booking.totalPrice?.toLocaleString('en-IN') %></span>
-    </div>
-    <div class="detail-row">
-      <span class="detail-label">Payment Status</span>
-      <span class="detail-value">
-        <span class="status-badge status-<%= booking.paymentStatus %>"><%= booking.paymentStatus %></span>
-      </span>
-    </div>
-    <div class="detail-row">
-      <span class="detail-label">Booking Status</span>
-      <span class="detail-value">
-        <span class="status-badge status-<%= booking.status %>"><%= booking.status %></span>
-      </span>
-    </div>
-    <% if (booking.razorpayPaymentId) { %>
-      <div class="detail-row">
-        <span class="detail-label">Razorpay Payment ID</span>
-        <span class="detail-value razorpay-id"><%= booking.razorpayPaymentId %></span>
+
+    <% if (booking.status === 'unavailable') { %>
+      <div style="margin-top:1rem;padding:0.9rem 1rem;background:#fef2f2;border-radius:10px;border:1px solid #fecaca;">
+        <p style="margin:0;font-size:0.85rem;color:#b91c1c;font-weight:600;">
+          <i class="fa-solid fa-triangle-exclamation"></i> This listing was marked unavailable by the host.
+          A full refund has been automatically initiated.
+        </p>
       </div>
     <% } %>
-    <div class="detail-row">
-      <span class="detail-label">Booked On</span>
-      <span class="detail-value"><%= new Date(booking.createdAt).toLocaleDateString('en-IN', {day:'numeric', month:'long', year:'numeric'}) %></span>
-    </div>
   </div>
 
-  <div style="margin-top:1.5rem;display:flex;gap:10px;">
-    <a href="/listings/<%= booking.listing?._id %>" class="hk-btn">View Listing</a>
-    <% if (booking.status === 'upcoming' && booking.paymentStatus === 'paid') { %>
-      <form method="POST" action="/bookings/<%= booking._id %>/cancel"
-        onsubmit="return confirm('Cancel this booking? This cannot be undone.');">
-        <button type="submit" class="hk-btn" style="background:#ef4444;border-color:#ef4444;">Cancel Booking</button>
-      </form>
-    <% } %>
-  </div>
+  <!-- Refund policy reminder (for upcoming bookings) -->
+  <% if (booking.status === 'upcoming') { %>
+    <div style="padding:1rem 1.2rem;background:#f9fafb;border-radius:12px;border:1px solid #e3e5ec;">
+      <p style="margin:0 0 4px;font-size:0.82rem;font-weight:700;color:#374151;">
+        <i class="fa-solid fa-circle-info" style="color:#6b7280;"></i> Cancellation Policy
+      </p>
+      <p style="margin:0;font-size:0.8rem;color:#6b7280;line-height:1.6;">
+        Cancel <strong>&gt;48 hrs</strong> before check-in → Full refund &nbsp;|&nbsp;
+        <strong>24–48 hrs</strong> → 50% refund &nbsp;|&nbsp;
+        <strong>&lt;24 hrs</strong> → No refund
+      </p>
+      <%
+        const now = new Date();
+        const ci  = new Date(booking.checkIn);
+        const hrs = Math.max(0, Math.round((ci - now) / (1000*60*60)));
+      %>
+      <p style="margin:4px 0 0;font-size:0.8rem;color:<%= hrs > 48 ? '#15803d' : hrs > 24 ? '#d97706' : '#ef4444' %>; font-weight:600;">
+        Your check-in is <strong><%= hrs %> hours away</strong> —
+        <% if (hrs > 48) { %>Full refund available<% } else if (hrs > 24) { %>50% refund available<% } else { %>No refund available<% } %>
+      </p>
+    </div>
+  <% } %>
+
 </div>
