@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const paymentController = require("../controllers/payment");
-const { isLoggedIn } = require("../middlewares/authenicate");
+const { isLoggedIn } = require("../middlewares/authenticate");
 const wrapAsync = require("../utils/wrapAsync");
 
 // GET: Checkout page (summary before paying)

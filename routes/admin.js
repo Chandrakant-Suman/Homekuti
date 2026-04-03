@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const adminController = require("../controllers/admin");
-const { isLoggedIn } = require("../middlewares/authenicate");
+const { isLoggedIn } = require("../middlewares/authenticate");
 const { isAdmin } = require("../middlewares/authorize");
 const wrapAsync = require("../utils/wrapAsync");
 

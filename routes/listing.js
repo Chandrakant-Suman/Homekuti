@@ -1,11 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const listingController = require("../controllers/listing");
-const { isLoggedIn } = require("../middlewares/authenicate");
+const { isLoggedIn } = require("../middlewares/authenticate");
 const { isOwner } = require("../middlewares/authorize");
 const { validateListing } = require("../middlewares/validateListing");
 const upload = require("../middlewares/upload");
 const wrapAsync = require("../utils/wrapAsync");
+const Review = require("../models/review");
 
 // Index + Create
 router
