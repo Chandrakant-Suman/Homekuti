@@ -8,12 +8,12 @@ cloudinary.config({
 });
 
 const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  folder: "Homekuti_DEV",
-  allowedFormats: ["jpeg", "png", "jpg", "webp"],
+  cloudinary,
+  params: {
+    folder: "Homekuti_DEV",
+    allowed_formats: ["jpeg", "png", "jpg", "webp"],
+    transformation: [{ width: 1200, height: 800, crop: "limit", quality: "auto" }],
+  },
 });
 
-module.exports = {
-  cloudinary,
-  storage,
-};
+module.exports = { cloudinary, storage };
