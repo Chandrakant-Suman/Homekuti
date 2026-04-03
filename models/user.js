@@ -2,9 +2,7 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 // IMPORTANT: default export fix
-const passportLocalMongoose = require("passport-local-mongoose").default
-    || require("passport-local-mongoose");
-
+const passportLocalMongoose = require("passport-local-mongoose");
 const userSchema = new Schema({
     username: {
         type: String,
@@ -20,19 +18,41 @@ const userSchema = new Schema({
     createdAt: {
         type: Date,
         default: Date.now
-    }, password: {
-        type: String,
-        required: false,
     },
-
-    // (Google login support)
+    // Google OAuth
     googleId: {
         type: String,
     },
     avatar: {
         type: String,
-    }
+    },
+    // Role-based access
+    role: {
+        type: String,
+        enum: ["user", "owner", "admin"],
+        default: "user",
+    },
+    // Wishlist
+    wishlist: {
+        type: [{
+            type: Schema.Types.ObjectId,
+            ref: "Listing",
+        }],
+        default: [],
+    },
+    // Bookings reference
+    bookings: [{
+        type: Schema.Types.ObjectId,
+        ref: "Booking",
+    }],
+    // Phone (optional)
+    phone: {
+        type: String,
+    },
 });
+
+// Indexes
+userSchema.index({ googleId: 1 });
 
 userSchema.plugin(passportLocalMongoose);
 

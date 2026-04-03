@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const Review = require("./review.js");
-const { required } = require("joi");
 
 // Default image constant
 const DEFAULT_IMAGE = {
@@ -67,9 +66,27 @@ const listingSchema = new Schema({
     },
     coordinates: {
       type: [Number], // [lng, lat]
-      default: [78.9629, 20.5937]  // ✅ Default coordinates (center of India)
+      default: [78.9629, 20.5937]
     }
-  }
+  },
+
+  genre: {
+    type: String,
+    enum: ["Beach", "Mountain", "City", "Luxury", "Budget", "Heritage", "Forest", "Countryside", "Island", "Desert"],
+    default: "City",
+  },
+
+  avgRating: {
+    type: Number,
+    default: 0,
+    min: 0,
+    max: 5,
+  },
+
+  totalReviews: {
+    type: Number,
+    default: 0,
+  },
 
 });
 
