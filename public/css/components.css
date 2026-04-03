@@ -213,31 +213,6 @@
   color: #111827;
 }
 
-.hk-stay-price-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 6px;
-}
-
-.hk-stay-price {
-  font-weight: 600;
-  color: #000;
-}
-
-.hk-stay-rating {
-  font-size: 0.9rem;
-  color: #222;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.hk-stay-no-reviews {
-  font-size: 0.9rem;
-  color: #777;
-}
-
 /* =========================================
    SEARCH PILL
 ========================================= */
@@ -247,71 +222,95 @@
   margin-bottom: 2rem;
 }
 
+/* MAIN BAR */
 .hk-search-pill {
-  background: #ffffff;
-  border-radius: 999px;
-  padding: 0.7rem;
   display: flex;
   align-items: center;
-  gap: 0.2rem;
-  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
-  border: 1px solid rgba(226, 232, 240, 0.9);
-  max-width: 720px;
+  justify-content: space-between;
+  flex-direction: row; /* 🔥 FORCE HORIZONTAL */
+  background: #ffffff;
+  border-radius: 999px;
+  padding: 0.6rem;
   width: 100%;
+  height: 70px;
+  max-width: 720px;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
 }
 
+/* EACH FIELD */
 .hk-search-item {
-  padding: 0.25rem 1rem;
+  flex: 1; /* 🔥 equal width */
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  padding: 0.5rem 1.2rem;
+  min-width: 0;
 }
 
-.hk-search-label {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #111827;
-}
-
-.hk-search-value {
-  font-size: 0.9rem;
-  color: #6b7280;
-}
-
+/* DIVIDER */
 .hk-search-divider {
   width: 1px;
-  height: 32px;
+  height: 28px;
   background: #e5e7eb;
+  flex-shrink: 0;
 }
 
+/* RIGHT BUTTON */
 .hk-search-end {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-left: auto;
+  justify-content: center;
+  margin-left: 10px;
 }
 
+/* BUTTON */
 .hk-search-btn {
-  border: none;
-  outline: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
   background: var(--primary);
-  color: #fff;
-  width: 40px;
-  height: 40px;
-  border-radius: 999px;
-  display: inline-flex;
+  color: white;
+  border: none;
+  display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
+  flex-shrink: 0; /* 🔥 prevents push */
 }
 
-.hk-search-btn:hover {
-  background-color: var(--primary-dark);
-  transform: scale(1.05);
+/* ------------ */
+/* Make inputs look like text (Airbnb style) */
+.hk-search-input {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 0.95rem;
+  color: #6b7280;
+  font-family: inherit;
+  width: 100%;
 }
 
-.hk-search-btn i {
-  font-size: 0.9rem;
+/* Select dropdown clean */
+.hk-search-input[type="text"]::placeholder {
+  color: #6b7280;
+}
+
+select.hk-search-input {
+  appearance: none;
+  cursor: pointer;
+}
+
+/* Hover zone like Airbnb */
+.hk-search-item:hover {
+  background: #f7f7f7;
+  border-radius: 30px;
+}
+
+/* Focus effect */
+.hk-search-item:focus-within {
+  background: white;
+  box-shadow: 0 0 0 2px #e8e9ed;
+  border-radius: 30px;
 }
 
 /* =========================================
@@ -511,6 +510,246 @@ form textarea::placeholder {
   border-color: #198754;
 }
 
+/* --------------------------------------------- */
+/* SEARCH BAR CONTAINER */
+.search-bar {
+  display: flex;
+  flex-direction: row; /* 🔥 force horizontal */
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+
+  width: 100%;
+  max-width: 600px;
+  margin: auto;
+}
+
+/* INPUT */
+.search-bar input {
+  flex: 1; /* 🔥 take remaining space */
+  min-width: 0; /* prevents breaking */
+  
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  outline: none;
+  font-size: 0.9rem;
+}
+
+/* BUTTON */
+.search-bar button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  white-space: nowrap; /* 🔥 prevents wrapping */
+  
+  border: none;
+  background: #ff385c;
+  color: white;
+  padding: 10px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+/* CLEAR LINK */
+.search-bar a {
+  white-space: nowrap;
+}
+
+/* ----------------- */
+/* MATCH HOME SEARCH PILL */
+.hk-search-pill {
+  background: #fff;
+  border-radius: 999px;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 650px;
+  margin-bottom: 1.2rem;
+  box-shadow: 0 20px 50px rgba(179, 185, 198, 0.08);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+/* ITEMS */
+.hk-search-item {
+  flex: 1;
+  padding: 0.4rem 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+
+/* LABEL */
+.hk-search-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+/* VALUE (for active genre display) */
+.hk-search-value {
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+/* INPUT */
+.hk-search-input {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 0.9rem;
+  color: #6b7280;
+  width: 100%;
+}
+
+/* DIVIDER */
+.hk-search-divider {
+  width: 1px;
+  height: 30px;
+  background: #e5e7eb;
+}
+
+/* RIGHT SIDE */
+.hk-search-end {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-left: 8px;
+}
+
+/* CLEAR BUTTON */
+.hk-clear-btn {
+  font-size: 0.85rem;
+  color: #9ca3af;
+  text-decoration: none;
+  padding: 6px;
+}
+
+.hk-clear-btn:hover {
+  color: #111;
+}
+
+/* SEARCH BUTTON */
+.hk-search-btn {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.hk-search-btn:hover {
+  background: var(--primary-dark);
+}
+
+/* HOVER EFFECT */
+.hk-search-item:hover {
+  background: #f7f7f7;
+  border-radius: 30px;
+}
+
+
+/* --------------- */
+/* wrapper for input + icon */
+.hk-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* input spacing */
+.hk-search-input {
+  padding-right: 22px;
+}
+
+/* small ❌ button */
+.hk-clear-icon {
+  position: absolute;
+  right: 0;
+  border: none;
+  background: none;
+  font-size: 0.8rem;
+  color: #9ca3af;
+  cursor: pointer;
+  display: none;
+}
+
+/* show only when needed */
+.hk-clear-icon.show {
+  display: block;
+}
+
+.hk-clear-icon:hover {
+  color: #111;
+}
+
+/* global clear button */
+.hk-clear-btn {
+  color: #ff4b6b;
+  text-decoration: none;
+  font-size: 0.85rem;
+}
+
+
+/* ------------------ */
+
+/* wrapper */
+.hk-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* input spacing */
+.hk-search-input {
+  width: 100%;
+  padding-right: 28px; /* space for icon */
+}
+
+/* INLINE CLEAR ICON (like Airbnb) */
+.hk-clear-icon {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  
+  border: none;
+  background: #f3f4f6;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+
+  font-size: 11px;
+  color: #6b7280;
+
+  display: none;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+}
+
+/* show only when typing */
+.hk-clear-icon.show {
+  display: flex;
+}
+
+/* hover effect */
+.hk-clear-icon:hover {
+  background: #e5e7eb;
+  color: #111;
+}
+
+
 /* =========================================
    SECTION HEADERS
 ========================================= */
@@ -641,3 +880,50 @@ form textarea::placeholder {
     padding: 0.8rem 1rem;
   }
 }
+/* =========================================
+   FLASH MESSAGES
+========================================= */
+.hk-flash {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  animation: slideDown 0.3s ease;
+}
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.hk-flash-success { background: #f0fdf4; color: #15803d; border: 1.5px solid #bbf7d0; }
+.hk-flash-error { background: #fef2f2; color: #b91c1c; border: 1.5px solid #fecaca; }
+.hk-flash i { flex-shrink: 0; }
+.hk-flash span { flex: 1; }
+.hk-flash-close {
+  background: none; border: none; cursor: pointer; font-size: 1.1rem;
+  color: inherit; opacity: 0.6; padding: 0; line-height: 1; transition: opacity 0.15s;
+}
+.hk-flash-close:hover { opacity: 1; }
+
+/* =========================================
+   STAY CARD POSITION RELATIVE (for genre badge)
+========================================= */
+.hk-stay-image { position: relative; }
+
+/* =========================================
+   DROPDOWN IMPROVEMENTS
+========================================= */
+.hk-dropdown .divider {
+  height: 1px; background: #f1f5f9; margin: 4px 0;
+}
+.hk-dropdown a {
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 16px; font-size: 0.88rem; font-weight: 500;
+  color: #374151; text-decoration: none; transition: background 0.12s;
+  border-radius: 8px; margin: 2px 4px;
+}
+.hk-dropdown a:hover { background: #f9fafb; text-decoration: none; }
+.hk-dropdown span { padding: 9px 16px; font-size: 0.82rem; color: #9ca3af; font-weight: 500; }
