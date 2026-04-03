@@ -1,25 +1,23 @@
-<% if (!hideFlash) { %>
-
-<div class="container mt-3">
-
-  <% if (success && success.length > 0) { %>
-    <% success.forEach(msg => { %>
-      <div class="alert alert-success auto-close alert-dismissible fade show w-100 shadow" role="alert">
-        <%= msg %>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-      </div>
-    <% }) %>
-  <% } %>
-
-  <% if (error && error.length > 0) { %>
-    <% error.forEach(msg => { %>
-      <div class="alert alert-danger alert-dismissible fade show w-100 shadow" role="alert">
-        <%= msg %>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-      </div>
-    <% }) %>
-  <% } %>
-
-</div>
-
+<% if (success && success.length > 0) { %>
+  <div class="hk-flash hk-flash-success" id="flashMsg">
+    <i class="fa-solid fa-circle-check"></i>
+    <span><%= success[0] %></span>
+    <button onclick="this.parentElement.remove()" class="hk-flash-close">&times;</button>
+  </div>
 <% } %>
+
+<% if (error && error.length > 0) { %>
+  <div class="hk-flash hk-flash-error" id="flashMsgErr">
+    <i class="fa-solid fa-circle-exclamation"></i>
+    <span><%= error[0] %></span>
+    <button onclick="this.parentElement.remove()" class="hk-flash-close">&times;</button>
+  </div>
+<% } %>
+
+<script>
+  // Auto-dismiss flash after 4s
+  ['flashMsg','flashMsgErr'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) setTimeout(() => el.remove(), 4000);
+  });
+</script>

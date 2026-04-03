@@ -3,43 +3,81 @@
 
     <!-- Brand -->
     <a href="/" class="hk-brand">
-      <img src="/images/logo.jpg" alt="Homekuti" class="hk-logo" />
+      <img src="/images/logo.jpg" alt="Homekuti" class="hk-logo" onerror="this.style.display='none'" />
       <span>Homekuti</span>
     </a>
+
     <!-- Right side nav -->
     <div class="hk-right">
       <!-- Desktop links -->
       <div class="hk-links">
-        <a href="/" class="<%= activeRoute === '/' ? 'active' : '' %>">Home</a>
+        <a href="/" class="<%= (activeRoute || '') === '/' ? 'active' : '' %>">Home</a> 
         <a href="/listings" class="<%= activeRoute === '/listings' ? 'active' : '' %>">All Listings</a>
-        <a href="/listings/new" class="<%= activeRoute === '/listings/new' ? 'active' : '' %>">Add Listing</a>
+        <% if (currUser) { %>
+          <a href="/listings/new" class="<%= activeRoute === '/listings/new' ? 'active' : '' %>">Add Listing</a>
+          <% } %>
       </div>
 
-      <!-- Hamburger -->
+      <!-- Right actions -->
       <div class="hk-menu">
-        <button class="hk-menu-btn" id="menuBtn" aria-label="Menu">
-          ☰
-        </button>
+        <% if (currUser) { %>
+          <!-- User avatar + dropdown -->
+          <button class="hk-menu-btn" id="menuBtn" aria-label="Menu" style="display:flex;align-items:center;gap:8px;">
+            <div
+              style="width:32px;height:32px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.85rem;flex-shrink:0;">
+              <%= currUser.username.charAt(0).toUpperCase() %>
+            </div>
+            <span style="font-size:0.88rem;font-weight:600;color:#374151;">
+              <%= currUser.username %>
+            </span>
+            <i class="fa-solid fa-chevron-down" style="font-size:0.7rem;color:#9ca3af;"></i>
+          </button>
+          <% } else { %>
+            <button class="hk-menu-btn" id="menuBtn" aria-label="Menu">☰</button>
+            <% } %>
 
-        <!-- Dropdown -->
-        <div class="hk-dropdown" id="menuDropdown">
+              <!-- Dropdown -->
+              <div class="hk-dropdown" id="menuDropdown">
 
-          <!-- Mobile-only links -->
-          <div class="hk-dropdown-section mobile-only">
-            <a href="/">Home</a>
-            <a href="/listings">All Listings</a>
-            <a href="/listings/new">Add Listing</a>
-            <div class="divider"></div>
-          </div>
+                <!-- Mobile-only links -->
+                <div class="hk-dropdown-section mobile-only">
+                  <a href="/">Home</a>
+                  <a href="/listings">All Listings</a>
+                  <% if (currUser) { %>
+                    <a href="/listings/new">Add Listing</a>
+                    <% } %>
+                      <div class="divider"></div>
+                </div>
 
-          <% if(!currUser) { %>
-            <a href="/user/signup">Sign Up</a>
-            <a href="/user/signin">Sign In</a>
-            <% } else { %>
-              <a href="/user/logout" class="danger">Log Out</a>
-              <% } %>
-
-        </div>
+                <% if (currUser) { %>
+                  <a href="/user/profile" style="display:flex;align-items:center;gap:8px;">
+                    <i class="fa-solid fa-user" style="color:#6b7280;width:16px;"></i> My Profile
+                  </a>
+                  <a href="/bookings/my" style="display:flex;align-items:center;gap:8px;">
+                    <i class="fa-solid fa-calendar" style="color:#6b7280;width:16px;"></i> My Bookings
+                  </a>
+                  <a href="/listings/new" style="display:flex;align-items:center;gap:8px;">
+                    <i class="fa-solid fa-plus" style="color:#6b7280;width:16px;"></i> Add Listing
+                  </a>
+                  <% if (currUser.role==='admin' ) { %>
+                    <div class="divider"></div>
+                    <a href="/admin/dashboard" style="display:flex;align-items:center;gap:8px;color:#d97706;">
+                      <i class="fa-solid fa-gear" style="width:16px;"></i> Admin Panel
+                    </a>
+                    <% } %>
+                      <div class="divider"></div>
+                      <a href="/user/logout" style="display:flex;align-items:center;gap:8px;color:#ef4444;">
+                        <i class="fa-solid fa-right-from-bracket" style="width:16px;"></i> Logout
+                      </a>
+                      <% } else { %>
+                        <a href="/user/signin" style="display:flex;align-items:center;gap:8px;">
+                          <i class="fa-solid fa-right-to-bracket" style="color:#6b7280;width:16px;"></i> Sign In
+                        </a>
+                        <a href="/user/signup" style="display:flex;align-items:center;gap:8px;">
+                          <i class="fa-solid fa-user-plus" style="color:#6b7280;width:16px;"></i> Sign Up
+                        </a>
+                        <% } %>
+              </div>
       </div>
     </div>
   </div>
