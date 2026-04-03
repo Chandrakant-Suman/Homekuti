@@ -17,11 +17,11 @@ const initDB = async () => {
     }
 
     // Find or create seed owner
-    let owner = await User.findOne({ username: "homekuti_admin" });
+    let owner = await User.findOne({ username: process.env.ADMIN_USERNAME || "admin" });
     if (!owner) {
-      owner = new User({ username: "homekuti_admin", email: "admin@homekuti.com", role: "admin" });
-      await User.register(owner, "Admin@1234");
-      console.log("✓ Created admin user: homekuti_admin / Admin@1234");
+      owner = new User({ username: "admin", email: "homekuti247@gmail.com", role: "admin" });
+      await User.register(owner, process.env.ADMIN_PASSWORD);
+      console.log("✓ Created admin user: admin / " + (process.env.ADMIN_PASSWORD));
     }
 
     // Insert listings
@@ -30,7 +30,7 @@ const initDB = async () => {
     console.log(`✓ Seeded ${inserted.length} listings`);
 
     console.log("\n🎉 Database initialized successfully!");
-    console.log("   Admin login: homekuti_admin / Admin@1234");
+    console.log("   Admin login: admin");
   } catch (err) {
     console.error("❌ Seed error:", err);
   } finally {
