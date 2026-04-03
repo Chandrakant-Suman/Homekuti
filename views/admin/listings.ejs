@@ -1,0 +1,48 @@
+<% layout('/layouts/boilerplate') -%>
+<style>
+  .admin-nav { display:flex;gap:10px;flex-wrap:wrap;margin:1.5rem 0; }
+  .admin-nav a { padding:8px 20px;border-radius:10px;border:1.5px solid #e3e5ec;text-decoration:none;font-size:0.88rem;font-weight:600;color:#374151;transition:all 0.15s; }
+  .admin-nav a:hover,.admin-nav a.active { background:var(--primary);color:#fff;border-color:var(--primary);text-decoration:none; }
+  .table-card { background:#fff;border-radius:16px;padding:1.5rem;box-shadow:0 4px 20px rgba(15,23,42,0.06); }
+  table { width:100%;border-collapse:collapse;font-size:0.88rem; }
+  thead th { padding:8px 12px;text-align:left;font-size:0.78rem;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;border-bottom:1px solid #f1f5f9; }
+  tbody td { padding:10px 12px;border-bottom:1px solid #f9fafb;color:#374151; }
+  tbody tr:hover td { background:#fafafa; }
+  .btn-del { background:none;border:1.5px solid #fca5a5;border-radius:8px;color:#ef4444;padding:4px 12px;cursor:pointer;font-size:0.8rem;font-weight:600;transition:all 0.15s; }
+  .btn-del:hover { background:#ef4444;color:#fff; }
+  .thumb { width:48px;height:38px;border-radius:8px;object-fit:cover; }
+</style>
+
+<h2 style="font-size:1.6rem;font-weight:700;margin:1.5rem 0 0.5rem;">Listings Management</h2>
+<div class="admin-nav">
+  <a href="/admin/dashboard">Dashboard</a>
+  <a href="/admin/users">Users</a>
+  <a href="/admin/listings" class="active">Listings</a>
+  <a href="/admin/bookings">Bookings</a>
+</div>
+
+<div class="table-card">
+  <table>
+    <thead>
+      <tr><th>#</th><th>Image</th><th>Title</th><th>Location</th><th>Price</th><th>Owner</th><th>Actions</th></tr>
+    </thead>
+    <tbody>
+      <% listings.forEach((l, i) => { %>
+        <tr>
+          <td style="color:#9ca3af;"><%= i+1 %></td>
+          <td><img src="<%= l.image?.url || l.image || '/images/placeholder.jpg' %>" class="thumb" onerror="this.src='/images/placeholder.jpg'"></td>
+          <td><a href="/listings/<%= l._id %>" style="font-weight:600;color:#1f2933;"><%= l.title %></a></td>
+          <td style="color:#6b7280;"><%= l.location %>, <%= l.country %></td>
+          <td><strong>₹<%= l.price?.toLocaleString('en-IN') %></strong></td>
+          <td><%= l.owner?.username %></td>
+          <td>
+            <form method="POST" action="/admin/listings/<%= l._id %>?_method=DELETE"
+              onsubmit="return confirm('Delete this listing?');">
+              <button type="submit" class="btn-del">Delete</button>
+            </form>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
