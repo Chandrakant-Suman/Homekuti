@@ -1,82 +1,65 @@
 <% layout('/layouts/boilerplate') -%>
+<style>
+  .form-card { background:#fff; border-radius:20px; padding:2.5rem; box-shadow:0 8px 40px rgba(15,23,42,0.08); max-width:680px; margin:2rem auto; }
+  .form-title { font-size:1.7rem; font-weight:700; margin-bottom:1.8rem; color:#1f2933; }
+  .form-label { font-size:0.87rem; font-weight:600; color:#374151; margin-bottom:5px; display:block; }
+  .form-control { border:1.5px solid #e3e5ec; border-radius:10px; font-family:inherit; }
+  .form-control:focus { border-color:var(--primary); box-shadow:none; }
+</style>
 
-  <div class="container mt-5">
-    <div class="row justify-content-center">
-      <div class="col-lg-8 col-md-10">
+<div class="form-card">
+  <h2 class="form-title">Create a New Listing</h2>
+  <form method="POST" action="/listings" class="needs-validation" novalidate enctype="multipart/form-data">
 
-        <h2 class="mb-4 text-center">Create a New Listing</h2>
+    <div class="mb-3">
+      <label class="form-label">Title *</label>
+      <input type="text" required minlength="3" class="form-control" name="listing[title]" placeholder="Enter a catchy title">
+      <div class="invalid-feedback">Title is required (min 3 chars).</div>
+    </div>
 
-        <form method="POST" action="/listings" class="needs-validation" novalidate enctype="multipart/form-data">
+    <div class="mb-3">
+      <label class="form-label">Description *</label>
+      <textarea class="form-control" name="listing[description]" rows="4" required minlength="10" placeholder="Describe the stay…"></textarea>
+      <div class="invalid-feedback">Description required (min 10 chars).</div>
+    </div>
 
-          <!-- Title -->
-          <div class="mb-1">
-            <label class="form-label">Title</label>
-            <input type="text" required minlength="3" class="form-control" name="listing[title]"
-              placeholder="Enter a catchy title" required>
-            <div class="valid-feedback">Looks good!</div>
-            <div class="invalid-feedback">Title is required.</div>
-          </div>
+    <div class="mb-3">
+      <label class="form-label">Upload Image</label>
+      <input type="file" class="form-control" name="listing[image]" id="imageInput" accept="image/*">
+    </div>
 
-          <!-- Description -->
-          <div class="mb-1">
-            <label class="form-label">Description</label>
-            <textarea class="form-control" name="listing[description]" rows="4" required minlength="50"
-              placeholder="Describe the stay" required></textarea>
-            <div class="valid-feedback">Looks good!</div>
-            <div class="invalid-feedback">Description is required (min 50 characters).</div>
-          </div>
-
-          <!-- Image URL -->
-          <div class="mb-3">
-            <label class="form-label">Upload Listing Image *</label>
-
-            <input type="file" class="form-control" name="listing[image]" id="imageInput" accept="image/*" required>
-
-            <div class="invalid-feedback" id="imageError">
-              Please upload a listing image.
-            </div>
-          </div>
-
-          <!-- Price + Location -->
-          <!-- Price -->
-          <div class="row">
-            <div class="col-md-4 mb-1">
-              <label class="form-label">Price</label>
-              <input type="number" class="form-control" name="listing[price]" min="500" placeholder="₹ per night"
-                required>
-              <div class="valid-feedback">This is OK!</div>
-              <div class="invalid-feedback">Enter a valid price; min.₹500</div>
-            </div>
-
-            <!-- Location -->
-            <div class="col-md-8 mb-1">
-              <label class="form-label">Location</label>
-              <input type="text" required minlength="3" class="form-control" name="listing[location]"
-                placeholder="City / Area" required>
-              <div class="valid-feedback">Looks good!</div>
-              <div class="invalid-feedback">Location is required.</div>
-            </div>
-          </div>
-
-          <!-- Country -->
-          <div class="mb-1">
-            <label class="form-label">Country</label>
-            <input type="text" required minlength="3" class="form-control" name="listing[country]" placeholder="Country"
-              required>
-            <div class="valid-feedback">Looks good!</div>
-            <div class="invalid-feedback">Country is required.</div>
-          </div>
-
-          <!-- Submit -->
-          <div class="d-grid">
-            <button class="hk-btn" type="submit">
-              Create Listing
-            </button>
-          </div>
-
-        </form>
-
+    <div class="row g-3 mb-3">
+      <div class="col-md-4">
+        <label class="form-label">Price / night (₹) *</label>
+        <input type="number" class="form-control" name="listing[price]" min="1" placeholder="e.g. 2500" required>
+        <div class="invalid-feedback">Min ₹1</div>
+      </div>
+      <div class="col-md-8">
+        <label class="form-label">Location *</label>
+        <input type="text" required class="form-control" name="listing[location]" placeholder="City / Area">
+        <div class="invalid-feedback">Location required.</div>
       </div>
     </div>
-  </div>
- 
+
+    <div class="row g-3 mb-3">
+      <div class="col-md-6">
+        <label class="form-label">Country *</label>
+        <input type="text" required class="form-control" name="listing[country]" placeholder="e.g. India">
+        <div class="invalid-feedback">Country required.</div>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Genre</label>
+        <select class="form-control form-select" name="listing[genre]">
+          <option value="">Select genre</option>
+          <% genres.forEach(g => { %>
+            <option value="<%= g %>"><%= g %></option>
+          <% }) %>
+        </select>
+      </div>
+    </div>
+
+    <div class="d-grid mt-4">
+      <button class="hk-btn" type="submit" style="height:48px;font-size:1rem;">Create Listing</button>
+    </div>
+  </form>
+</div>
