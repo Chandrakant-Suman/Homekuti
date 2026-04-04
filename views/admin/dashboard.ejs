@@ -118,3 +118,68 @@
     </table>
   <% } %>
 </div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="row mt-5">
+
+  <!-- Revenue Chart -->
+  <div class="col-md-6">
+    <canvas id="revenueChart"></canvas>
+  </div>
+
+  <!-- User Growth -->
+  <div class="col-md-6">
+    <canvas id="userChart"></canvas>
+  </div>
+
+</div>
+
+<div class="row mt-5">
+  <div class="col-md-12">
+    <canvas id="listingChart"></canvas>
+  </div>
+</div>
+
+<script>
+  const revenueData = <%- JSON.stringify(revenueTrend || []) %>;
+const userData = <%- JSON.stringify(userGrowth || []) %>;
+const listingData = <%- JSON.stringify(bookingsPerListing || []) %>;
+
+  // Revenue Chart
+  new Chart(document.getElementById("revenueChart"), {
+    type: "line",
+    data: {
+      labels: revenueData.map(d => d._id),
+      datasets: [{
+        label: "Revenue",
+        data: revenueData.map(d => d.revenue),
+        borderWidth: 2
+      }]
+    }
+  });
+
+  // User Growth Chart
+  new Chart(document.getElementById("userChart"), {
+    type: "bar",
+    data: {
+      labels: userData.map(d => d._id),
+      datasets: [{
+        label: "Users",
+        data: userData.map(d => d.users)
+      }]
+    }
+  });
+
+  // Top Listings Chart
+  new Chart(document.getElementById("listingChart"), {
+    type: "doughnut",
+    data: {
+      labels: listingData.map(d => d.title),
+      datasets: [{
+        data: listingData.map(d => d.count)
+      }]
+    }
+  });
+</script>

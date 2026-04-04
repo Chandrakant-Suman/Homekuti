@@ -59,6 +59,71 @@
   pointer-events: none;
 }
 
+.hk-btn-outline-danger {
+  background: transparent;
+  border: 1.5px solid #ef4444;
+  color: #ef4444;
+}
+
+.hk-btn-outline-danger:hover {
+  background: #ef4444;
+  color: #fff;
+}
+
+.hk-btn-link {
+  background: none;
+  border: none;
+  color: inherit;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+}
+
+.hk-btn-link:hover {
+  text-decoration: underline;
+}
+
+
+/* 🔥 Airbnb-style Reserve Button */
+.bw {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 1.5rem;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+}
+
+.reserve-btn {
+  width: 100%;
+  height: 56px;
+  border: none;
+  border-radius: 999px; /* full pill */
+  background: linear-gradient(135deg, #ff385c, #d70466);
+  color: #ffffff;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Hover effect */
+.reserve-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 30px rgba(215, 4, 102, 0.35);
+}
+
+/* Click effect */
+.reserve-btn:active {
+  transform: scale(0.98);
+}
+
+/* Disabled */
+.reserve-btn:disabled {
+  background: #f3a4b3;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
 /* =========================================
    LISTING CARDS
 ========================================= */
@@ -219,32 +284,69 @@
 .hk-search-wrapper {
   display: flex;
   justify-content: center;
-  margin-bottom: 2rem;
+  margin: 2rem 0;
 }
 
-/* MAIN BAR */
-.hk-search-pill {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-direction: row; /* 🔥 FORCE HORIZONTAL */
-  background: #ffffff;
-  border-radius: 999px;
-  padding: 0.6rem;
-  width: 100%;
-  height: 70px;
-  max-width: 720px;
-  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
-}
+
 
 /* EACH FIELD */
 .hk-search-item {
-  flex: 1; /* 🔥 equal width */
+  flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  padding: 0.5rem 1.2rem;
   min-width: 0;
+}
+
+/* ===== BASE ===== */
+
+/* LABEL */
+.hk-search-item label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+/* INPUT WRAP */
+.hk-input-wrap {
+  position: relative;
+}
+
+/* INPUT + SELECT */
+.hk-search-item input,
+.hk-search-item select {
+  width: 100%;
+  border: none;
+  outline: none;
+  font-size: 0.9rem;
+  padding: 6px 28px 6px 0;
+  background: transparent;
+}
+
+/* CLEAR BUTTON */
+#clearSearch {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #e5e7eb;
+  border: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  font-size: 12px;
+  cursor: pointer;
+  display: none;
+}
+
+/* SEARCH BTN */
+.hk-search-btn {
+  background: #ff385c;
+  color: white;
+  border: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  cursor: pointer;
 }
 
 /* DIVIDER */
@@ -511,66 +613,13 @@ form textarea::placeholder {
 }
 
 /* --------------------------------------------- */
-/* SEARCH BAR CONTAINER */
-.search-bar {
-  display: flex;
-  flex-direction: row; /* 🔥 force horizontal */
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
 
-  width: 100%;
-  max-width: 600px;
-  margin: auto;
-}
-
-/* INPUT */
-.search-bar input {
-  flex: 1; /* 🔥 take remaining space */
-  min-width: 0; /* prevents breaking */
-  
-  padding: 10px 14px;
-  border-radius: 999px;
-  border: 1px solid #e5e7eb;
-  outline: none;
-  font-size: 0.9rem;
-}
-
-/* BUTTON */
-.search-bar button {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-
-  white-space: nowrap; /* 🔥 prevents wrapping */
-  
-  border: none;
-  background: #ff385c;
-  color: white;
-  padding: 10px 18px;
-  border-radius: 999px;
-  cursor: pointer;
-}
 
 /* CLEAR LINK */
 .search-bar a {
   white-space: nowrap;
 }
 
-/* ----------------- */
-/* MATCH HOME SEARCH PILL */
-.hk-search-pill {
-  background: #fff;
-  border-radius: 999px;
-  padding: 0.5rem;
-  display: flex;
-  align-items: center;
-  width: 100%;
-  max-width: 650px;
-  margin-bottom: 1.2rem;
-  box-shadow: 0 20px 50px rgba(179, 185, 198, 0.08);
-  border: 1px solid rgba(226, 232, 240, 0.9);
-}
 
 /* ITEMS */
 .hk-search-item {
@@ -580,6 +629,7 @@ form textarea::placeholder {
   flex-direction: column;
   justify-content: center;
   min-width: 0;
+  margin-bottom: 2rem;
 }
 
 /* LABEL */
@@ -681,11 +731,6 @@ form textarea::placeholder {
   color: #9ca3af;
   cursor: pointer;
   display: none;
-}
-
-/* show only when needed */
-.hk-clear-icon.show {
-  display: block;
 }
 
 .hk-clear-icon:hover {
@@ -817,69 +862,7 @@ form textarea::placeholder {
   color: #4b5563;
 }
 
-/* =========================================
-   COMPONENT RESPONSIVE
-========================================= */
-@media (max-width: 768px) {
-  .hk-search-pill {
-    flex-wrap: wrap;
-    border-radius: 24px;
-    padding: 0.6rem;
-  }
 
-  .hk-search-item {
-    flex: 1 1 100%;
-    padding: 0.4rem 0.8rem;
-  }
-
-  .hk-search-divider {
-    display: none;
-  }
-
-  .hk-search-end {
-    width: 100%;
-    justify-content: space-between;
-    margin-left: 0;
-    padding: 0.4rem 0.8rem;
-  }
-
-  .hk-search-btn {
-    margin-left: 0;
-  }
-
-  .hk-host-card {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .hk-section-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-}
-
-@media (max-width: 576px) {
-  .hk-listing-image {
-    height: 190px;
-  }
-
-  .hk-stay-card {
-    height: 18rem;
-  }
-
-  .hk-stay-image {
-    height: 160px;
-  }
-
-  .hk-date-row {
-    flex-direction: column;
-  }
-
-  .hk-panel {
-    padding: 0.8rem 1rem;
-  }
-}
 /* =========================================
    FLASH MESSAGES
 ========================================= */
@@ -927,3 +910,13 @@ form textarea::placeholder {
 }
 .hk-dropdown a:hover { background: #f9fafb; text-decoration: none; }
 .hk-dropdown span { padding: 9px 16px; font-size: 0.82rem; color: #9ca3af; font-weight: 500; }
+
+
+
+/* -----------refund done badge in admin bookings page---------------- */
+.refund-done {
+  color: #15803d;
+  font-weight: 600;
+  font-size: 0.78rem;
+}
+

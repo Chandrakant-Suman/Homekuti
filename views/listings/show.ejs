@@ -131,20 +131,44 @@
       <p style="color:#4b5563;line-height:1.75;font-size:0.95rem;"><%= listing.description || "No description provided." %></p>
     </div>
 
-    <!-- Edit/Delete -->
-  <% if(currUser && currUser._id.equals(listing.owner._id)) { %>
-    <div class="edit-delete-btn">
-      <form method="GET" action="/listings/<%= listing._id %>/edit" class="form-no-card">
-        <button type="submit" class="hk-btn me-2">Edit</button>
-      </form>
+    <!-- Owner edit/delete -->
+<% if (currUser && currUser._id.equals(listing.owner._id)) { %>
+  <div class="listing-actions">
 
-      <form method="POST" action="/listings/<%= listing._id %>?_method=DELETE"
-        onsubmit="return confirm('Delete this listing? This will also remove the image from storage.');"
-        class="form-no-card">
-        <button type="submit" class="hk-btn">Delete</button>
-      </form>
-    </div>
-  <% } %>
+    <a href="/listings/<%= listing._id %>/edit" class="hk-btn">
+      <i class="fa-solid fa-pen"></i> Edit
+    </a>
+
+    <form method="POST"
+      action="/listings/<%= listing._id %>?_method=DELETE"
+      onsubmit="return confirm('Delete this listing? This cannot be undone.');"
+      class="form-no-card"
+    >
+      <button type="submit" class="hk-btn" data-no-disable="true">
+        <i class="fa-solid fa-trash"></i> Delete
+      </button>
+    </form>
+
+  </div>
+<% } %>
+
+    <!-- Host: mark bookings unavailable -->
+    <% if (currUser && (currUser._id.equals(listing.owner._id) || currUser.role === 'admin')) { %>
+      <%
+        // We don't have active bookings here, but owner can see a link to manage bookings
+      %>
+      <div style="background:#fff7ed;border:1.5px solid #fed7aa;border-radius:12px;padding:1rem 1.2rem;margin-bottom:1.4rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.8rem;">
+        <div>
+          <strong style="font-size:0.9rem;color:#c2410c;">Host Controls</strong>
+          <p style="margin:2px 0 0;font-size:0.82rem;color:#9a3412;">If you need to cancel a guest's booking due to unavailability, go to Admin → Bookings or contact support.</p>
+        </div>
+        <% if (currUser.role === 'admin') { %>
+          <a href="/admin/bookings" class="hk-btn" style="background:#fff7ed;color:#c2410c;border-color:#fed7aa;white-space:nowrap;font-size:0.85rem;">
+            <i class="fa-solid fa-gear"></i> Manage Bookings
+          </a>
+        <% } %>
+      </div>
+    <% } %>
 
     <hr style="border-color:#f1f5f9;margin:1.8rem 0;">
 

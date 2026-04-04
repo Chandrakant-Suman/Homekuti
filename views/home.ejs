@@ -11,56 +11,50 @@
     </p>
     <div class="hk-hero-actions">
       <a href="/listings" class="hk-btn">Explore all stays</a>
-      <a href="/listings/new" class="hk-btn" style="background:#fff;color:var(--primary);border-color:var(--primary);">Become a host</a>
+      <a href="/listings/new" class="hk-btn">Become a host</a>
     </div>
   </div>
 
-  <div class="hk-hero-side d-none d-md-block">
+<div class="hk-hero-side d-none d-md-block">
+
+  <% if (bestDeal) { %>
+    <a href="/listings/<%= bestDeal._id %>" style="text-decoration:none;color:inherit;">
+      <div class="hk-hero-card">
+
+        <h3>
+          Top Rated in <%= bestDeal.location || "India" %>
+        </h3>
+
+        <p>
+          <%= bestDeal.title || "Cozy stay" %>
+        </p>
+
+        <span class="hk-hero-tag">
+          ⭐ <%= bestDeal.avgRating?.toFixed ? bestDeal.avgRating.toFixed(1) : bestDeal.avgRating %>
+          • ₹<%= bestDeal.price ? Number(bestDeal.price).toLocaleString("en-IN") : "N/A" %>/night
+        </span>
+
+      </div>
+    </a>
+
+  <% } else { %>
+
     <div class="hk-hero-card">
-      <h3>Weekend idea</h3>
-      <p>3 nights in a hillside homestay, chai on the balcony, no Slack notifications.</p>
-      <span class="hk-hero-tag">From ₹1,499/night</span>
+      <h3>Explore stays</h3>
+      <p>Find cozy and highly rated places across India.</p>
+      <span class="hk-hero-tag">Browse listings</span>
     </div>
-  </div>
+
+  <% } %>
+
+</div>
 </section>
 
 <!-- search section -->
-<section class="hk-search-wrapper">
-  <form action="/listings" method="GET" class="hk-search-pill">
 
-  <div class="hk-search-item">
-    <label class="hk-search-label">WHERE</label>
-    <input type="text" name="search" placeholder="Search destinations" class="hk-search-input">
-  </div>
-
-  <div class="hk-search-divider"></div>
-
-  <!-- GENRE -->
-    <div class="hk-search-item">
-      <label class="hk-search-label">Genre</label>
-      <select name="genre" class="hk-search-input">
-        <option value="">Any type</option>
-        <option value="Beach">🏖️ Beach</option>
-        <option value="Mountain">⛰️ Mountain</option>
-        <option value="City">🏙️ City</option>
-        <option value="Luxury">💎 Luxury</option>
-        <option value="Budget">💰 Budget</option>
-        <option value="Heritage">🏰 Heritage</option>
-        <option value="Forest">🌲 Forest</option>
-        <option value="Countryside">🌾 Countryside</option>
-        <option value="Island">🏝️ Island</option>
-        <option value="Desert">🏜️ Desert</option>
-      </select>
-    </div>
-
-  <div class="hk-search-end">
-    <button type="submit" class="hk-search-btn">
-      🔍
-    </button>
-  </div>
-
-</form>
-</section>
+<div class="hk-search-wrapper">
+  <%- include("./partials/search") %>
+</div>
 
 <!-- Featured Stays -->
 <section class="hk-section">

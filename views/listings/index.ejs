@@ -116,54 +116,13 @@
     }
   </style>
 
+  
+<div class="hk-search-wrapper">
+  <%- include("../partials/search") %>
+</div>
+
   <div style="margin-top:1.5rem;">
     <h2 style="font-size:1.7rem;font-weight:700;color:#1f2933;margin-bottom:1rem;">All Listings</h2>
-
-    <!-- Search -->
-    <form action="/listings" method="GET" class="hk-search-pill">
-
-      <!-- WHERE (title + location search) -->
-      <div class="hk-search-item">
-        <label class="hk-search-label">Search</label>
-        <input type="text" name="search" placeholder="Search homestay, location…" value="<%= search %>"
-          class="hk-search-input">
-        <button type="button" id="clearSearch" class="hk-clear-icon">
-          ✕
-        </button>
-      </div>
-
-      <div class="hk-search-divider"></div>
-
-      <!-- GENRE (optional hidden if already selected) -->
-      <div class="hk-search-item">
-        <label class="hk-search-label">Genre</label>
-        <select name="genre" class="hk-search-input">
-          <option value="">Any type</option>
-          <% genres.forEach(g=> { %>
-            <option value="<%= g %>" <%=activeGenre===g ? "selected" : "" %>>
-              <%= g %>
-            </option>
-            <% }) %>
-        </select>
-      </div>
-
-      <!-- BUTTON + CLEAR -->
-      <div class="hk-search-end">
-
-        <!-- SEARCH -->
-        <button type="submit" class="hk-search-btn">
-          <i class="fa-solid fa-magnifying-glass"></i>
-        </button>
-
-        <!-- CLEAR -->
-        <% if (search || (activeGenre && activeGenre !=='all' )) { %>
-          <a href="/listings" class="hk-clear-btn" style="color: #ff4b6b;text-decoration: none;">Clear <i
-              class="fa-solid fa-filter-circle-xmark"></i></a>
-          <% } %>
-
-      </div>
-
-    </form>
 
     <!-- Genre filter -->
     <div class="genre-bar">

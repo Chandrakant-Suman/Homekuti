@@ -145,7 +145,26 @@
       btn.classList.remove("clicked");
     });
   });
+  document.addEventListener("DOMContentLoaded", () => {
+    const input = document.getElementById("searchInput");
+    const clearBtn = document.getElementById("clearSearch");
 
+    if (!input || !clearBtn) return;
+
+    function toggle() {
+      clearBtn.style.display = input.value ? "block" : "none";
+    }
+
+    input.addEventListener("input", toggle);
+
+    clearBtn.addEventListener("click", () => {
+      input.value = "";
+      input.focus();
+      toggle();
+    });
+
+    toggle();
+  });
   // ===============================
   // AUTO CLOSE ALERTS
   // ===============================

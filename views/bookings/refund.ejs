@@ -1,0 +1,39 @@
+<%- layout('/layouts/boilerplate') %>
+
+<div class="container mt-5">
+
+  <div class="card shadow-lg border-0 p-4">
+
+    <h3 class="mb-4 text-danger">Cancel Booking & Refund</h3>
+
+    <div class="mb-3">
+      <strong>Listing:</strong> <%= booking.listing.title %>
+    </div>
+
+    <div class="mb-3">
+      <strong>Price Paid:</strong> ₹ <%= booking.totalPrice %>
+    </div>
+
+    <div class="mb-3">
+      <strong>Status:</strong>
+      <span class="badge bg-success"><%= booking.paymentStatus %></span>
+    </div>
+
+    <hr>
+
+    <h5 class="text-warning">Refund Policy</h5>
+    <ul>
+      <li>Full refund if cancelled within 24 hours</li>
+      <li>50% refund if cancelled within 3 days</li>
+      <li>No refund after that</li>
+    </ul>
+
+    <form action="/bookings/<%= booking._id %>?_method=DELETE" method="POST">
+      <button class="btn btn-danger w-100 mt-3">
+        Confirm Cancellation & Refund
+      </button>
+    </form>
+
+  </div>
+
+</div>

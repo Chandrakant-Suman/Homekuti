@@ -17,3 +17,6 @@
 
 /* 5. Media Queries */
 @import url("./responsive.css");
+
+/* 6. Search Pill Styles */
+@import url("./searchpill.css");

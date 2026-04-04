@@ -1,0 +1,353 @@
+<% layout('/layouts/boilerplate') -%>
+
+  <style>
+    .admin-nav {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 1.5rem 0;
+    }
+
+    .admin-nav a {
+      padding: 8px 20px;
+      border-radius: 10px;
+      border: 1.5px solid #e3e5ec;
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #374151;
+      transition: all 0.15s;
+    }
+
+    .admin-nav a:hover,
+    .admin-nav a.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+      text-decoration: none;
+    }
+
+    .table-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.86rem;
+    }
+
+    thead th {
+      padding: 8px 12px;
+      text-align: left;
+      font-size: 0.76rem;
+      color: #6b7280;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    tbody td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #f9fafb;
+      color: #374151;
+      vertical-align: middle;
+    }
+
+    tbody tr:hover td {
+      background: #fafafa;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 9px;
+      border-radius: 999px;
+      font-size: 0.73rem;
+      font-weight: 700;
+    }
+
+    .b-paid {
+      background: #f0fdf4;
+      color: #15803d;
+    }
+
+    .b-upcoming {
+      background: #eff6ff;
+      color: #1d4ed8;
+    }
+
+    .b-cancelled {
+      background: #f3f4f6;
+      color: #6b7280;
+    }
+
+    .b-unavailable {
+      background: #fef2f2;
+      color: #b91c1c;
+    }
+
+    .b-refund_initiated {
+      background: #fffbeb;
+      color: #d97706;
+    }
+
+    .b-refunded {
+      background: #f0fdf4;
+      color: #15803d;
+    }
+
+    .b-refund_failed {
+      background: #fef2f2;
+      color: #b91c1c;
+    }
+
+    .b-completed {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    /* Refund action form */
+    .refund-form {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .refund-input {
+      border: 1.5px solid #e3e5ec;
+      border-radius: 8px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      font-family: inherit;
+      width: 90px;
+      outline: none;
+    }
+
+    .refund-input:focus {
+      border-color: var(--primary);
+    }
+
+    .refund-btn {
+      padding: 4px 12px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+
+    .refund-btn:hover {
+      background: var(--primary-dark);
+    }
+
+    .refund-done {
+      font-size: 0.78rem;
+      color: #15803d;
+      font-weight: 600;
+    }
+
+    /* Unavail button (host listings) */
+    .unavail-btn {
+      padding: 4px 10px;
+      background: none;
+      border: 1.5px solid #fca5a5;
+      border-radius: 8px;
+      color: #ef4444;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    .unavail-btn:hover {
+      background: #ef4444;
+      color: #fff;
+    }
+
+    /* Stats row */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat-mini {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1rem 1.2rem;
+      box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
+      border: 1.5px solid #f1f5f9;
+    }
+
+    .stat-mini .num {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #1f2933;
+    }
+
+    .stat-mini .lbl {
+      font-size: 0.78rem;
+      color: #6b7280;
+      font-weight: 500;
+    }
+  </style>
+
+  <h2 style="font-size:1.6rem;font-weight:700;margin:1.5rem 0 0.5rem;">Bookings & Refunds</h2>
+  <div class="admin-nav">
+    <a href="/admin/dashboard">Dashboard</a>
+    <a href="/admin/users">Users</a>
+    <a href="/admin/listings">Listings</a>
+    <a href="/admin/bookings" class="active">Bookings</a>
+  </div>
+
+  <!-- Quick stats -->
+  <% const totalPaid=bookings.filter(b=> b.paymentStatus === 'paid').length;
+    const refundPending = bookings.filter(b => b.paymentStatus === 'refund_initiated').length;
+    const refundFailed = bookings.filter(b => b.paymentStatus === 'refund_failed').length;
+    const totalRevenue = bookings.filter(b => b.paymentStatus === 'paid').reduce((s,b) => s + (b.totalPrice||0), 0);
+    %>
+    <div class="stats-row">
+      <div class="stat-mini">
+        <div class="num">
+          <%= bookings.length %>
+        </div>
+        <div class="lbl">Total Bookings</div>
+      </div>
+      <div class="stat-mini">
+        <div class="num">
+          <%= totalPaid %>
+        </div>
+        <div class="lbl">Paid Bookings</div>
+      </div>
+      <div class="stat-mini" style="border-color:<%= refundPending > 0 ? '#fde68a' : '#f1f5f9' %>">
+        <div class="num" style="color:<%= refundPending > 0 ? '#d97706' : '#1f2933' %>">
+          <%= refundPending %>
+        </div>
+        <div class="lbl">Refunds Pending</div>
+      </div>
+      <div class="stat-mini" style="border-color:<%= refundFailed > 0 ? '#fecaca' : '#f1f5f9' %>">
+        <div class="num" style="color:<%= refundFailed > 0 ? '#ef4444' : '#1f2933' %>">
+          <%= refundFailed %>
+        </div>
+        <div class="lbl">Refunds Failed ⚠️</div>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Guest</th>
+            <th>Listing</th>
+            <th>Dates</th>
+            <th>Amount</th>
+            <th>Payment</th>
+            <th>Status</th>
+            <th>Refund Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% bookings.forEach((b, i)=> { %>
+            <tr>
+              <td style="color:#9ca3af;font-size:0.8rem;">
+                <%= i+1 %>
+              </td>
+              <td>
+                <strong>
+                  <%= b.user?.username %>
+                </strong><br>
+                <span style="color:#9ca3af;font-size:0.76rem;">
+                  <%= b.user?.email %>
+                </span>
+              </td>
+              <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                <%= b.listing?.title || '—' %>
+              </td>
+              <td style="white-space:nowrap;font-size:0.82rem;">
+                <%= new Date(b.checkIn).toLocaleDateString('en-IN',{day:'numeric',month:'short'}) %> →
+                  <%= new Date(b.checkOut).toLocaleDateString('en-IN',{day:'numeric',month:'short'}) %><br>
+                    <span style="color:#9ca3af;">
+                      <%= b.nights %>n · <%= b.guests %>g
+                    </span>
+              </td>
+              <td><strong>₹<%= b.totalPrice?.toLocaleString('en-IN') %></strong></td>
+              <td><span class="badge b-<%= b.paymentStatus %>">
+                  <%= b.paymentStatus.replace(/_/g,' ') %></span></td>
+          <td><span class="badge b-<%= b.status %>"><%= b.status %></span></td>
+          <td>
+            <%
+              const canRefund =
+              b.razorpayPaymentId &&
+              [' paid','refund_failed'].includes(b.paymentStatus) && ['cancelled','unavailable'].includes(b.status) &&
+                    !b.refund?.razorpayRefundId; const
+                    alreadyRefunded=['refund_initiated','refunded'].includes(b.paymentStatus) ||
+                    b.refund?.razorpayRefundId; %>
+                    <% if (alreadyRefunded) { %>
+                      <span class="refund-done">
+                        <i class="fa-solid fa-circle-check"></i>
+                        ₹<%= b.refund?.amount?.toLocaleString('en-IN') || '0' %>
+                          <%= b.paymentStatus==='refunded' ? 'Refunded' : 'In Progress' %>
+                            <span style="margin-left:4px;">
+                              <%= b.paymentStatus==='refunded' ? 'Refunded' : 'In Progress' %>
+                            </span>
+                      </span>
+                      <% } else if (canRefund) { %>
+                        <form method="POST" action="/bookings/<%= b._id %>/refund" class="refund-form"
+                          onsubmit="return confirm('Initiate refund of this amount via Razorpay?')">
+                          <input type="number" name="amount" class="refund-input" value="<%= b.totalPrice %>" min="1"
+                            max="<%= b.totalPrice %>">
+                          <button type="submit" class="refund-btn">
+                            <i class="fa-solid fa-rotate-left"></i> Refund
+                          </button>
+                        </form>
+                        <% } else if (b.status==='upcoming' && b.paymentStatus==='paid' ) { %>
+                          <!-- Host can mark unavailable -->
+                          <form method="POST" action="/bookings/<%= b._id %>/unavailable"
+                            onsubmit="return confirm('Mark this booking as unavailable? A full refund will be auto-initiated.')">
+                            <input type="hidden" name="reason" value="Marked unavailable by admin">
+                            <button type="submit" class="unavail-btn">Mark Unavailable</button>
+                          </form>
+                          <% } else { %>
+                            <% if (b.paymentStatus==='refunded' ) { %>
+                              <span class="refund-done">
+                                <i class="fa-solid fa-circle-check"></i>
+                                Refunded ₹<%= b.refund?.amount?.toLocaleString('en-IN') || '0' %>
+                              </span>
+
+                              <% } else if (b.paymentStatus==='refund_initiated' ) { %>
+                                <span style="color:#d97706;font-weight:600;font-size:0.78rem;">
+                                  <i class="fa-solid fa-clock"></i>
+                                  Refund Initiated
+                                </span>
+
+                                <% } else if (b.paymentStatus==='refund_failed' ) { %>
+                                  <span style="color:#ef4444;font-weight:600;font-size:0.78rem;">
+                                    <i class="fa-solid fa-circle-xmark"></i>
+                                    Refund Failed
+                                  </span>
+
+                                  <% } else { %>
+                                    <span style="color:#9ca3af;font-size:0.78rem;">
+                                      No Action
+                                    </span>
+                                    <% } %>
+                                      <% } %>
+              </td>
+            </tr>
+            <% }) %>
+        </tbody>
+      </table>
+    </div>

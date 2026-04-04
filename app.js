@@ -23,6 +23,9 @@ const Review = require("./models/review");
 const listingRouter = require("./routes/listing");
 const reviewsRouter = require("./routes/review");
 const userRouter = require("./routes/user");
+const adminRoutes = require("./routes/admin");
+const bookingRouter=require("./routes/booking")
+const paymentRoutes=require("./routes/payment");
 
 // ================= UTILITIES =================
 const maintenance = require("./middlewares/maintenance");
@@ -196,8 +199,20 @@ app.get(
   "/",
   maintenance,
   wrapAsync(async (req, res) => {
-    const featuredListings = await Listing.aggregate([{ $sample: { size: 3 } }]);
-    res.render("home", { featuredListings });
+    const featuredListings = await Listing.find({}).limit(6);
+
+  // ⭐ Get highest rated listing
+  const bestDealArr = await Listing.find({ avgRating: { $gt: 0 } })
+    .sort({ avgRating: -1 })
+    .limit(1)
+    .lean();
+
+  const bestDeal = bestDealArr[0] || null;
+
+  res.render("home", {
+    featuredListings,
+    bestDeal 
+  });
   })
 );
 
@@ -205,6 +220,9 @@ app.get(
 app.use("/listings", listingRouter);
 app.use("/listings/:id/reviews", reviewsRouter);
 app.use("/user", userRouter);
+app.use("/admin", adminRoutes);
+app.use("/bookings", bookingRouter);
+app.use("/api/payment", paymentRoutes);
 
 // STATIC PAGES
 app.get("/about", (req, res) => res.render("about"));

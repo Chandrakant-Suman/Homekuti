@@ -29,4 +29,22 @@ router.post("/:id/refund", isLoggedIn, isAdmin, wrapAsync(ctrl.adminRefund));
 // Fallback
 router.post("/", isLoggedIn, wrapAsync(ctrl.createBooking));
 
+router.delete("/:id", isLoggedIn, wrapAsync(async (req, res) => {
+  const booking = await Booking.findById(req.params.id);
+
+  if (!booking) {
+    req.flash("error", "Booking not found");
+    return res.redirect("/bookings");
+  }
+
+  // Optional: refund logic placeholder
+  booking.paymentStatus = "refunded";
+  await booking.save();
+
+  await Booking.findByIdAndDelete(req.params.id);
+
+  req.flash("success", "Booking cancelled & refunded");
+  res.redirect("/bookings");
+}));
+
 module.exports = router;

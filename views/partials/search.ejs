@@ -1,0 +1,36 @@
+<form action="/listings" method="GET" class="hk-search-pill">
+
+  <!-- SEARCH -->
+  <div class="hk-search-item">
+    <label>Search</label>
+    <div class="hk-input-wrap">
+      <input 
+        type="text" 
+        name="search" 
+        id="searchInput"
+        placeholder="Search homestay, location..."
+        value="<%= typeof search !== 'undefined' ? search : '' %>"
+      >
+      <button type="button" id="clearSearch">✕</button>
+    </div>
+  </div>
+
+  <!-- GENRE -->
+  <div class="hk-search-item">
+    <label>Genre</label>
+    <select name="genre">
+      <option value="">Any type</option>
+      <% if (typeof genres !== 'undefined') { %>
+        <% genres.forEach(g => { %>
+          <option value="<%= g %>" <%= activeGenre===g ? "selected" : "" %>>
+            <%= g %>
+          </option>
+        <% }) %>
+      <% } %>
+    </select>
+  </div>
+
+  <!-- BUTTON -->
+  <button type="submit" class="hk-search-btn">🔍</button>
+
+</form>

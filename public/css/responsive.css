@@ -1,7 +1,8 @@
-
 /* =========================================
-   Responsive Design
+   RESPONSIVE DESIGN (CLEAN VERSION)
 ========================================= */
+
+/* -------- TABLET -------- */
 @media (max-width: 992px) {
   .hk-hero {
     flex-direction: column;
@@ -23,65 +24,70 @@
   }
 }
 
+/* -------- MOBILE (MAIN) -------- */
 @media (max-width: 768px) {
+
+  /* SEARCH PILL */
   .hk-search-pill {
-    flex-wrap: wrap;
-    border-radius: 24px;
-    padding: 0.6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    border-radius: 18px;
+    padding: 12px;
   }
 
   .hk-search-item {
-    flex: 1 1 100%;
-    padding: 0.4rem 0.8rem;
-  }
-
-  .hk-search-divider {
-    display: none;
-  }
-
-  .hk-search-end {
     width: 100%;
-    justify-content: space-between;
-    margin-left: 0;
-    padding: 0.4rem 0.8rem;
+    padding: 0;
+  }
+
+  .hk-search-item:not(:last-child) {
+    border-right: none;
   }
 
   .hk-search-btn {
-    margin-left: 0;
+    width: 100%;
+    border-radius: 10px;
+  }
+
+  /* HERO */
+  .hk-hero-title {
+    font-size: 1.75rem;
   }
 
   .hero-mini-tagline {
     font-size: 0.8rem;
   }
 
+  /* HOST */
   .hk-host-card {
     flex-direction: column;
     align-items: flex-start;
   }
 
-  .hk-hero-title {
-    font-size: 1.75rem;
-  }
-
+  /* SECTION HEADER */
   .hk-section-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.5rem;
   }
 
+  /* FOOTER */
   .footer-content {
     flex-direction: column;
     gap: 16px;
   }
 }
 
+/* -------- SMALL MOBILE -------- */
 @media (max-width: 576px) {
+
   .hk-listing-image {
     height: 190px;
   }
 
   .hk-hero {
-    padding: 1.5rem 0 1rem 0;
+    padding: 1.5rem 0 1rem;
   }
 
   .hk-hero-title {
@@ -106,5 +112,29 @@
 
   .hk-panel {
     padding: 0.8rem 1rem;
+  }
+}
+
+/* -------- DESKTOP ENHANCEMENT -------- */
+@media (min-width: 769px) {
+
+  .hk-search-pill {
+    display: grid;
+    grid-template-columns: 2fr 1fr auto;
+    align-items: center;
+    gap: 16px;
+
+    padding: 12px 18px;
+    border-radius: 999px;
+  }
+
+  .hk-search-item:not(:last-child) {
+    border-right: 1px solid #e5e7eb;
+    padding-right: 12px;
+  }
+
+  .hk-search-btn {
+    width: 44px;
+    height: 44px;
   }
 }
