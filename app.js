@@ -130,8 +130,8 @@ const sessionOptions = {
     httpOnly: true,
     maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
     sameSite: "lax",
-    secure: false, // ✅ MUST be false for localhost development
-    // secure: process.env.NODE_ENV === "production",
+    // secure: false, // ✅ MUST be false for localhost development
+    secure: process.env.NODE_ENV === "production",
     path: "/",
   },
 };
@@ -177,20 +177,6 @@ app.use((req, res, next) => {
   console.log("User:", req.user ? req.user.username : "No user");
   next();
 });
-
-// ================= DEBUG MIDDLEWARE (REMOVE IN PRODUCTION) =================
-// app.use((req, res, next) => {
-//   console.log("\n--- Request Debug ---");
-//   console.log("Path:", req.path);
-//   console.log("Method:", req.method);
-//   console.log("Session ID:", req.sessionID);
-//   console.log("Has Session:", !!req.session);
-//   console.log("Authenticated:", req.isAuthenticated());
-//   console.log("User:", req.user ? req.user.username : "No user");
-//   console.log("Cookie Header:", req.headers.cookie ? "Present" : "Missing");
-//   console.log("-------------------\n");
-//   next();
-// });
 
 // ================= ROUTES =================
 
