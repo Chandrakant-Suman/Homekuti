@@ -1,36 +1,54 @@
 <form action="/listings" method="GET" class="hk-search-pill">
 
-  <!-- SEARCH -->
-  <div class="hk-search-item">
-    <label>Search</label>
-    <div class="hk-input-wrap">
-      <input 
-        type="text" 
-        name="search" 
-        id="searchInput"
-        placeholder="Search homestay, location..."
-        value="<%= typeof search !== 'undefined' ? search : '' %>"
-      >
-      <button type="button" id="clearSearch">✕</button>
+    <!-- SEARCH -->
+    <div class="hk-search-item">
+        <label>Search</label>
+        <div class="hk-input-wrap">
+            <input type="text" name="search" id="searchInput" placeholder="Search homestay, location..."
+                value="<%= typeof search !== 'undefined' ? search : '' %>">
+            <button type="button" id="clearSearch" class="hk-clear-icon">
+                <i class="fa-solid fa-circle-xmark"></i>
+            </button>
+        </div>
     </div>
-  </div>
 
-  <!-- GENRE -->
-  <div class="hk-search-item">
-    <label>Genre</label>
-    <select name="genre">
-      <option value="">Any type</option>
-      <% if (typeof genres !== 'undefined') { %>
-        <% genres.forEach(g => { %>
-          <option value="<%= g %>" <%= activeGenre===g ? "selected" : "" %>>
-            <%= g %>
-          </option>
-        <% }) %>
-      <% } %>
-    </select>
-  </div>
+    <!-- GENRE -->
+    <div class="hk-search-item">
+        <label>Genre</label>
+        <select name="genre">
+            <option value="">Any type</option>
+            <% if (typeof genres !=='undefined' ) { %>
+                <% genres.forEach(g=> { %>
+                    <option value="<%= g %>" <%=activeGenre===g ? "selected" : "" %>>
+                        <%= g %>
+                    </option>
+                    <% }) %>
+                        <% } %>
+        </select>
+    </div>
 
-  <!-- BUTTON -->
-  <button type="submit" class="hk-search-btn">🔍</button>
+    <!-- BUTTON -->
+    <button type="submit" class="hk-search-btn">🔍</button>
 
 </form>
+<script>
+    const searchInput = document.getElementById("searchInput");
+    const clearBtn = document.getElementById("clearSearch");
+
+    // Show button if value already exists (EJS case)
+    if (searchInput.value.trim() !== "") {
+        clearBtn.style.display = "block";
+    }
+
+    // Toggle visibility
+    searchInput.addEventListener("input", () => {
+        clearBtn.style.display = searchInput.value.trim() ? "block" : "none";
+    });
+
+    // Clear input
+    clearBtn.addEventListener("click", () => {
+        searchInput.value = "";
+        clearBtn.style.display = "none";
+        searchInput.focus();
+    });
+</script>

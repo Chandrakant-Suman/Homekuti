@@ -1,111 +1,241 @@
 <% layout('/layouts/boilerplate') -%>
 
-<!-- hero section -->
-<section class="hk-hero offset-1">
-  <div class="hk-hero-content">
-    <p class="hk-hero-kicker">Curated homestays • Cozy cottages • Mountain escapes</p>
-    <h1 class="hk-hero-title">Find a stay that actually feels like home.</h1>
-    <p class="hk-hero-subtitle">
-      Discover handpicked homes, cabins, and rooms hosted by people who care.
-      No generic hotel vibe, just warm, lived-in spaces.
-    </p>
-    <div class="hk-hero-actions">
-      <a href="/listings" class="hk-btn">Explore all stays</a>
-      <a href="/listings/new" class="hk-btn">Become a host</a>
-    </div>
-  </div>
+  <!-- hero section -->
+  <section class="hk-hero">
+    <div class="hk-hero-overlay"></div>
 
-<div class="hk-hero-side d-none d-md-block">
+    <div class="hk-container hk-hero-inner">
 
-  <% if (bestDeal) { %>
-    <a href="/listings/<%= bestDeal._id %>" style="text-decoration:none;color:inherit;">
-      <div class="hk-hero-card">
-
-        <h3>
-          Top Rated in <%= bestDeal.location || "India" %>
+      <!-- LEFT CONTENT -->
+      <div class="hk-hero-content">
+        <h3 class="hk-heading">
+          Welcome to <span class="hk-brand">Homekuti</span>
         </h3>
 
-        <p>
-          <%= bestDeal.title || "Cozy stay" %>
+        <p class="hk-kicker">
+          CURATED HOMESTAYS • COZY COTTAGES • MOUNTAIN ESCAPES
         </p>
 
-        <span class="hk-hero-tag">
-          ⭐ <%= bestDeal.avgRating?.toFixed ? bestDeal.avgRating.toFixed(1) : bestDeal.avgRating %>
-          • ₹<%= bestDeal.price ? Number(bestDeal.price).toLocaleString("en-IN") : "N/A" %>/night
-        </span>
+        <h1 class="hk-title">
+          Find a stay that actually feels like home.
+        </h1>
 
+        <p class="hk-subtitle">
+          Handpicked homes hosted by real people. No generic hotel vibes.
+        </p>
+
+        <div class="hk-actions">
+          <a href="/listings" class="hk-btn">Explore stays</a>
+          <a href="/listings/new" class="hk-btn">Become a host</a>
+        </div>
+
+        <!-- Glass card BELOW content -->
+        <div class="hk-glass-card">
+          <h4>Explore stays</h4>
+          <p>Highly rated homes across India.</p>
+          <a href="/listings">Browse listings →</a>
+        </div>
       </div>
-    </a>
 
-  <% } else { %>
+      <!-- RIGHT SIDE IMAGES -->
+      <div class="hk-hero-image">
+        <img src="/images/hero.jpeg" alt="Hero image">
+      </div>
 
-    <div class="hk-hero-card">
-      <h3>Explore stays</h3>
-      <p>Find cozy and highly rated places across India.</p>
-      <span class="hk-hero-tag">Browse listings</span>
+    </div>
+  </section>
+  
+  <!-- search section -->
+  <div class="hk-search-wrapper">
+    <%- include("./partials/search") %>
+  </div>
+
+  <!-- Featured Stays -->
+  <section class="hk-section">
+    <div class="hk-section-header">
+      <h2>Featured stays</h2>
+      <a href="/listings"><strong>View all</strong></a>
     </div>
 
-  <% } %>
-
-</div>
-</section>
-
-<!-- search section -->
-
-<div class="hk-search-wrapper">
-  <%- include("./partials/search") %>
-</div>
-
-<!-- Featured Stays -->
-<section class="hk-section">
-  <div class="hk-section-header">
-    <h2>Featured stays</h2>
-    <a href="/listings"><strong>View all</strong></a>
-  </div>
-
-  <div class="row g-4">
-    <% if (featuredListings && featuredListings.length) { %>
-      <% featuredListings.forEach(listing => { %>
-        <div class="col-md-4">
-          <div class="hk-stay-card position-relative">
-            <a href="/listings/<%= listing._id %>" class="stretched-link" style="z-index:2;"></a>
-            <%
-              let displayImage = "/images/placeholder.jpg";
-              if (listing.image) {
-                if (typeof listing.image === "string") displayImage = listing.image;
-                else if (listing.image.url) displayImage = listing.image.url;
-              }
-            %>
-            <div class="hk-stay-image" style="background-image:url('<%= displayImage %>')">
-              <% if (listing.genre) { %>
-                <span style="position:absolute;top:10px;left:10px;background:rgba(0,0,0,0.5);color:#fff;padding:2px 10px;border-radius:999px;font-size:0.72rem;font-weight:600;backdrop-filter:blur(4px);">
-                  <%= listing.genre %>
-                </span>
-              <% } %>
-            </div>
-            <div class="hk-stay-body">
-              <p class="hk-stay-location"><%= listing.location || "Location" %>, <%= listing.country || "India" %></p>
-              <p class="hk-stay-title"><%= listing.title || "Untitled" %></p>
-              <div style="display:flex;justify-content:space-between;align-items:center;">
-                <p class="hk-stay-price" style="margin:0;">
-                  <span>₹<%= listing.price ? Number(listing.price).toLocaleString("en-IN") : "N/A" %></span> /night
-                </p>
-                <% if (listing.avgRating > 0) { %>
-                  <span style="font-size:0.82rem;font-weight:600;display:flex;align-items:center;gap:3px;">
-                    <i class="fa-solid fa-star" style="color:#f59e0b;font-size:0.75rem;"></i>
-                    <%= listing.avgRating.toFixed ? listing.avgRating.toFixed(1) : listing.avgRating %>
-                  </span>
-                <% } %>
-              </div>
+    <div class="row g-4">
+      <% if (featuredListings && featuredListings.length) { %>
+        <% featuredListings.forEach(listing=> { %>
+          <div class="col-md-4">
+            <div class="hk-stay-card position-relative">
+              <a href="/listings/<%= listing._id %>" class="stretched-link" style="z-index:2;"></a>
+              <% let displayImage="/images/placeholder.jpg" ; if (listing.image) { if (typeof listing.image==="string" )
+                displayImage=listing.image; else if (listing.image.url) displayImage=listing.image.url; } %>
+                <div class="hk-stay-image" style="background-image:url('<%= displayImage %>')">
+                  <% if (listing.genre) { %>
+                    <span
+                      style="position:absolute;top:10px;left:10px;background:rgba(0,0,0,0.5);color:#fff;padding:2px 10px;border-radius:999px;font-size:0.72rem;font-weight:600;backdrop-filter:blur(4px);">
+                      <%= listing.genre %>
+                    </span>
+                    <% } %>
+                </div>
+                <div class="hk-stay-body">
+                  <p class="hk-stay-location">
+                    <%= listing.location || "Location" %>, <%= listing.country || "India" %>
+                  </p>
+                  <p class="hk-stay-title">
+                    <%= listing.title || "Untitled" %>
+                  </p>
+                  <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <p class="hk-stay-price" style="margin:0;">
+                      <span>₹<%= listing.price ? Number(listing.price).toLocaleString("en-IN") : "N/A" %></span> /night
+                    </p>
+                    <% if (listing.avgRating> 0) { %>
+                      <span style="font-size:0.82rem;font-weight:600;display:flex;align-items:center;gap:3px;">
+                        <i class="fa-solid fa-star" style="color:#f59e0b;font-size:0.75rem;"></i>
+                        <%= listing.avgRating.toFixed ? listing.avgRating.toFixed(1) : listing.avgRating %>
+                      </span>
+                      <% } %>
+                  </div>
+                </div>
             </div>
           </div>
-        </div>
-      <% }) %>
-    <% } else { %>
-      <div class="col-12 text-center py-5">
-        <p style="color:#6b7280;">No featured stays available right now.</p>
-        <a href="/listings" class="hk-btn" style="display:inline-block;margin-top:1rem;">Browse all listings</a>
+          <% }) %>
+            <% } else { %>
+              <div class="col-12 text-center py-5">
+                <p style="color:#6b7280;">No featured stays available right now.</p>
+                <a href="/listings" class="hk-btn" style="display:inline-block;margin-top:1rem;">Browse all listings</a>
+              </div>
+              <% } %>
+    </div>
+  </section>
+
+  <!-- Featured Destinations -->
+  <!-- <section class="hk-section hk-container">
+    <h2 class="hk-section-title">Featured Destinations</h2>
+
+    <div class="hk-destination-grid">
+      <div class="hk-destination">Manali</div>
+      <div class="hk-destination">Kerala</div>
+      <div class="hk-destination">Goa</div>
+      <div class="hk-destination">Jaipur</div>
+    </div>
+  </section> -->
+
+  <section class="hk-destinations-section">
+    <h2 class="hk-dest-title">Featured Destinations</h2>
+
+    <div class="hk-dest-grid">
+
+      <div class="hk-dest-card">
+        <img src="/images/sikkim.jpg" alt="Sikkim">
+        <span>Sikkim</span>
       </div>
-    <% } %>
-  </div>
-</section>
+
+      <div class="hk-dest-card">
+        <img src="/images/kerala.jpg" alt="Kerala">
+        <span>Kerala</span>
+      </div>
+
+      <div class="hk-dest-card">
+        <img src="/images/goa.jpg" alt="Goa">
+        <span>Goa</span>
+      </div>
+
+      <div class="hk-dest-card">
+        <img src="/images/manali.jpg" alt="Manali">
+        <span>Manali</span>
+      </div>
+
+      <div class="hk-dest-card">
+        <img src="/images/andaman.jpg" alt="Andaman">
+        <span>Andaman</span>
+      </div>
+
+      <div class="hk-dest-card">
+        <img src="/images/hampi.jpg" alt="Hampi">
+        <span>Hampi</span>
+      </div>
+
+      <div class="hk-dest-card">
+        <img src="/images/meghalaya.jpg" alt="Meghalaya">
+        <span>Meghalaya</span>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Why Choose Homekuti -->
+  <section class="hk-why">
+    <h2 class="hk-why-title">Why Choose Homekuti?</h2>
+
+    <div class="hk-why-grid">
+
+      <!-- ITEM 1 -->
+      <div class="hk-why-item">
+        <div class="hk-why-icon">
+          <img src="/images/assign.png" alt="user" style="height: 50px; width: 65px; size: fit;">
+        </div>
+        <h4>Verified Hosts</h4>
+        <p>Verifies your reservations and verified hosts.</p>
+      </div>
+
+      <!-- ITEM 2 -->
+      <div class="hk-why-item">
+        <div class="hk-why-icon">
+          <img src="/images/support.png" alt="support" style="height: 50px; width: 65px; size: fit;">
+        </div>
+        <h4>24/7 Local Support</h4>
+        <p>Based in town, ready to help anytime.</p>
+      </div>
+
+      <!-- ITEM 3 -->
+      <div class="hk-why-item">
+        <div class="hk-why-icon">
+          <img src="/images/experience.png" alt="experience" style="height: 50px; width: 65px; size: fit;">
+        </div>
+        <h4>Unique Experiences</h4>
+        <p>Stay somewhere that actually feels different.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section class="hk-testimonials-section">
+    <h2 class="hk-testimonials-title">Testimonials</h2>
+
+    <div class="hk-testimonials-grid">
+
+      <!-- CARD 1 -->
+      <div class="hk-testimonial-card">
+        <div class="hk-user">
+          <img src="/images/user1.png" alt="user">
+          <div>
+            <h4>Aarav</h4>
+            <div class="hk-stars">★★★★★</div>
+          </div>
+        </div>
+        <p>"Amazing stay! Everything felt premium and cozy."</p>
+      </div>
+
+      <!-- CARD 2 -->
+      <div class="hk-testimonial-card">
+        <div class="hk-user">
+          <img src="/images/user2.jpg" alt="user">
+          <div>
+            <h4>Riya</h4>
+            <div class="hk-stars">★★★★★</div>
+          </div>
+        </div>
+        <p>"Felt like home. Would definitely recommend!"</p>
+      </div>
+
+      <!-- CARD 3 -->
+      <div class="hk-testimonial-card">
+        <div class="hk-user">
+          <img src="/images/user3.jpg" alt="user">
+          <div>
+            <h4>Kabir</h4>
+            <div class="hk-stars">★★★★★</div>
+          </div>
+        </div>
+        <p>"Will book again. Great experience overall."</p>
+      </div>
+
+    </div>
+  </section>

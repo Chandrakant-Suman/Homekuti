@@ -1,0 +1,123 @@
+/* ================= SEARCH PILL ================= */
+
+.hk-search-wrapper {
+  margin-top: -50px; /* Adjust this value to move the search pill up or down */
+  display: flex;
+  justify-content: center;
+  z-index: 10; /* Ensure it appears above other content */
+  overflow: visible; /* for clear button */;
+  position: relative;
+}
+
+/* CONTAINER */
+.hk-search-pill {
+  display: grid;
+  grid-template-columns: 2fr 1fr auto;
+  align-items: center;
+
+  width: 100%;
+  max-width: 750px;
+
+  padding: 12px 18px;
+  border-radius: 999px;
+
+  background: #fff;
+  border: 1px solid rgba(226,232,240,0.9);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+
+}
+
+/* ITEMS */
+.hk-search-item {
+  display: flex;
+  flex-direction: column;
+  padding: 0 12px;
+}
+
+/* LABEL */
+.hk-search-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+/* INPUT WRAP */
+.hk-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* INPUT + SELECT */
+.hk-search-item input,
+.hk-search-item select {
+  border: none;
+  outline: none;
+  background: transparent;
+
+  font-size: 0.95rem;
+  color: #374151;
+
+  width: 100%;
+  padding-right: 32px;
+}
+
+/* DIVIDER */
+.hk-search-item:not(:last-child) {
+  border-right: 1px solid #e5e7eb;
+}
+
+/* CLEAR ICON */
+.hk-clear-icon {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+
+  border: none;
+  background: transparent; /* ❌ remove box */
+  
+  font-size: 16px;
+  font-weight: 500;
+  color: #9ca3af;
+
+  cursor: pointer;
+
+  display: none;
+}
+
+/* show state */
+.hk-clear-icon.show {
+  display: block;
+}
+
+/* subtle hover */
+.hk-clear-icon:hover {
+  color: #727272;
+}
+
+.hk-clear-icon.show {
+  display: flex;
+}
+
+/* SEARCH BUTTON */
+.hk-search-btn {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+
+  border: none;
+  background: var(--primary);
+  color: white;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+}
+
+/* HOVER */
+.hk-search-pill:hover {
+  box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+}

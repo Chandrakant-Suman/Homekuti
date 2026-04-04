@@ -438,15 +438,28 @@ ul li p {
    Hero Section 
 ========================================= */
 .hk-hero {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 32px;
-  padding: 2.5rem 0 1.5rem 0;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 16px;
 }
 
+/* MAIN ROW */
+.hk-hero-inner {
+  display: flex;
+  align-items: flex-start; /* 🔥 aligns vertically */
+  justify-content: space-between;
+  gap: 40px;
+}
+
+/* LEFT CONTENT */
 .hk-hero-content {
-  max-width: 540px;
+  flex: 1;
+  max-width: 650px;
+}
+
+/* RIGHT CARD */
+.hk-hero-side {
+  flex: 0 0 300px;
 }
 
 .hk-hero-kicker {
@@ -474,13 +487,6 @@ ul li p {
   margin-top: 1.25rem;
   display: flex;
   gap: 0.75rem;
-}
-
-/* Hero Side Card */
-.hk-hero-side {
-  flex: 1;
-  display: flex;
-  justify-content: flex-end;
 }
 
 .hk-hero-card {
@@ -780,6 +786,8 @@ ul li p {
   border: 1px solid rgba(226, 232, 240, 0.9);
   box-shadow: var(--shadow-card);
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
   transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, background 0.15s ease;
 }
 

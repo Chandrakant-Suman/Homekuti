@@ -122,6 +122,16 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+<script type="application/json" id="revenue-data">
+<%- JSON.stringify(revenueTrend || []) %>
+</script>
+<script type="application/json" id="user-data">
+<%- JSON.stringify(userGrowth || []) %>
+</script>
+<script type="application/json" id="listing-data">
+<%- JSON.stringify(bookingsPerListing || []) %>
+</script>
+
 <div class="row mt-5">
 
   <!-- Revenue Chart -->
@@ -143,9 +153,9 @@
 </div>
 
 <script>
-  const revenueData = <%- JSON.stringify(revenueTrend || []) %>;
-const userData = <%- JSON.stringify(userGrowth || []) %>;
-const listingData = <%- JSON.stringify(bookingsPerListing || []) %>;
+  const revenueData = JSON.parse(document.getElementById('revenue-data').textContent);
+  const userData = JSON.parse(document.getElementById('user-data').textContent);
+  const listingData = JSON.parse(document.getElementById('listing-data').textContent);
 
   // Revenue Chart
   new Chart(document.getElementById("revenueChart"), {

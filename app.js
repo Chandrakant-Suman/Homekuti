@@ -199,7 +199,9 @@ app.get(
   "/",
   maintenance,
   wrapAsync(async (req, res) => {
-    const featuredListings = await Listing.find({}).limit(6);
+  const featuredListings = await Listing.find({}).limit(3);
+
+  const genres = (await Listing.distinct("genre")).filter(Boolean);
 
   // ⭐ Get highest rated listing
   const bestDealArr = await Listing.find({ avgRating: { $gt: 0 } })
@@ -211,7 +213,9 @@ app.get(
 
   res.render("home", {
     featuredListings,
-    bestDeal 
+    genres,
+    activeGenre: "",
+    bestDeal
   });
   })
 );

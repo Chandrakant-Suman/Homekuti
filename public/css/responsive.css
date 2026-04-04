@@ -1,39 +1,57 @@
 /* =========================================
-   RESPONSIVE DESIGN (CLEAN VERSION)
+   RESPONSIVE SYSTEM (FINAL CLEAN VERSION)
 ========================================= */
 
-/* -------- TABLET -------- */
+
+/* -------- TABLET (≤ 992px) -------- */
 @media (max-width: 992px) {
-  .hk-hero {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 24px;
+
+  /* HERO LAYOUT */
+  .hk-hero-inner {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+  .hk-heading {
+    white-space: normal; /* allow wrap on small screens */
+    text-align: center;
   }
 
-  .hk-hero-side {
-    width: 100%;
-    justify-content: flex-start;
-  }
-
-  .hk-hero-card {
+  .hk-hero-content {
     max-width: 100%;
+    margin: 0 auto;
   }
 
-  .hk-hero-title {
-    font-size: 2rem;
+  .hk-actions {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .hk-hero-image {
+    margin-top: 30px;
+    justify-content: center;
+  }
+
+  .hk-hero-image img {
+    max-width: 90%;
+    transform: none; /* remove desktop push */
+  }
+
+  .hk-hero-image::before {
+    display: none; /* remove background panel for cleaner tablet */
   }
 }
 
-/* -------- MOBILE (MAIN) -------- */
+
+/* -------- MOBILE (≤ 768px) -------- */
 @media (max-width: 768px) {
 
-  /* SEARCH PILL */
+  /* SEARCH */
   .hk-search-pill {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    border-radius: 18px;
     padding: 12px;
+    border-radius: 18px;
   }
 
   .hk-search-item {
@@ -51,19 +69,46 @@
   }
 
   /* HERO */
-  .hk-hero-title {
-    font-size: 1.75rem;
+  .hk-hero {
+    padding: 40px 16px;
   }
 
-  .hero-mini-tagline {
-    font-size: 0.8rem;
+  .hk-hero-inner {
+    grid-template-columns: 1fr;
+    text-align: center;
+    gap: 30px;
   }
 
-  /* HOST */
-  .hk-host-card {
-    flex-direction: column;
-    align-items: flex-start;
+  .hk-hero-content {
+    max-width: 100%;
   }
+
+  .hk-actions {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .hk-hero-image {
+    margin-top: 20px;
+    justify-content: center;
+  }
+
+  .hk-hero-image img {
+    width: 100%;
+    max-width: 90%;
+    margin: auto;
+  }
+
+
+  /* TYPOGRAPHY */
+  .hk-title {
+    font-size: 2rem;
+  }
+
+  .hk-subtitle {
+    font-size: 0.95rem;
+  }
+
 
   /* SECTION HEADER */
   .hk-section-header {
@@ -72,6 +117,32 @@
     gap: 0.5rem;
   }
 
+
+  /* GRIDS */
+  .hk-feature-grid,
+  .hk-testimonials-grid,
+  .hk-why-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hk-why-grid {
+    gap: 30px;
+  }
+
+  .hk-dest-grid {
+    justify-content: center;
+  }
+
+  table {
+    font-size: 0.8rem;
+  }
+
+  .thumb {
+    width: 42px;
+    height: 32px;
+  }
+
+
   /* FOOTER */
   .footer-content {
     flex-direction: column;
@@ -79,31 +150,32 @@
   }
 }
 
-/* -------- SMALL MOBILE -------- */
+
+/* -------- SMALL MOBILE (≤ 576px) -------- */
 @media (max-width: 576px) {
 
-  .hk-listing-image {
-    height: 190px;
-  }
-
   .hk-hero {
-    padding: 1.5rem 0 1rem;
+    padding: 30px 12px;
   }
 
-  .hk-hero-title {
-    font-size: 1.5rem;
+  .hk-title {
+    font-size: 1.6rem;
   }
 
-  .hk-hero-subtitle {
+  .hk-subtitle {
     font-size: 0.9rem;
   }
 
+  .hk-listing-image {
+    height: 180px;
+  }
+
   .hk-stay-card {
-    height: 18rem;
+    height: 17rem;
   }
 
   .hk-stay-image {
-    height: 160px;
+    height: 150px;
   }
 
   .hk-date-row {
@@ -115,7 +187,8 @@
   }
 }
 
-/* -------- DESKTOP ENHANCEMENT -------- */
+
+/* -------- DESKTOP (≥ 769px) -------- */
 @media (min-width: 769px) {
 
   .hk-search-pill {

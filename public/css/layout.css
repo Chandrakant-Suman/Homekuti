@@ -266,8 +266,8 @@
 
 .footer-social a:hover i.fa-instagram {
   background: linear-gradient(45deg, #f9ce34, #ee2a7b, #6228d7);
-  background-clip: text;
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   transform: translateY(-2px);
 }

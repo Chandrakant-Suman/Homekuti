@@ -1,0 +1,140 @@
+
+/* =========================================
+   SEARCH PANELS
+========================================= */
+.hk-panel {
+  max-width: 720px;
+  margin: 0.75rem auto 0;
+  background: #ffffff;
+  border-radius: 24px;
+  box-shadow: 0 22px 60px rgba(15, 23, 42, 0.16);
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  padding: 1rem 1.25rem;
+  display: none;
+}
+
+.hk-panel h4 {
+  font-size: 1rem;
+  margin-bottom: 0.75rem;
+  color: #111827;
+}
+
+/* Where Panel */
+#wherePanel ul {
+  list-style: none;
+  padding-left: 0;
+  margin-bottom: 0.5rem;
+  margin-top: 0;
+}
+
+#wherePanel li {
+  padding: 0.45rem 0.3rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #374151;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+}
+
+#wherePanel li:hover {
+  background: #f3f4f6;
+}
+
+#whereCustom {
+  width: 100%;
+  padding: 0.5rem 0.6rem;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+}
+
+/* When Panel */
+.hk-date-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.hk-date-row label {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.hk-date-row input[type="date"] {
+  padding: 0.4rem 0.5rem;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+}
+
+/* Who Panel */
+.hk-guest-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.hk-guest-row:last-child {
+  border-bottom: none;
+}
+
+.hk-guest-title {
+  font-size: 0.95rem;
+  color: #111827;
+}
+
+.hk-guest-sub {
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.hk-guest-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.hk-guest-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.hk-guest-btn:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.hk-guest-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.hk-guest-count {
+  min-width: 16px;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #111827;
+}
+
+.hk-panel-apply {
+  margin-top: 0.8rem;
+  border: none;
+  background: #111827;
+  color: #fff;
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.hk-panel-apply:hover {
+  background: #374151;
+}

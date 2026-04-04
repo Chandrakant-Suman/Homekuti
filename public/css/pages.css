@@ -3,84 +3,175 @@
    Page-Specific Layouts and Styles
 ========================================= */
 
+/*{ Best for debugging layout issues */
+/* *{
+  outline: 1px solid red !important;
+} */
+
+
 /* =========================================
-   HOME PAGE - HERO
+   HOME PAGE - HERO (FINAL CLEAN VERSION)
 ========================================= */
+
+
+/* CONTAINER SYSTEM */
+.hk-container {
+  max-width: 1200px;
+  margin: auto;
+  padding: 0 20px;
+}
+
+
+/* HERO BASE */
 .hk-hero {
-  display: flex;
+  position: relative;
+  background: linear-gradient(to bottom, #f9fafb, #eef2f7);
+  padding: 10px 0 60px;
+}
+
+
+/* OVERLAY (SAFE) */
+.hk-hero-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+
+/* LAYOUT */
+.hk-hero-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   align-items: center;
-  justify-content: space-between;
-  gap: 32px;
-  padding: 2.5rem 0 1.5rem 0;
+
+  gap: 30px;
 }
 
+
+/* LEFT CONTENT */
 .hk-hero-content {
-  max-width: 540px;
+  max-width: 520px;
+  position: relative;
+  z-index: 2;
 }
 
-.hk-hero-kicker {
-  font-size: 0.9rem;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--text-light);
-  margin-bottom: 0.75rem;
+.hk-heading {
+  display: inline-block; /* prevents weird wrapping */
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 4px;
 }
 
-.hk-hero-title {
-  font-size: 2.4rem;
-  font-weight: 700;
-  color: #0f172a;
-  margin-bottom: 0.75rem;
-}
-
-.hk-hero-subtitle {
-  font-size: 0.98rem;
-  color: #4b5563;
-  max-width: 480px;
-}
-
-.hk-hero-actions {
-  margin-top: 1.25rem;
-  display: flex;
-  gap: 0.75rem;
-}
-
-/* Hero Side Card */
-.hk-hero-side {
-  flex: 1;
-  display: flex;
-  justify-content: flex-end;
-}
-
-.hk-hero-card {
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 1.25rem 1.4rem;
-  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.16);
-  max-width: 280px;
-  border: 1px solid rgba(226, 232, 240, 0.9);
-}
-
-.hk-hero-card h3 {
-  font-size: 1.02rem;
-  margin-bottom: 0.4rem;
-  color: #111827;
-}
-
-.hk-hero-card p {
-  font-size: 0.9rem;
-  color: #6b7280;
-  margin-bottom: 0.6rem;
-}
-
-.hk-hero-tag {
-  display: inline-block;
-  font-size: 0.85rem;
+.hk-heading .hk-brand {
+  display: inline; /* force same line */
+  color: #ff385c;
   font-weight: 600;
-  color: var(--primary);
 }
 
+/* TEXT */
+.hk-brand {
+  color: #ff385c;
+  font-weight: 600;
+}
+
+.hk-kicker {
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+  color: #9ca3af;
+  margin-bottom: 6px;
+}
+
+.hk-title {
+  font-size: 3rem;
+  font-weight: 700;
+  margin: 12px 0;
+  line-height: 1.2;
+  color: #1f2937;
+}
+
+.hk-subtitle {
+  color: #6b7280;
+  margin-bottom: 20px;
+}
+
+
+/* BUTTONS */
+.hk-actions {
+  display: flex;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+
+/* GLASS CARD */
+.hk-glass-card {
+  margin-top: 22px;
+  padding: 18px;
+  border-radius: 16px;
+
+  background: rgba(255,255,255,0.65);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+
+
+/* =========================================
+   RIGHT IMAGE (PREMIUM SINGLE IMAGE FIX)
+========================================= */
+
+.hk-hero-image {
+  position: relative;
+  width: 100%;
+
+  display: flex;
+  justify-content: flex-end; /* 🔥 pushes image to right */
+  padding-right: 20px; /* 🔥 slight padding from edge */
+  margin-bottom: 20px; /* 🔥 small gap below image */
+}
+
+
+/* LIGHT BACKGROUND PANEL (like your 2nd image) */
+.hk-hero-image::before {
+  content: "";
+  position: absolute;
+
+  right: 0;
+  top: 20px;
+
+  width: 90%;
+  height: 100%;
+
+  background: #f3f4f6;
+  border-radius: 24px;
+
+  z-index: 0;
+}
+
+
+/* IMAGE */
+.hk-hero-image img {
+  position: relative;
+  z-index: 1;
+
+  width: 100%;
+  max-width: 520px;
+
+  height: auto;
+  object-fit: cover;
+
+  border-radius: 20px;
+  box-shadow: 0 25px 50px rgba(0,0,0,0.18);
+
+  transform: translateX(20px); /* 🔥 slight push to edge (premium feel) */
+}
+
+
+/* =========================================
+   SEARCH PILL
 /* Hero Mini Tagline */
+
 .hero-mini-tagline {
   font-size: 0.90rem;
   font-style: italic;
@@ -88,6 +179,231 @@
   white-space: nowrap;
   margin: 0;
   line-height: 1;
+}
+
+/* ------destination------ */
+.hk-section {
+  padding: 60px 0;
+}
+
+.hk-section-title {
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+}
+
+/* SECTION */
+.hk-destinations-section {
+  padding: 40px 20px;
+}
+
+.hk-dest-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+/* GRID */
+.hk-dest-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 24px;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+/* CARD */
+.hk-dest-card {
+  position: relative;
+  width: 110px;
+  height: 110px;
+  aspect-ratio: 1/1;
+  border-radius: 50%;
+  overflow: hidden;
+  cursor: pointer;
+  flex-shrink: 0;
+  /* box-shadow: 0 6px 16px rgba(0,0,0,0.1); */
+}
+
+/* IMAGE */
+.hk-dest-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+/* OVERLAY */
+.hk-dest-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  /* background: rgba(0, 0, 0, 0.25); */
+}
+
+/* TEXT */
+.hk-dest-card span {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  z-index: 2;
+}
+
+/* HOVER EFFECT */
+.hk-dest-card:hover img {
+  transform: scale(1.1);
+}
+
+.hk-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+}
+
+/* ---------------------------------- */
+/* TESTIMONIAL SECTION */
+/* ---------------------------------- */
+.hk-testimonial-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.hk-testimonial {
+  background: #fff;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+}
+.hk-testimonials-section {
+  padding: 80px 20px;
+  background: linear-gradient(to bottom, #f9fafb, #eef2f7);
+  text-align: center;
+}
+
+.hk-testimonials-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 40px;
+}
+
+/* GRID */
+.hk-testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+  max-width: 1100px;
+  margin: auto;
+}
+
+/* CARD */
+.hk-testimonial-card {
+  background: #fff;
+  padding: 24px;
+  border-radius: 18px;
+  text-align: left;
+
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+  transition: all 0.3s ease;
+}
+
+.hk-testimonial-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+}
+
+/* USER */
+.hk-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.hk-user img {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* NAME */
+.hk-user h4 {
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+/* STARS */
+.hk-stars {
+  font-size: 0.8rem;
+  color: #f59e0b;
+}
+
+/* TEXT */
+.hk-testimonial-card p {
+  font-size: 0.9rem;
+  color: #4b5563;
+  line-height: 1.5;
+}
+/* --------------------------------------- */
+/* ----------- Why Homekuti? ---------- */
+/* -------------------------------------- */
+.hk-why {
+  padding: 60px 20px;
+  text-align: center;
+  background: #fff;
+}
+
+.hk-why-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 40px;
+}
+
+/* GRID */
+.hk-why-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px;
+  max-width: 900px;
+  margin: auto;
+}
+
+/* ITEM */
+.hk-why-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ICON */
+.hk-why-icon {
+  font-size: 40px;
+  background: #f9fafb;
+  padding: 16px;
+  border-radius: 50%;
+  transition: 0.3s;
+}
+
+.hk-why-item:hover .hk-why-icon {
+  transform: translateY(-5px);
+  background: #ffe4e6;
+}
+
+/* TEXT */
+.hk-why-item h4 {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.hk-why-item p {
+  font-size: 0.85rem;
+  color: #6b7280;
+  max-width: 220px;
 }
 
 /* =========================================
@@ -134,50 +450,46 @@ ul li p {
   font-size: 0.95rem;
 }
 
-/* =========================================
-   PAGE RESPONSIVE
-========================================= */
-@media (max-width: 992px) {
-  .hk-hero {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 24px;
-  }
-
-  .hk-hero-side {
-    width: 100%;
-    justify-content: flex-start;
-  }
-
-  .hk-hero-card {
-    max-width: 100%;
-  }
-
-  .hk-hero-title {
-    font-size: 2rem;
-  }
+/* ------------------ ADMIN PAGE ------------------ */
+.admin-nav {
+  display: flex;
+  gap: 10px;
+  flex-wrap: nowrap; /* changed */
+  overflow-x: auto;  /* added */
+  margin: 1.5rem 0;
 }
 
-@media (max-width: 768px) {
-  .hk-hero-title {
-    font-size: 1.75rem;
-  }
-
-  .hero-mini-tagline {
-    font-size: 0.8rem;
-  }
+.admin-nav a {
+  flex: 0 0 auto; /* prevents shrinking */
 }
 
-@media (max-width: 576px) {
-  .hk-hero {
-    padding: 1.5rem 0 1rem 0;
-  }
+/* ------------------------------ */
+/* ===== TABLE RESPONSIVENESS FIX ===== */
 
-  .hk-hero-title {
-    font-size: 1.5rem;
-  }
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
 
-  .hk-hero-subtitle {
-    font-size: 0.9rem;
-  }
+/* Prevent table from shrinking */
+.table-wrapper table {
+  min-width: 720px; /* adjust if needed */
+}
+
+/* Optional scrollbar styling */
+.table-wrapper::-webkit-scrollbar {
+  height: 6px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 10px;
+}
+
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
 }

@@ -202,6 +202,22 @@
       color: #6b7280;
       font-weight: 500;
     }
+
+    .stat-mini--pending {
+      border-color: #fde68a;
+    }
+
+    .stat-mini--failed {
+      border-color: #fecaca;
+    }
+
+    .num--pending {
+      color: #d97706;
+    }
+
+    .num--failed {
+      color: #ef4444;
+    }
   </style>
 
   <h2 style="font-size:1.6rem;font-weight:700;margin:1.5rem 0 0.5rem;">Bookings & Refunds</h2>
@@ -231,14 +247,14 @@
         </div>
         <div class="lbl">Paid Bookings</div>
       </div>
-      <div class="stat-mini" style="border-color:<%= refundPending > 0 ? '#fde68a' : '#f1f5f9' %>">
-        <div class="num" style="color:<%= refundPending > 0 ? '#d97706' : '#1f2933' %>">
+      <div class="stat-mini <%= refundPending > 0 ? 'stat-mini--pending' : '' %>">
+        <div class="num <%= refundPending > 0 ? 'num--pending' : '' %>">
           <%= refundPending %>
         </div>
         <div class="lbl">Refunds Pending</div>
       </div>
-      <div class="stat-mini" style="border-color:<%= refundFailed > 0 ? '#fecaca' : '#f1f5f9' %>">
-        <div class="num" style="color:<%= refundFailed > 0 ? '#ef4444' : '#1f2933' %>">
+      <div class="stat-mini <%= refundFailed > 0 ? 'stat-mini--failed' : '' %>">
+        <div class="num <%= refundFailed > 0 ? 'num--failed' : '' %>">
           <%= refundFailed %>
         </div>
         <div class="lbl">Refunds Failed ⚠️</div>

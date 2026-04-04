@@ -116,10 +116,10 @@
     }
   </style>
 
-  
-<div class="hk-search-wrapper">
-  <%- include("../partials/search") %>
-</div>
+
+  <div class="hk-search-wrapper">
+    <%- include("../partials/search") %>
+  </div>
 
   <div style="margin-top:1.5rem;">
     <h2 style="font-size:1.7rem;font-weight:700;color:#1f2933;margin-bottom:1rem;">All Listings</h2>
@@ -173,13 +173,14 @@
               <a href="/listings/<%= listing._id %>"
                 style="text-decoration:none;color:inherit;display:block;height:100%;">
                 <article class="hk-stay-card" style="height:100%;cursor:pointer;">
-                  <div class="hk-stay-image"
-                    style="background-image:url('<%= listing.image?.url || listing.image || '/images/placeholder.jpg' %>');">
+                  <div class="hk-stay-image" style="background-image: url('<%= (listing.image && listing.image.url || listing.image || "/images/placeholder.jpg").replace(/'/g, "\\'") %>');">
+
                     <% if (listing.genre) { %>
                       <span class="genre-label">
                         <%= listing.genre %>
                       </span>
                       <% } %>
+
                   </div>
                   <div class="hk-stay-body">
                     <p class="hk-stay-location">
@@ -188,8 +189,8 @@
                     <p class="hk-stay-title">
                       <%= listing.title %>
                     </p>
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:auto;">
-                      <p class="hk-stay-price" style="margin:0;">
+                    <div class="card-footer">
+                      <p class="hk-stay-price" style="margin: 0;">
                         <span>₹<%= listing.price.toLocaleString("en-IN") %></span>/night
                       </p>
                       <% if (listing.avgRating> 0) { %>

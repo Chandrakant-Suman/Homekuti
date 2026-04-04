@@ -1,0 +1,120 @@
+/* =================================
+   BUTTONS
+================================= */
+.hk-btn {
+  -webkit-appearance: button;
+  appearance: button;
+  position: relative;
+  z-index: 10;
+  height: 36px;
+  padding: 0 14px;
+  border: 2px solid var(--primary);
+  background-color: var(--primary);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.45rem;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  outline: none;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
+}
+
+.hk-btn:hover {
+  text-decoration: none;
+  background-color: var(--primary-dark);
+  border-color: var(--primary-dark);
+  color: #fff;
+}
+
+.hk-btn:active {
+  background-color: #fff;
+  color: var(--primary);
+  border-color: var(--primary);
+  transform: scale(0.96);
+}
+
+.hk-btn:focus,
+.hk-btn:focus-visible {
+  outline: none;
+}
+
+.hk-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.hk-btn.clicked {
+  background-color: #fff !important;
+  color: var(--primary) !important;
+  border-color: var(--primary) !important;
+  pointer-events: none;
+}
+
+.hk-btn-outline-danger {
+  background: transparent;
+  border: 1.5px solid #ef4444;
+  color: #ef4444;
+}
+
+.hk-btn-outline-danger:hover {
+  background: #ef4444;
+  color: #fff;
+}
+
+.hk-btn-link {
+  background: none;
+  border: none;
+  color: inherit;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+}
+
+.hk-btn-link:hover {
+  text-decoration: underline;
+}
+
+
+/* 🔥 Airbnb-style Reserve Button */
+.bw {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 1.5rem;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+}
+
+.reserve-btn {
+  width: 100%;
+  height: 56px;
+  border: none;
+  border-radius: 999px; /* full pill */
+  background: linear-gradient(135deg, #ff385c, #d70466);
+  color: #ffffff;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Hover effect */
+.reserve-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 30px rgba(215, 4, 102, 0.35);
+}
+
+/* Click effect */
+.reserve-btn:active {
+  transform: scale(0.98);
+}
+
+/* Disabled */
+.reserve-btn:disabled {
+  background: #f3a4b3;
+  cursor: not-allowed;
+  box-shadow: none;
+}
