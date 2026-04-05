@@ -21,8 +21,9 @@
 
 ## 🏡 Overview
 
-**Homekuti** is a full-stack homestay listing platform inspired by modern booking systems.  
-Built using **Node.js, Express, MongoDB, and EJS**, it allows users to explore stays, manage listings, upload images, write reviews, and view locations on an interactive map.
+**Homekuti** is a full-stack homestay booking platform that enables users to discover, book, and manage stays with secure authentication, real-time availability, and seamless online payments.
+
+Built using a **scalable MVC architecture**, the platform focuses on reliability, user experience, and production-grade backend handling.
 
 Unlike basic CRUD apps, Homekuti implements:
 
@@ -36,91 +37,101 @@ Unlike basic CRUD apps, Homekuti implements:
 
 ## ✨ Key Features
 
-### 🔐 Authentication System
-- Passport.js local authentication
-- Session-based login
-- Flash messaging system
-- Protected routes
+### 🔐 Authentication & Security
+- Secure login using **Passport.js (Local Strategy)**
+- Session-based authentication with persistent login
+- Flash messaging for user feedback
+- Route protection & authorization middleware
+
+---
 
 ### 🏡 Listing Management
-- Create, edit, delete listings
-- Owner-based permissions
-- Cloudinary image upload
-- Automatic fallback image if upload fails
+- Full CRUD operations for listings
+- Ownership-based access control
+- Image uploads via **Cloudinary**
+- Automatic fallback image handling
 
-### 🗺️ Smart Map Integration
-- Leaflet interactive map
-- Custom logo marker
-- Smart zoom logic
-- Default New Delhi fallback
-- India-wide view for approximate locations
+---
+
+### 🗺️ Interactive Map Experience
+- Integrated **Leaflet.js** maps
+- Dynamic location rendering
+- Smart zoom control based on coordinates
+- Default fallback to New Delhi if location fails
+- India-wide view for approximate data
+
+---
 
 ### ⭐ Reviews & Ratings
-- Star rating system
-- Add & delete reviews
-- Ownership validation
+- Star-based rating system
+- Add/delete reviews functionality
+- Ownership validation for secure actions
 
-### ⚙️ Error Handling & Stability
-- Centralized error handler
+---
+
+### ⚙️ Robust Error Handling
+- Centralized error middleware
 - Mongoose validation handling
-- Multer upload safeguards
-- Graceful degradation strategy
+- Multer upload protection
+- Graceful failure recovery across services
 
 ---
 
 ## 🧠 Engineering Highlights
 
-### 📍 Graceful Degradation Strategy
+### 📍 Graceful Degradation (Production Mindset)
 
-If external services fail:
+When external services fail:
 
-- Listing still saves
-- Default coordinates used
-- India zoomed-out map view
-- “Approximate location” indicator shown
+- Listing creation still succeeds
+- Default coordinates applied
+- Map falls back to India view
+- UI shows “Approximate location”
 
-This mirrors real-world marketplace architecture.
+> 💡 Mirrors real-world fault-tolerant system design.
 
 ---
 
-### ☁️ Cloudinary Integration
+### ☁️ Fault-Tolerant Image Upload
 
-Uploads never block listing creation:
-
-- Successful upload → Cloudinary image used
-- Failure → Default image automatically applied
+- Cloudinary success → Image stored remotely
+- Failure → Default image assigned automatically
+- No user flow interruption
 
 ---
 
 ### 🧭 Clean MVC Architecture
 
+
 controllers → business logic
-models → database schema
-routes → request flow
-views → UI rendering
+models → schema & database
+routes → API flow
+views → UI rendering (EJS)
 utils → reusable helpers
 
+
+> 📌 Separation of concerns → scalable + maintainable codebase
 
 ---
 
 ## 🛠️ Tech Stack
 
-| Layer | Technology |
-|------|------------|
-| Frontend | EJS, Bootstrap, Custom CSS |
-| Backend | Node.js, Express.js |
-| Database | MongoDB + Mongoose |
-| Auth | Passport.js |
-| Maps | Leaflet.js, LocationIQ |
-| Images | Cloudinary |
-| Sessions | express-session |
+| Layer        | Technology |
+|-------------|-----------|
+| Frontend    | EJS, Bootstrap, Custom CSS |
+| Backend     | Node.js, Express.js |
+| Database    | MongoDB, Mongoose |
+| Authentication | Passport.js |
+| Maps        | Leaflet.js, LocationIQ |
+| Image Storage | Cloudinary |
+| Sessions    | express-session |
 
 ---
 
 ## 📂 Project Structure
 
 ```text
-Project/
+Homekuti/
 ├── controllers/
 ├── middlewares/
 ├── models/
@@ -136,13 +147,20 @@ Project/
 ├── cloudConfig.js
 └── README.md
 ```
+
 ## 🖼️ Screenshots 📸
+
+### 🏠 Homekuti Architecture Image
+![Homekuti Architecture Image](https://raw.githubusercontent.com/Chandrakant-Suman/Homekuti/main/public/images/Homekuti-Architecture-Image.png)
 
 ### 🏠 Home Page
 ![Homekuti Home Page](https://raw.githubusercontent.com/Chandrakant-Suman/Homekuti/main/public/images/demo-home.png)
 
-### 🏠 Listing Page
-![Homekuti Listing Page](https://raw.githubusercontent.com/Chandrakant-Suman/Homekuti/main/public/images/demo-listing.png)
+### 🏠 Listings
+![Homekuti All Listing Page](https://raw.githubusercontent.com/Chandrakant-Suman/Homekuti/main/public/images/demo-listing.png)
+
+### 🏠 Listing Details
+![Homekuti Listing Page](https://raw.githubusercontent.com/Chandrakant-Suman/Homekuti/main/public/images/demo-show.png)
 
 ### 🗺️ Map View
 ![Homekuti Map View](https://raw.githubusercontent.com/Chandrakant-Suman/Homekuti/main/public/images/demo-map.png)
@@ -154,25 +172,23 @@ git clone https://github.com/Chandrakant-Suman/Homekuti.git
 cd Homekuti
 npm install
 npm start
-Server runs at:
-http://localhost:8000
----
-⚙️ Environment Variables
-Create .env file:
 
-DB_URL=mongodb://127.0.0.1:27017/homekuti
-SESSION_SECRET=your_secret
-CLOUDINARY_CLOUD_NAME=your_cloud
-CLOUDINARY_KEY=your_key
-CLOUDINARY_SECRET=your_secret
+Server runs at:
+https://homekuti.onrender.com/
+
 ---
-📈 Future Enhancements
-Real geocoding API integration
-Booking system with date selection
-Payment gateway support
-Admin dashboard
-Advanced filtering & search
+
+## 📈 Future Enhancements
+
+- 🌍 High-precision geocoding integration for accurate location mapping  
+- 🛏️ End-to-end booking system with real-time availability tracking  
+- 💳 Full payment gateway integration (Razorpay / Stripe)  
+- 🛠️ Advanced admin dashboard with analytics & controls  
+- 🔍 Smart search with filters (price, location, category, ratings)  
+- 🧠 Enhanced system design features (scalability, caching, optimization)
+
 ---
+
 👨‍💻 Author
 Chandrakant Suman
 GitHub: https://github.com/Chandrakant-Suman
