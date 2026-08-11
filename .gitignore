@@ -11,3 +11,8 @@ package-lock.json
 # Logs
 *.log
 logs/
+
+# Compiled source #
+TECH_STACK.md
+INTERVIEW_PREP.md
+AUDIT.md

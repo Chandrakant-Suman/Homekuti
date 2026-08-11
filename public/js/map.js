@@ -15,19 +15,12 @@ if (typeof listing !== "undefined" && listing?.geometry?.coordinates) {
   // Enable scroll zoom after click
   map.on("click", () => map.scrollWheelZoom.enable());
 
-  // ⭐ LOCATIONIQ TILE LAYER
-  // Get API key from a global variable (set in your EJS template)
-  const LOCATIONIQ_API_KEY = window.LOCATIONIQ_API_KEY || 'pk.YOUR_API_KEY_HERE';
-  
-  L.tileLayer(
-    `https://{s}-tiles.locationiq.com/v3/streets/r/{z}/{x}/{y}.png?key=${LOCATIONIQ_API_KEY}`,
-    {
-      attribution:
-        '&copy; <a href="https://locationiq.com/">LocationIQ</a> | &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-      maxZoom: 19,
-      subdomains: ['a', 'b', 'c'], // LocationIQ subdomains for load balancing
-    }
-  ).addTo(map);
+// OpenStreetMap tiles — no API key required
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom: 19,
+  }).addTo(map);
 
   // Custom marker icon
   const redIcon = L.icon({

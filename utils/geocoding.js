@@ -77,44 +77,43 @@ function getDefaultCoordinates() {
   };
 }
 
-/**
- * Reverse geocode coordinates to get location name using LocationIQ
- * @param {number} lat - Latitude
- * @param {number} lng - Longitude
- * @returns {Promise<string>} - Location name
- */
-async function reverseGeocode(lat, lng) {
-  try {
-    if (!LOCATIONIQ_API_KEY) {
-      console.error("⚠️  LOCATIONIQ_API_KEY not found");
-      return "Unknown location";
-    }
+// /**
+//  * Reverse geocode coordinates to get location name using LocationIQ
+//  * @param {number} lat - Latitude
+//  * @param {number} lng - Longitude
+//  * @returns {Promise<string>} - Location name
+//  */
+// async function reverseGeocode(lat, lng) {
+//   try {
+//     if (!LOCATIONIQ_API_KEY) {
+//       console.error("⚠️  LOCATIONIQ_API_KEY not found");
+//       return "Unknown location";
+//     }
 
-    const url = `https://us1.locationiq.com/v1/reverse.php`;
+//     const url = `https://us1.locationiq.com/v1/reverse.php`;
 
-    const response = await axios.get(url, {
-      params: {
-        key: LOCATIONIQ_API_KEY,
-        lat: lat,
-        lon: lng,
-        format: "json",
-      },
-      timeout: 10000, // ✅ Increased to 10 seconds
-    });
+//     const response = await axios.get(url, {
+//       params: {
+//         key: LOCATIONIQ_API_KEY,
+//         lat: lat,
+//         lon: lng,
+//         format: "json",
+//       },
+//       timeout: 10000, // ✅ Increased to 10 seconds
+//     });
 
-    if (response.data && response.data.display_name) {
-      return response.data.display_name;
-    }
+//     if (response.data && response.data.display_name) {
+//       return response.data.display_name;
+//     }
 
-    return "Unknown location";
-  } catch (error) {
-    console.error("Reverse geocoding error:", error.message);
-    return "Unknown location";
-  }
-}
+//     return "Unknown location";
+//   } catch (error) {
+//     console.error("Reverse geocoding error:", error.message);
+//     return "Unknown location";
+//   }
+// }
 
 module.exports = {
   geocodeLocation,
-  reverseGeocode,
   getDefaultCoordinates,
 };

@@ -4,9 +4,11 @@ const ctrl    = require("../controllers/booking");
 const { isLoggedIn } = require("../middlewares/authenticate");
 const { isAdmin }    = require("../middlewares/authorize");
 const wrapAsync      = require("../utils/wrapAsync");
+const Booking = require("../models/booking");
 
 // Webhook — no auth, raw body needed
-router.post("/webhook", express.raw({ type: "application/json" }), wrapAsync(ctrl.refundWebhook));
+// NOTE: signature verification needs the raw bytes;
+router.post("/webhook", wrapAsync(ctrl.refundWebhook));
 
 // My bookings list
 router.get("/my",   isLoggedIn, wrapAsync(ctrl.myBookings));
