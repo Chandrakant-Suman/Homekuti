@@ -8,53 +8,175 @@ const DEFAULT_IMAGE = {
   filename: "Homekuti_DEV/kzjbrisg2uqssvvp99a3",
 };
 
+const GENRES = [
+  "Beach", "Mountain", "City", "Luxury", "Budget",
+  "Heritage", "Forest", "Countryside", "Island", "Desert",
+];
+
+const MAX_SEARCH_LENGTH = 100;
+
+/**
+ * Query params are not guaranteed to be strings: `?search=a&search=b` arrives
+ * as an array and `?search[$ne]=x` as an object. Calling .trim() on either
+ * threw a TypeError, so coerce to a plain string first.
+ */
+const asString = (value) => {
+  if (typeof value === "string") return value;
+  if (Array.isArray(value)) return typeof value[0] === "string" ? value[0] : "";
+  return "";
+};
+
+/**
+ * Escape every regex metacharacter so the search term is matched literally.
+ *
+ * Previously the raw input was passed to `new RegExp()`, so a perfectly
+ * reasonable search like "Villa (Goa)", "C++" or a half-typed "[" threw
+ * `SyntaxError: Invalid regular expression` and returned a 500. Escaping also
+ * closes off ReDoS — a crafted pattern like "(a+)+$" could otherwise pin the
+ * event loop.
+ */
+const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+// Fields searched, in descending order of how much a hit there matters.
+const SEARCH_FIELDS = [
+  { name: "title", weight: 10 },
+  { name: "location", weight: 6 },
+  { name: "country", weight: 3 },
+  { name: "description", weight: 1 },
+];
+
+const MAX_TOKENS = 8;
+
+// Ignored as search words — matching every listing with "in" in its
+// description is noise, not a result.
+const STOP_WORDS = new Set([
+  "a", "an", "and", "at", "by", "for", "in", "of", "on", "or",
+  "the", "to", "with", "near",
+]);
+
+/**
+ * Split a search string into usable words.
+ *
+ * "Villa (Goa)" → ["villa", "goa"], so a listing titled "Hillside Villa" or
+ * one located in Goa both come back. Punctuation is a separator, not part of
+ * the term. Single characters are dropped (a stray "(" shouldn't match
+ * everything), and stop words are only removed when something else remains.
+ */
+const tokenize = (search) => {
+  const words = search
+    .toLowerCase()
+    .split(/[^\p{L}\p{N}]+/u) // split on anything that isn't a letter or digit
+    .filter((w) => w.length > 1);
+
+  const meaningful = words.filter((w) => !STOP_WORDS.has(w));
+
+  // If the query was *only* stop words ("the"), search them rather than
+  // silently returning everything.
+  return (meaningful.length ? meaningful : words).slice(0, MAX_TOKENS);
+};
+
+/**
+ * Score a listing against the search words.
+ *
+ * Each word is counted once per field, weighted by that field's importance,
+ * so a listing matching both "villa" and "goa" in its title outranks one that
+ * merely mentions Goa in its description. A whole-phrase hit gets a bonus so
+ * exact matches stay on top, and matching more of the words beats matching one
+ * of them repeatedly.
+ */
+const scoreListing = (listing, tokens, phrase) => {
+  let score = 0;
+  let matchedTokens = 0;
+
+  for (const token of tokens) {
+    let hit = false;
+
+    for (const { name, weight } of SEARCH_FIELDS) {
+      const value = listing[name];
+      if (typeof value === "string" && value.toLowerCase().includes(token)) {
+        score += weight;
+        hit = true;
+      }
+    }
+
+    if (hit) matchedTokens++;
+  }
+
+  // Coverage matters more than raw field weight: 2-of-2 words beats 1-of-2.
+  score += matchedTokens * 25;
+
+  if (phrase) {
+    for (const { name, weight } of SEARCH_FIELDS) {
+      const value = listing[name];
+      if (typeof value === "string" && value.toLowerCase().includes(phrase)) {
+        score += weight * 5;
+      }
+    }
+  }
+
+  return score;
+};
+
 // Resolves to a GeoJSON Point; never throws (see utils/geocoding.js)
 const geocodeSafe = (location, country) => geocodeToGeometry(location, country);
 
 module.exports.index = async (req, res) => {
-  const { search, genre } = req.query;
+  const search = asString(req.query.search).trim().slice(0, MAX_SEARCH_LENGTH);
+
+  // Only accept a genre we actually offer; anything else is ignored rather
+  // than passed through to the query.
+  const requestedGenre = asString(req.query.genre).trim();
+  const genre = GENRES.includes(requestedGenre) ? requestedGenre : "";
+
+  const tokens = search ? tokenize(search) : [];
   const filter = {};
 
-  if (search && search.trim()) {
-    const regex = new RegExp(search.trim(), "i");
-    filter.$or = [
-      { title: regex },
-      { location: regex },
-      { country: regex },
-      { description: regex }
-    ];
-  }
-
-  if (genre && genre !== "all") {
-    filter.genre = genre;
-  }
-
-  const allListings = await Listing.find(filter).lean();
-
-  const genres = ["Beach","Mountain","City","Luxury","Budget","Heritage","Forest","Countryside","Island","Desert"];
-
-  // 🔥 AJAX request (for real-time search)
-  if (req.xhr) {
-    return res.render("listings/index", {
-      allListings,
-      genres,
-      search: search || "",
-      activeGenre: genre || "all",
-      layout: false
+  if (tokens.length) {
+    // Match ANY word in ANY field — "Villa Goa" should still find a villa
+    // that happens to be in Kerala, just ranked lower than the Goa one.
+    filter.$or = tokens.flatMap((token) => {
+      const term = { $regex: escapeRegex(token), $options: "i" };
+      return SEARCH_FIELDS.map(({ name }) => ({ [name]: term }));
     });
   }
 
-  res.render("listings/index", {
+  if (genre) {
+    filter.genre = genre;
+  }
+
+  let allListings = await Listing.find(filter).lean();
+
+  // Rank in the app rather than in Mongo: the OR query above is deliberately
+  // broad, so relevance ordering is what keeps the results useful.
+  if (tokens.length && allListings.length > 1) {
+    const phrase = search.toLowerCase();
+
+    allListings = allListings
+      .map((listing) => ({
+        listing,
+        score: scoreListing(listing, tokens, tokens.length > 1 ? phrase : ""),
+      }))
+      .sort((a, b) => b.score - a.score || a.listing.title.localeCompare(b.listing.title))
+      .map((entry) => entry.listing);
+  }
+
+  const viewData = {
     allListings,
-    genres,
-    search: search || "",
+    genres: GENRES,
+    search,
     activeGenre: genre || "all",
-  });
+  };
+
+  // 🔥 AJAX request (for real-time search)
+  if (req.xhr) {
+    return res.render("listings/index", { ...viewData, layout: false });
+  }
+
+  res.render("listings/index", viewData);
 };
 
 module.exports.renderNewForm = (req, res) => {
-  const genres = ["Beach", "Mountain", "City", "Luxury", "Budget", "Heritage", "Forest", "Countryside", "Island", "Desert"];
-  res.render("listings/new", { genres });
+  res.render("listings/new", { genres: GENRES });
 };
 
 module.exports.showListing = async (req, res) => {
@@ -116,8 +238,7 @@ module.exports.editListing = async (req, res) => {
     req.flash("error", "Listing not found!");
     return res.redirect("/listings");
   }
-  const genres = ["Beach", "Mountain", "City", "Luxury", "Budget", "Heritage", "Forest", "Countryside", "Island", "Desert"];
-  res.render("listings/edit", { listing, genres });
+  res.render("listings/edit", { listing, genres: GENRES });
 };
 
 module.exports.updateListing = async (req, res) => {
