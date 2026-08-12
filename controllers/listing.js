@@ -1,7 +1,7 @@
 const Listing = require("../models/listing");
 const User = require("../models/user");
 const { geocodeToGeometry, isDefaultCoordinates } = require("../utils/geocoding");
-const { cloudinary } = require("../cloudConfig");
+const { cloudinary, fileToImage } = require("../cloudConfig");
 
 const DEFAULT_IMAGE = {
   url: "https://res.cloudinary.com/dgu8te3bn/image/upload/v1771003245/Homekuti_DEV/kzjbrisg2uqssvvp99a3.jpg",
@@ -120,6 +120,23 @@ const scoreListing = (listing, tokens, phrase) => {
 // Resolves to a GeoJSON Point; never throws (see utils/geocoding.js)
 const geocodeSafe = (location, country) => geocodeToGeometry(location, country);
 
+/**
+ * Delete a listing's image from Cloudinary, skipping the shared default (which
+ * every listing without an upload points at — deleting it would blank them all).
+ * Failures are logged, not thrown: a leftover file is not worth failing the
+ * user's delete/update over.
+ */
+async function destroyImage(image) {
+  const filename = image?.filename;
+  if (!filename || filename === DEFAULT_IMAGE.filename) return;
+
+  try {
+    await cloudinary.uploader.destroy(filename);
+  } catch (err) {
+    console.error(`Cloudinary cleanup failed for "${filename}":`, err.message);
+  }
+}
+
 module.exports.index = async (req, res) => {
   const search = asString(req.query.search).trim().slice(0, MAX_SEARCH_LENGTH);
 
@@ -207,9 +224,15 @@ module.exports.showListing = async (req, res) => {
 module.exports.createListing = async (req, res) => {
   const newListing = new Listing(req.body.listing);
 
-  newListing.image = (req.file?.path && req.file?.filename)
-    ? { url: req.file.path, filename: req.file.filename }
-    : DEFAULT_IMAGE;
+  // fileToImage() reads whichever field names the installed storage engine
+  // uses; it returns null only when no usable file was uploaded.
+  const uploaded = fileToImage(req.file);
+
+  if (req.file && !uploaded) {
+    console.warn("⚠️  Upload succeeded but no usable URL on req.file:", Object.keys(req.file));
+  }
+
+  newListing.image = uploaded || DEFAULT_IMAGE;
 
   newListing.owner = req.user._id;
   newListing.geometry = await geocodeSafe(newListing.location, newListing.country);
@@ -256,12 +279,16 @@ module.exports.updateListing = async (req, res) => {
   // Apply text field updates
   Object.assign(listing, req.body.listing);
 
-  // Update image if new file uploaded
-  if (req.file?.path && req.file?.filename) {
-    if (listing.image?.filename && listing.image.filename !== DEFAULT_IMAGE.filename) {
-      try { await cloudinary.uploader.destroy(listing.image.filename); } catch { }
-    }
-    listing.image = { url: req.file.path, filename: req.file.filename };
+  // Update image if a new file was uploaded
+  const uploaded = fileToImage(req.file);
+
+  if (req.file && !uploaded) {
+    console.warn("⚠️  Upload succeeded but no usable URL on req.file:", Object.keys(req.file));
+  }
+
+  if (uploaded) {
+    await destroyImage(listing.image);
+    listing.image = uploaded;
   }
 
   // Re-geocode only when the address changed, or when the stored point is
@@ -293,9 +320,7 @@ module.exports.deleteListing = async (req, res) => {
     return res.redirect("/listings");
   }
 
-  if (listing.image?.filename && listing.image.filename !== DEFAULT_IMAGE.filename) {
-    try { await cloudinary.uploader.destroy(listing.image.filename); } catch { }
-  }
+  await destroyImage(listing.image);
 
   await Listing.findByIdAndDelete(req.params.id);
   req.flash("success", "Listing deleted!");
