@@ -67,6 +67,13 @@ const listingSchema = new Schema({
     coordinates: {
       type: [Number], // [lng, lat]
       default: [78.9629, 20.5937]
+    },
+    // true when geocoding failed and the fallback (centre of India) is stored.
+    // Deliberately has NO default: legacy listings saved before this field
+    // existed stay `undefined`, so the controller falls back to a coordinate
+    // check instead of wrongly flagging them as approximate.
+    isApproximate: {
+      type: Boolean
     }
   },
 

@@ -1,6 +1,6 @@
 const Listing = require("../models/listing");
 const User = require("../models/user");
-const { geocodeLocation } = require("../utils/geocoding");
+const { geocodeToGeometry, isDefaultCoordinates } = require("../utils/geocoding");
 const { cloudinary } = require("../cloudConfig");
 
 const DEFAULT_IMAGE = {
@@ -8,16 +8,8 @@ const DEFAULT_IMAGE = {
   filename: "Homekuti_DEV/kzjbrisg2uqssvvp99a3",
 };
 
-async function geocodeSafe(location, country) {
-  try {
-    const geoData = await geocodeLocation(`${location}, ${country}`);
-    return geoData?.coordinates
-      ? { type: "Point", coordinates: geoData.coordinates }
-      : { type: "Point", coordinates: [78.9629, 20.5937] };
-  } catch {
-    return { type: "Point", coordinates: [78.9629, 20.5937] };
-  }
-}
+// Resolves to a GeoJSON Point; never throws (see utils/geocoding.js)
+const geocodeSafe = (location, country) => geocodeToGeometry(location, country);
 
 module.exports.index = async (req, res) => {
   const { search, genre } = req.query;
@@ -79,8 +71,11 @@ module.exports.showListing = async (req, res) => {
     (id) => id.equals(listing._id)
   ) || false;
 
-  const [lng, lat] = listing.geometry?.coordinates || [78.9629, 20.5937];
-  const isDefaultLocation = lng === 78.9629 && lat === 20.5937;
+  // Prefer the stored flag; fall back to a coordinate check for older listings
+  // saved before `isApproximate` existed.
+  const isDefaultLocation =
+    listing.geometry?.isApproximate ??
+    isDefaultCoordinates(listing.geometry?.coordinates);
   // console.log("USER:", req.user);
   // console.log("WISHLIST:", req.user?.wishlist);
 
@@ -104,7 +99,14 @@ module.exports.createListing = async (req, res) => {
     await User.findByIdAndUpdate(req.user._id, { role: "owner" });
   }
 
-  req.flash("success", "New listing created successfully!");
+  if (newListing.geometry?.isApproximate) {
+    req.flash(
+      "success",
+      "New listing created! We couldn't pin the exact spot — edit the listing with a more specific location (e.g. \"Calangute, Goa\") to fix the map."
+    );
+  } else {
+    req.flash("success", "New listing created successfully!");
+  }
   res.redirect(`/listings/${newListing._id}`);
 };
 
@@ -127,6 +129,9 @@ module.exports.updateListing = async (req, res) => {
     return res.redirect("/listings");
   }
 
+  const prevLocation = listing.location;
+  const prevCountry = listing.country;
+
   // Apply text field updates
   Object.assign(listing, req.body.listing);
 
@@ -138,10 +143,25 @@ module.exports.updateListing = async (req, res) => {
     listing.image = { url: req.file.path, filename: req.file.filename };
   }
 
-  listing.geometry = await geocodeSafe(listing.location, listing.country);
+  // Re-geocode only when the address changed, or when the stored point is
+  // still the approximate fallback (gives failed lookups a second chance).
+  const addressChanged =
+    listing.location !== prevLocation || listing.country !== prevCountry;
+
+  if (addressChanged || listing.geometry?.isApproximate !== false) {
+    listing.geometry = await geocodeSafe(listing.location, listing.country);
+  }
 
   await listing.save();
-  req.flash("success", "Listing updated!");
+
+  if (listing.geometry?.isApproximate) {
+    req.flash(
+      "success",
+      "Listing updated! The map still shows an approximate location — try a more specific location name."
+    );
+  } else {
+    req.flash("success", "Listing updated!");
+  }
   res.redirect(`/listings/${id}`);
 };
 

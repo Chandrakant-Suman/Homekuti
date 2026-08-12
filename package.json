@@ -9,6 +9,7 @@
     "start": "node app.js",
     "dev": "nodemon app.js",
     "seed:reset": "cross-env RESET_DB=true node init/index.js",
+    "fix:geocode": "node init/backfill-geocode.js",
     "test": "echo \"No tests yet\""
   },
   "keywords": [],
