@@ -108,6 +108,15 @@
       background: #ef4444;
       color: #fff;
     }
+    .user-tabs { display: flex; gap: 6px; margin-bottom: 1rem; }
+    .user-tab {
+      padding: 6px 16px; border-radius: 999px; border: 1.5px solid #e3e5ec; background: #fff;
+      font-size: 0.85rem; font-weight: 600; color: #374151; cursor: pointer; font-family: inherit;
+    }
+    .user-tab.active { background: #1f2933; border-color: #1f2933; color: #fff; }
+    .user-tab .count { opacity: 0.7; margin-left: 4px; }
+    .badge-request { background: #fef3c7; color: #92400e; }
+    .badge-removed { background: #fef2f2; color: #b91c1c; }
   </style>
 
   <h2 style="font-size:1.6rem;font-weight:700;margin:1.5rem 0 0.5rem;">Users Management</h2>
@@ -118,7 +127,60 @@
     <a href="/admin/bookings">Bookings</a>
   </div>
 
-  <div class="table-card">
+  <% if (deleteRequests.length > 0) { %>
+  <div class="table-card" style="margin-bottom:1.5rem;border:1.5px solid #fecaca;">
+    <h3 style="font-size:1.05rem;font-weight:700;margin-bottom:1rem;color:#b91c1c;">
+      <i class="fa-solid fa-user-xmark"></i> Account Deletion Requests (<%= deleteRequests.length %>)
+    </h3>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Requested</th>
+            <th>Reason</th>
+            <th>Blockers</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% deleteRequests.forEach(u => { const blocked = u.openBookings > 0 || u.ownedListings > 0; %>
+            <tr>
+              <td><strong><%= u.username %></strong></td>
+              <td style="color:#6b7280;"><%= u.email %></td>
+              <td><%= new Date(u.deleteRequest.requestedAt).toLocaleDateString('en-IN') %></td>
+              <td style="max-width:260px;color:#6b7280;"><%= u.deleteRequest.reason || '—' %></td>
+              <td style="font-size:0.8rem;">
+                <% if (blocked) { %>
+                  <span style="color:#b91c1c;"><%= u.openBookings %> open booking(s), <%= u.ownedListings %> listing(s)</span>
+                <% } else { %>
+                  <span style="color:#15803d;">None</span>
+                <% } %>
+              </td>
+              <td style="display:flex;gap:6px;">
+                <form method="POST" action="/admin/users/<%= u._id %>/delete-request/approve"
+                  onsubmit="return confirm('Permanently delete <%= u.username %>? This cannot be undone.');">
+                  <button type="submit" class="btn-del" <%- blocked ? 'disabled title="Resolve bookings/listings first" style="opacity:.5;cursor:not-allowed"' : '' %>>Approve</button>
+                </form>
+                <form method="POST" action="/admin/users/<%= u._id %>/delete-request/reject">
+                  <button type="submit" class="btn-del" style="border-color:#e3e5ec;color:#374151;">Reject</button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <% } %>
+
+  <div class="user-tabs" role="tablist">
+    <button type="button" class="user-tab active" data-tab="active" role="tab">Active<span class="count">(<%= users.length %>)</span></button>
+    <button type="button" class="user-tab" data-tab="deleted" role="tab">Deleted<span class="count">(<%= deletedUsers.length %>)</span></button>
+  </div>
+
+  <div class="table-card" data-panel="active">
     <div class="table-wrapper">
       <table>
         <thead>
@@ -167,3 +229,56 @@
       </table>
     </div>
   </div>
+
+  <div class="table-card" data-panel="deleted" hidden>
+    <% if (deletedUsers.length === 0) { %>
+      <p style="color:#9ca3af;font-style:italic;font-size:0.9rem;margin:0;">No deleted accounts yet.</p>
+    <% } else { %>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Joined</th>
+            <th>Deleted</th>
+            <th>How</th>
+            <th>Reason</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% deletedUsers.forEach((d, i) => { %>
+            <tr>
+              <td style="color:#9ca3af;"><%= i+1 %></td>
+              <td><strong><%= d.username %></strong></td>
+              <td style="color:#6b7280;"><%= d.email %></td>
+              <td style="text-transform:capitalize;"><%= d.role || '—' %></td>
+              <td><%= d.joinedAt ? new Date(d.joinedAt).toLocaleDateString('en-IN') : '—' %></td>
+              <td><%= new Date(d.deletedAt).toLocaleDateString('en-IN') %></td>
+              <td>
+                <% if (d.method === 'request') { %>
+                  <span class="badge badge-request" title="Approved by <%= d.deletedBy?.username || 'admin' %>">User request</span>
+                <% } else { %>
+                  <span class="badge badge-removed" title="Removed by <%= d.deletedBy?.username || 'admin' %>">Removed by admin</span>
+                <% } %>
+                <div style="font-size:0.75rem;color:#9ca3af;margin-top:2px;">by <%= d.deletedBy?.username || '—' %></div>
+              </td>
+              <td style="max-width:240px;color:#6b7280;"><%= d.reason || '—' %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+    <% } %>
+  </div>
+
+  <script>
+    document.querySelectorAll('.user-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.user-tab').forEach(t => t.classList.toggle('active', t === tab));
+        document.querySelectorAll('[data-panel]').forEach(p => { p.hidden = p.dataset.panel !== tab.dataset.tab; });
+      });
+    });
+  </script>

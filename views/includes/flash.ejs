@@ -1,23 +1,31 @@
 <% if (success && success.length > 0) { %>
-  <div class="hk-flash hk-flash-success" id="flashMsg">
+  <div class="hk-flash hk-flash-success" role="status">
     <i class="fa-solid fa-circle-check"></i>
     <span><%= success[0] %></span>
-    <button onclick="this.parentElement.remove()" class="hk-flash-close">&times;</button>
+    <button type="button" class="hk-flash-close" aria-label="Dismiss message">&times;</button>
   </div>
 <% } %>
 
 <% if (error && error.length > 0) { %>
-  <div class="hk-flash hk-flash-error" id="flashMsgErr">
+  <div class="hk-flash hk-flash-error" role="alert">
     <i class="fa-solid fa-circle-exclamation"></i>
     <span><%= error[0] %></span>
-    <button onclick="this.parentElement.remove()" class="hk-flash-close">&times;</button>
+    <button type="button" class="hk-flash-close" aria-label="Dismiss message">&times;</button>
   </div>
 <% } %>
 
 <script>
-  // Auto-dismiss flash after 4s
-  ['flashMsg','flashMsgErr'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) setTimeout(() => el.remove(), 4000);
-  });
+  (() => {
+    const dismiss = (el) => {
+      if (!el || el.classList.contains('is-hiding')) return;
+      el.classList.add('is-hiding');
+      setTimeout(() => el.remove(), 200);
+    };
+    // Close on ×
+    document.querySelectorAll('.hk-flash-close').forEach(btn =>
+      btn.addEventListener('click', () => dismiss(btn.closest('.hk-flash')))
+    );
+    // Auto-dismiss after 4s
+    document.querySelectorAll('.hk-flash').forEach(el => setTimeout(() => dismiss(el), 4000));
+  })();
 </script>

@@ -137,17 +137,17 @@
     <form action="/user/signin" method="POST" id="signinForm" novalidate>
       <!-- Username -->
       <div class="mb-form">
-        <label class="signin-label" for="username">Username</label>
+        <label class="signin-label" for="username">Username or Email</label>
         <input
           type="text"
           class="signin-input"
           id="username"
           name="username"
-          placeholder="Enter username"
+          placeholder="Enter username or email"
           required
           autocomplete="username"
         />
-        <div class="invalid-msg">Username is required.</div>
+        <div class="invalid-msg">Username or email is required.</div>
       </div>
 
       <!-- Password -->
@@ -163,6 +163,9 @@
           autocomplete="current-password"
         />
         <div class="invalid-msg">Password is required.</div>
+        <div style="text-align:right;margin-top:6px;">
+          <a href="/user/forgot-password" style="font-size:0.85rem;color:var(--primary);font-weight:600;text-decoration:none;">Forgot password?</a>
+        </div>
       </div>
 
       <button type="submit" class="signin-btn">Sign In</button>

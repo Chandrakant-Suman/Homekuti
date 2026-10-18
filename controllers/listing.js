@@ -1,7 +1,8 @@
 const Listing = require("../models/listing");
 const User = require("../models/user");
 const { geocodeToGeometry, isDefaultCoordinates } = require("../utils/geocoding");
-const { cloudinary, fileToImage } = require("../cloudConfig");
+const { fileToImage } = require("../cloudConfig");
+const { destroyImage, archiveAndDeleteListing } = require("../utils/listingDeletion");
 
 const DEFAULT_IMAGE = {
   url: "https://res.cloudinary.com/dgu8te3bn/image/upload/v1771003245/Homekuti_DEV/kzjbrisg2uqssvvp99a3.jpg",
@@ -119,23 +120,6 @@ const scoreListing = (listing, tokens, phrase) => {
 
 // Resolves to a GeoJSON Point; never throws (see utils/geocoding.js)
 const geocodeSafe = (location, country) => geocodeToGeometry(location, country);
-
-/**
- * Delete a listing's image from Cloudinary, skipping the shared default (which
- * every listing without an upload points at — deleting it would blank them all).
- * Failures are logged, not thrown: a leftover file is not worth failing the
- * user's delete/update over.
- */
-async function destroyImage(image) {
-  const filename = image?.filename;
-  if (!filename || filename === DEFAULT_IMAGE.filename) return;
-
-  try {
-    await cloudinary.uploader.destroy(filename);
-  } catch (err) {
-    console.error(`Cloudinary cleanup failed for "${filename}":`, err.message);
-  }
-}
 
 module.exports.index = async (req, res) => {
   const search = asString(req.query.search).trim().slice(0, MAX_SEARCH_LENGTH);
@@ -320,9 +304,9 @@ module.exports.deleteListing = async (req, res) => {
     return res.redirect("/listings");
   }
 
-  await destroyImage(listing.image);
-
-  await Listing.findByIdAndDelete(req.params.id);
+  // isOwner lets admins through too, so record who actually deleted it
+  const method = listing.owner?.equals(req.user._id) ? "owner" : "admin";
+  await archiveAndDeleteListing(listing, { method, deletedBy: req.user });
   req.flash("success", "Listing deleted!");
   res.redirect("/listings");
 };

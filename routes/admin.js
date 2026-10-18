@@ -12,6 +12,8 @@ router.get("/dashboard", wrapAsync(adminController.dashboard));
 router.get("/users", wrapAsync(adminController.listUsers));
 router.post("/users/:id/role", wrapAsync(adminController.changeRole));
 router.delete("/users/:id", wrapAsync(adminController.deleteUser));
+router.post("/users/:id/delete-request/approve", wrapAsync(adminController.approveDeleteRequest));
+router.post("/users/:id/delete-request/reject", wrapAsync(adminController.rejectDeleteRequest));
 router.get("/listings", wrapAsync(adminController.listListings));
 router.delete("/listings/:id", wrapAsync(adminController.deleteListing));
 router.get("/bookings", wrapAsync(adminController.listBookings));

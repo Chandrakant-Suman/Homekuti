@@ -49,11 +49,39 @@ const userSchema = new Schema({
     phone: {
         type: String,
     },
+    // Forgot-password flow: only a SHA-256 hash of the emailed token is stored
+    resetPasswordToken: {
+        type: String,
+        select: false,
+    },
+    resetPasswordExpires: Date,
+    resetPasswordRequestedAt: Date,
+    // Account deletion request (reviewed by admin)
+    deleteRequest: {
+        status: {
+            type: String,
+            enum: ["none", "pending", "rejected"],
+            default: "none",
+        },
+        reason: {
+            type: String,
+            trim: true,
+            maxlength: 500,
+        },
+        requestedAt: Date,
+        reviewedAt: Date,
+    },
 });
 
 // Indexes
 userSchema.index({ googleId: 1 });
+userSchema.index({ "deleteRequest.status": 1 });
 
-userSchema.plugin(passportLocalMongoose);
+userSchema.plugin(passportLocalMongoose, {
+    // Allow signing in with either username or email
+    usernameQueryFields: ["email"],
+    // Case-insensitive match, so "Admin" / "HomeKuti247@Gmail.com" still work
+    findByUsername: (model, query) => model.findOne(query).collation({ locale: "en", strength: 2 }),
+});
 
 module.exports = mongoose.model("User", userSchema);

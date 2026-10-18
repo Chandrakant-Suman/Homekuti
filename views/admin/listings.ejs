@@ -83,6 +83,16 @@
       border-radius: 8px;
       object-fit: cover;
     }
+    .user-tabs { display: flex; gap: 6px; margin-bottom: 1rem; }
+    .user-tab {
+      padding: 6px 16px; border-radius: 999px; border: 1.5px solid #e3e5ec; background: #fff;
+      font-size: 0.85rem; font-weight: 600; color: #374151; cursor: pointer; font-family: inherit;
+    }
+    .user-tab.active { background: #1f2933; border-color: #1f2933; color: #fff; }
+    .user-tab .count { opacity: 0.7; margin-left: 4px; }
+    .badge { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; }
+    .badge-owner-del { background: #eff6ff; color: #1d4ed8; }
+    .badge-removed { background: #fef2f2; color: #b91c1c; }
   </style>
 
   <h2 style="font-size:1.6rem;font-weight:700;margin:1.5rem 0 0.5rem;">Listings Management</h2>
@@ -93,7 +103,12 @@
     <a href="/admin/bookings">Bookings</a>
   </div>
 
-  <div class="table-card">
+  <div class="user-tabs" role="tablist">
+    <button type="button" class="user-tab active" data-tab="active" role="tab">Active<span class="count">(<%= listings.length %>)</span></button>
+    <button type="button" class="user-tab" data-tab="deleted" role="tab">Deleted<span class="count">(<%= deletedListings.length %>)</span></button>
+  </div>
+
+  <div class="table-card" data-panel="active">
     <div class="table-wrapper">
       <table>
         <thead>
@@ -138,3 +153,64 @@
     </div>
 
   </div>
+
+  <div class="table-card" data-panel="deleted" hidden>
+    <% if (deletedListings.length === 0) { %>
+      <p style="color:#9ca3af;font-style:italic;font-size:0.9rem;margin:0;">No deleted listings yet.</p>
+    <% } else { %>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Title</th>
+            <th>Location</th>
+            <th>Price</th>
+            <th>Owner</th>
+            <th>Created</th>
+            <th>Deleted</th>
+            <th>How</th>
+            <th>Activity</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% deletedListings.forEach((d, i) => { %>
+            <tr>
+              <td style="color:#9ca3af;"><%= i+1 %></td>
+              <td><strong><%= d.title %></strong></td>
+              <td style="color:#6b7280;"><%= [d.location, d.country].filter(Boolean).join(', ') || '—' %></td>
+              <td>₹<%= d.price?.toLocaleString('en-IN') ?? '—' %></td>
+              <td>
+                <%= d.owner?.username || '—' %>
+                <% if (d.owner?.email) { %><div style="font-size:0.75rem;color:#9ca3af;"><%= d.owner.email %></div><% } %>
+              </td>
+              <td><%= d.createdAt ? new Date(d.createdAt).toLocaleDateString('en-IN') : '—' %></td>
+              <td><%= new Date(d.deletedAt).toLocaleDateString('en-IN') %></td>
+              <td>
+                <% if (d.method === 'owner') { %>
+                  <span class="badge badge-owner-del">By owner</span>
+                <% } else { %>
+                  <span class="badge badge-removed">Removed by admin</span>
+                <% } %>
+                <div style="font-size:0.75rem;color:#9ca3af;margin-top:2px;">by <%= d.deletedBy?.username || '—' %></div>
+              </td>
+              <td style="font-size:0.8rem;color:#6b7280;">
+                <%= d.totalBookings %> booking(s)<br>
+                <%= d.totalReviews %> review(s)<% if (d.totalReviews > 0 && d.avgRating) { %> · ★ <%= d.avgRating.toFixed(1) %><% } %>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+    <% } %>
+  </div>
+
+  <script>
+    document.querySelectorAll('.user-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.user-tab').forEach(t => t.classList.toggle('active', t === tab));
+        document.querySelectorAll('[data-panel]').forEach(p => { p.hidden = p.dataset.panel !== tab.dataset.tab; });
+      });
+    });
+  </script>

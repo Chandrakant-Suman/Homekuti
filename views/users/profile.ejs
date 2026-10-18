@@ -38,6 +38,23 @@
   .wishlist-price { font-size: 0.8rem; color: #6b7280; }
 
   .empty-msg { color: #9ca3af; font-size: 0.9rem; font-style: italic; }
+
+  .settings-form { display: flex; flex-direction: column; gap: 0.8rem; max-width: 420px; }
+  .settings-form label { font-size: 0.82rem; font-weight: 600; color: #374151; margin-bottom: 2px; display: block; }
+  .settings-form input, .settings-form textarea {
+    width: 100%; border: 1.5px solid #e3e5ec; border-radius: 10px; padding: 0.55rem 0.8rem;
+    font-size: 0.9rem; font-family: inherit;
+  }
+  .settings-form input:focus, .settings-form textarea:focus { outline: none; border-color: var(--primary); }
+  .settings-hint { font-size: 0.78rem; color: #9ca3af; margin-top: 2px; }
+  .settings-divider { border: 0; border-top: 1px solid #f1f5f9; margin: 1.5rem 0; }
+  .danger-card { border: 1.5px solid #fecaca; }
+  .danger-card h3 { color: #b91c1c; }
+  .hk-btn-danger { background: #fff; color: #ef4444; border: 1.5px solid #fca5a5; }
+  .hk-btn-danger:hover { background: #ef4444; color: #fff; }
+  .delete-status { padding: 0.8rem 1rem; border-radius: 12px; font-size: 0.88rem; margin-bottom: 1rem; }
+  .delete-status.pending { background: #fef3c7; color: #92400e; }
+  .delete-status.rejected { background: #fef2f2; color: #b91c1c; }
 </style>
 
 <div class="profile-layout">
@@ -122,5 +139,93 @@
         </div>
       </div>
     </div>
+
+    <!-- Account settings -->
+    <div class="section-card">
+      <h3><i class="fa-solid fa-user-pen" style="color:#6b7280;"></i> Account Settings</h3>
+
+      <form method="POST" action="/user/profile/username?_method=PATCH" class="settings-form">
+        <div>
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username" value="<%= user.username %>"
+            required minlength="3" maxlength="30" pattern="[a-zA-Z0-9_.]{3,30}">
+          <div class="settings-hint">3-30 characters: letters, numbers, dots or underscores.</div>
+        </div>
+        <div><button type="submit" class="hk-btn">Update Username</button></div>
+      </form>
+
+      <hr class="settings-divider">
+
+      <form method="POST" action="/user/profile/password?_method=PATCH" class="settings-form" id="passwordForm">
+        <% if (hasPassword) { %>
+          <div>
+            <label for="currentPassword">Current password</label>
+            <input type="password" id="currentPassword" name="currentPassword" required autocomplete="current-password">
+          </div>
+        <% } else { %>
+          <div class="settings-hint" style="margin:0;">You signed in with Google. Set a password to also sign in with your username.</div>
+        <% } %>
+        <div>
+          <label for="newPassword">New password</label>
+          <input type="password" id="newPassword" name="newPassword" required minlength="8" autocomplete="new-password">
+          <div class="settings-hint">At least 8 characters.</div>
+        </div>
+        <div>
+          <label for="confirmPassword">Confirm new password</label>
+          <input type="password" id="confirmPassword" name="confirmPassword" required minlength="8" autocomplete="new-password">
+        </div>
+        <div><button type="submit" class="hk-btn"><%= hasPassword ? 'Change Password' : 'Set Password' %></button></div>
+      </form>
+    </div>
+
+    <!-- Delete account -->
+    <div class="section-card danger-card">
+      <h3><i class="fa-solid fa-triangle-exclamation"></i> Delete Account</h3>
+      <% const delStatus = user.deleteRequest?.status || 'none'; %>
+
+      <% if (user.role === 'admin') { %>
+        <p class="empty-msg" style="font-style:normal;">Admin accounts can't request deletion. Ask another admin to change your role first.</p>
+      <% } else if (delStatus === 'pending') { %>
+        <div class="delete-status pending">
+          Your deletion request was sent on
+          <strong><%= new Date(user.deleteRequest.requestedAt).toLocaleDateString('en-IN') %></strong>
+          and is awaiting admin review.
+        </div>
+        <form method="POST" action="/user/profile/delete-request?_method=DELETE">
+          <button type="submit" class="hk-btn">Cancel Request</button>
+        </form>
+      <% } else { %>
+        <% if (delStatus === 'rejected') { %>
+          <div class="delete-status rejected">
+            Your previous deletion request was declined. Please make sure you have no upcoming bookings or active listings, then try again.
+          </div>
+        <% } %>
+        <p style="font-size:0.88rem;color:#6b7280;margin-bottom:1rem;">
+          Request permanent deletion of your account. An admin will review it; any upcoming bookings or listings you own must be resolved first.
+        </p>
+        <form method="POST" action="/user/profile/delete-request" class="settings-form"
+          onsubmit="return confirm('Send a request to permanently delete your account?');">
+          <div>
+            <label for="reason">Reason (optional)</label>
+            <textarea id="reason" name="reason" rows="3" maxlength="500"></textarea>
+          </div>
+          <div><button type="submit" class="hk-btn hk-btn-danger">Request Account Deletion</button></div>
+        </form>
+      <% } %>
+    </div>
   </div>
 </div>
+
+<script>
+  // Client-side check that the two new passwords match
+  document.getElementById('passwordForm')?.addEventListener('submit', (e) => {
+    const np = document.getElementById('newPassword');
+    const cp = document.getElementById('confirmPassword');
+    if (np.value !== cp.value) {
+      e.preventDefault();
+      cp.setCustomValidity('Passwords do not match');
+      cp.reportValidity();
+    }
+  });
+  document.getElementById('confirmPassword')?.addEventListener('input', (e) => e.target.setCustomValidity(''));
+</script>

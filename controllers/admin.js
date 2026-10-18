@@ -2,6 +2,9 @@ const User = require("../models/user");
 const Listing = require("../models/listing");
 const Booking = require("../models/booking");
 const Review = require("../models/review");
+const DeletedUser = require("../models/deletedUser");
+const DeletedListing = require("../models/deletedListing");
+const { archiveAndDeleteListing } = require("../utils/listingDeletion");
 
 module.exports.dashboard = async (req, res) => {
 
@@ -116,7 +119,91 @@ module.exports.dashboard = async (req, res) => {
 
 module.exports.listUsers = async (req, res) => {
   const users = await User.find({}).lean();
-  res.render("admin/users", { users });
+
+  const pending = users.filter(u => u.deleteRequest?.status === "pending");
+  const pendingIds = pending.map(u => u._id);
+  const [openBookings, ownedListings] = await Promise.all([
+    Booking.aggregate([
+      { $match: { user: { $in: pendingIds }, status: { $in: ["upcoming", "active"] } } },
+      { $group: { _id: "$user", count: { $sum: 1 } } },
+    ]),
+    Listing.aggregate([
+      { $match: { owner: { $in: pendingIds } } },
+      { $group: { _id: "$owner", count: { $sum: 1 } } },
+    ]),
+  ]);
+  const toMap = rows => Object.fromEntries(rows.map(r => [r._id.toString(), r.count]));
+  const bookingCounts = toMap(openBookings);
+  const listingCounts = toMap(ownedListings);
+
+  const deleteRequests = pending
+    .map(u => ({
+      ...u,
+      openBookings: bookingCounts[u._id.toString()] || 0,
+      ownedListings: listingCounts[u._id.toString()] || 0,
+    }))
+    .sort((a, b) => new Date(a.deleteRequest.requestedAt) - new Date(b.deleteRequest.requestedAt));
+
+  const deletedUsers = await DeletedUser.find({}).sort({ deletedAt: -1 }).lean();
+
+  res.render("admin/users", { users, deleteRequests, deletedUsers });
+};
+
+// Keep a minimal record (no credentials/contact extras) before removing the account
+async function archiveAndDeleteUser(user, { method, admin }) {
+  const archived = await DeletedUser.create({
+    originalId: user._id,
+    username: user.username,
+    email: user.email,
+    role: user.role,
+    joinedAt: user.createdAt,
+    method,
+    reason: user.deleteRequest?.reason || undefined,
+    requestedAt: user.deleteRequest?.requestedAt || undefined,
+    deletedBy: { id: admin._id, username: admin.username },
+  });
+  try {
+    await Review.deleteMany({ author: user._id });
+    await User.findByIdAndDelete(user._id);
+  } catch (err) {
+    // Roll back the archive entry so the record isn't marked deleted while the account still exists
+    await DeletedUser.findByIdAndDelete(archived._id);
+    throw err;
+  }
+}
+
+module.exports.approveDeleteRequest = async (req, res) => {
+  const user = await User.findById(req.params.id);
+  if (!user || user.deleteRequest?.status !== "pending") {
+    req.flash("error", "No pending deletion request for this user.");
+    return res.redirect("/admin/users");
+  }
+
+  // Don't strand guests or listings: these must be resolved first
+  const [openBookings, ownedListings] = await Promise.all([
+    Booking.countDocuments({ user: user._id, status: { $in: ["upcoming", "active"] } }),
+    Listing.countDocuments({ owner: user._id }),
+  ]);
+  if (openBookings > 0 || ownedListings > 0) {
+    req.flash(
+      "error",
+      `Cannot delete ${user.username} yet: ${openBookings} upcoming/active booking(s) and ${ownedListings} listing(s) must be cancelled or removed first.`
+    );
+    return res.redirect("/admin/users");
+  }
+
+  await archiveAndDeleteUser(user, { method: "request", admin: req.user });
+  req.flash("success", `Account ${user.username} deleted. A minimal record was kept under Deleted Accounts.`);
+  res.redirect("/admin/users");
+};
+
+module.exports.rejectDeleteRequest = async (req, res) => {
+  await User.updateOne(
+    { _id: req.params.id, "deleteRequest.status": "pending" },
+    { $set: { "deleteRequest.status": "rejected", "deleteRequest.reviewedAt": new Date() } }
+  );
+  req.flash("success", "Deletion request rejected.");
+  res.redirect("/admin/users");
 };
 
 module.exports.changeRole = async (req, res) => {
@@ -127,19 +214,36 @@ module.exports.changeRole = async (req, res) => {
 };
 
 module.exports.deleteUser = async (req, res) => {
-  await User.findByIdAndDelete(req.params.id);
+  const user = await User.findById(req.params.id);
+  if (!user) {
+    req.flash("error", "User not found");
+    return res.redirect("/admin/users");
+  }
+  if (user._id.equals(req.user._id)) {
+    req.flash("error", "You can't delete your own admin account.");
+    return res.redirect("/admin/users");
+  }
+  await archiveAndDeleteUser(user, { method: "admin", admin: req.user });
   req.flash("success", "User deleted");
   res.redirect("/admin/users");
 };
 
 module.exports.listListings = async (req, res) => {
-  const listings = await Listing.find({}).populate("owner", "username").lean();
-  res.render("admin/listings", { listings });
+  const [listings, deletedListings] = await Promise.all([
+    Listing.find({}).populate("owner", "username").lean(),
+    DeletedListing.find({}).sort({ deletedAt: -1 }).lean(),
+  ]);
+  res.render("admin/listings", { listings, deletedListings });
 };
 
 module.exports.deleteListing = async (req, res) => {
-  await Listing.findByIdAndDelete(req.params.id);
-  req.flash("success", "Listing deleted");
+  const listing = await Listing.findById(req.params.id);
+  if (!listing) {
+    req.flash("error", "Listing not found");
+    return res.redirect("/admin/listings");
+  }
+  await archiveAndDeleteListing(listing, { method: "admin", deletedBy: req.user });
+  req.flash("success", "Listing deleted. A minimal record was kept under Deleted Listings.");
   res.redirect("/admin/listings");
 };
 
