@@ -30,6 +30,30 @@ const bookingSchema = new Schema({
     type: Number,
     required: true,
   },
+  // Details of every guest on the booking (guestDetails.length === guests)
+  guestDetails: [{
+    _id: false,
+    name: { type: String, trim: true, required: true },
+    age: { type: Number, min: 0, max: 120, required: true },
+    gender: {
+      type: String,
+      enum: ["male", "female", "other", "prefer_not_to_say"],
+      required: true,
+    },
+  }],
+  // Price snapshot at booking time (listing price/percent may change later)
+  priceBreakdown: {
+    pricePerNight: Number,
+    baseGuests: Number,
+    extraGuests: Number,
+    extraGuestPercent: Number,
+    extraGuestFeePerNight: Number,
+    baseTotal: Number,
+    extraGuestTotal: Number,
+    gstRate: Number,       // % applied to the stay
+    gst: Number,           // ₹ GST on the stay (not refunded on guest cancellation)
+    serviceFee: Number,
+  },
   totalPrice: {
     type: Number,
     required: true,
@@ -190,7 +214,16 @@ bookingSchema.methods.getRefundPolicy = function (now = new Date()) {
  */
 bookingSchema.methods.getRefundAmount = function (now = new Date()) {
   const { percentage } = this.getRefundPolicy(now);
-  return Math.round((this.totalPrice * percentage) / 100);
+  return Math.round((this.getRefundableBase() * percentage) / 100);
+};
+
+/**
+ * Amount the guest-cancellation percentage applies to: everything paid except
+ * GST, which is non-refundable on guest cancellation. (Host cancellations
+ * refund the full totalPrice instead.) Older bookings have no GST recorded.
+ */
+bookingSchema.methods.getRefundableBase = function () {
+  return Math.max(0, this.totalPrice - (this.priceBreakdown?.gst || 0));
 };
 
 module.exports = mongoose.model("Booking", bookingSchema);

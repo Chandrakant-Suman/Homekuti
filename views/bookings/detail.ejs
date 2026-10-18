@@ -83,6 +83,7 @@
     <div class="dr"><span class="dr-l">Check-out</span> <span class="dr-v"><%= new Date(booking.checkOut).toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'long',year:'numeric'}) %></span></div>
     <div class="dr"><span class="dr-l">Duration</span>  <span class="dr-v"><%= booking.nights %> night<%= booking.nights!==1?'s':'' %></span></div>
     <div class="dr"><span class="dr-l">Guests</span>    <span class="dr-v"><%= booking.guests %> guest<%= booking.guests!==1?'s':'' %></span></div>
+    <%- include('../includes/booking-guests', { booking }) %>
     <div class="dr">
       <span class="dr-l">Booking Status</span>
       <span class="dr-v"><span class="sbadge sb-<%= booking.status %>"><%= booking.status %></span></span>

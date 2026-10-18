@@ -1,0 +1,46 @@
+<%#
+  Guest list + price breakdown for a booking.
+  Usage: include('../includes/booking-guests', { booking })
+  Older bookings have no guestDetails / priceBreakdown; each block is skipped then.
+%>
+<%
+  const genderLabel = { male: 'Male', female: 'Female', other: 'Other', prefer_not_to_say: 'Prefer not to say' };
+  const pb = booking.priceBreakdown || {};
+  const inr = n => '₹' + Number(n || 0).toLocaleString('en-IN');
+%>
+<% if (booking.guestDetails && booking.guestDetails.length) { %>
+  <div style="margin:0.8rem 0 0.4rem;">
+    <div style="font-size:0.8rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.5rem;">Guest details</div>
+    <% booking.guestDetails.forEach((g, i) => { %>
+      <div style="display:flex;justify-content:space-between;gap:1rem;padding:0.45rem 0;border-bottom:1px solid #f9fafb;font-size:0.88rem;">
+        <span style="color:#1f2933;font-weight:600;"><%= i + 1 %>. <%= g.name %></span>
+        <span style="color:#6b7280;"><%= g.age %> yrs · <%= genderLabel[g.gender] || g.gender %></span>
+      </div>
+    <% }) %>
+  </div>
+<% } %>
+<% if (pb.pricePerNight) { %>
+  <div style="margin:0.8rem 0 0.4rem;font-size:0.86rem;color:#374151;">
+    <div style="font-size:0.8rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.5rem;">Price breakdown</div>
+    <div style="display:flex;justify-content:space-between;padding:0.25rem 0;">
+      <span><%= inr(pb.pricePerNight) %> × <%= booking.nights %> night<%= booking.nights !== 1 ? 's' : '' %></span>
+      <span><%= inr(pb.baseTotal) %></span>
+    </div>
+    <% if (pb.extraGuestTotal > 0) { %>
+      <div style="display:flex;justify-content:space-between;padding:0.25rem 0;">
+        <span>Extra guest<%= pb.extraGuests > 1 ? 's' : '' %> (<%= pb.extraGuests %> × <%= inr(pb.extraGuestFeePerNight) %> × <%= booking.nights %>, +<%= pb.extraGuestPercent %>%)</span>
+        <span><%= inr(pb.extraGuestTotal) %></span>
+      </div>
+    <% } %>
+    <% if (pb.gst) { %>
+      <div style="display:flex;justify-content:space-between;padding:0.25rem 0;">
+        <span>GST (<%= pb.gstRate %>%)</span>
+        <span><%= inr(pb.gst) %></span>
+      </div>
+    <% } %>
+    <div style="display:flex;justify-content:space-between;padding:0.25rem 0;color:#059669;">
+      <span>Service fee</span>
+      <span><%= inr(pb.serviceFee) %></span>
+    </div>
+  </div>
+<% } %>

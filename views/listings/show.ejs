@@ -279,6 +279,10 @@
           <option value="3">3 guests</option>
           <option value="4">4 guests</option>
         </select>
+        <% const egp = listing.extraGuestPercent ?? 20; %>
+        <p class="bw-hint" style="text-align:left;margin:-0.3rem 0 0.8rem;">
+          Price covers 2 guests<% if (egp > 0) { %> · +<%= egp %>% per extra guest per night<% } else { %> · no extra guest charge<% } %>
+        </p>
 
         <!-- Price breakdown (shown when dates selected) -->
         <div class="pb" id="priceBox">
@@ -286,8 +290,16 @@
             <span id="pb-nights-label">—</span>
             <span id="pb-nights-amt">—</span>
           </div>
+          <div class="pb-row" id="pb-extra-row" style="display:none;">
+            <span id="pb-extra-label">—</span>
+            <span id="pb-extra-amt">—</span>
+          </div>
+          <div class="pb-row">
+            <span id="pb-gst-label">GST</span>
+            <span id="pb-gst">—</span>
+          </div>
           <div class="pb-row pb-green">
-            <span>Service fee (5%)</span>
+            <span>Service fee</span>
             <span id="pb-fee">—</span>
           </div>
           <div class="pb-row total">
@@ -387,13 +399,32 @@ if (ciEl) {
       return;
     }
 
-    // Show breakdown
-    const base  = nights * ppp;
-    const fee   = Math.round(base * 0.05);
-    const total = base + fee;
+    // Show breakdown (mirrors utils/pricing.js; the server recalculates)
+    const g          = parseInt(guests, 10) || 0;
+    const extraPct   = listing.extraGuestPercent ?? 20;
+    const extraG     = Math.max(0, g - 2);
+    const extraNight = Math.round(ppp * extraPct / 100);
+    const base       = nights * ppp;
+    const extraAmt   = extraNight * extraG * nights;
+    const tariff     = ppp + extraNight * extraG;          // per night, incl. extra guests
+    const gstRate    = tariff <= 7500 ? 5 : 18;            // GST slab on accommodation
+    const gst        = Math.round((base + extraAmt) * gstRate / 100);
+    const fee        = 20;                                 // flat service fee
+    const total      = base + extraAmt + gst + fee;
 
     document.getElementById("pb-nights-label").textContent = `${fmt(ppp)} × ${nights} night${nights > 1 ? "s" : ""}`;
     document.getElementById("pb-nights-amt").textContent   = fmt(base);
+    const extraRow = document.getElementById("pb-extra-row");
+    if (extraAmt > 0) {
+      document.getElementById("pb-extra-label").textContent =
+        `Extra guest${extraG > 1 ? "s" : ""} (${extraG} × ${fmt(extraNight)} × ${nights} night${nights > 1 ? "s" : ""})`;
+      document.getElementById("pb-extra-amt").textContent = fmt(extraAmt);
+      extraRow.style.display = "";
+    } else {
+      extraRow.style.display = "none";
+    }
+    document.getElementById("pb-gst-label").textContent    = `GST (${gstRate}%)`;
+    document.getElementById("pb-gst").textContent          = fmt(gst);
     document.getElementById("pb-fee").textContent          = fmt(fee);
     document.getElementById("pb-total").textContent        = fmt(total);
     priceBox.style.display = "block";

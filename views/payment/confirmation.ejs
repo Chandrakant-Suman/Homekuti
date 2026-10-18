@@ -141,6 +141,7 @@
       <span class="dr-label">Guests</span>
       <span class="dr-value"><%= booking.guests %> guest<%= booking.guests !== 1 ? 's' : '' %></span>
     </div>
+    <%- include('../includes/booking-guests', { booking }) %>
 
     <!-- Amount -->
     <div class="amount-row">

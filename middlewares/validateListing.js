@@ -6,6 +6,7 @@ const listingSchema = Joi.object({
     title: Joi.string().min(3).required(),
     description: Joi.string().min(10).required(),
     price: Joi.number().min(1).required(),
+    extraGuestPercent: Joi.number().min(0).max(100).optional(),
     location: Joi.string().min(2).required(),
     country: Joi.string().min(2).required(),
     genre: Joi.string().valid("Beach","Mountain","City","Luxury","Budget","Heritage","Forest","Countryside","Island","Desert").optional(),

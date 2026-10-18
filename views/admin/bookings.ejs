@@ -325,6 +325,13 @@
                     <span style="color:#9ca3af;">
                       <%= b.nights %>n · <%= b.guests %>g
                     </span>
+                    <% if (b.guestDetails?.length) { %>
+                      <div style="font-size:0.72rem;color:#6b7280;margin-top:2px;white-space:normal;max-width:180px;"
+                        title="<%= b.guestDetails.map(g => `${g.name} (${g.age}, ${g.gender.replace(/_/g,' ')})`).join(', ') %>">
+                        <i class="fa-solid fa-users" style="font-size:0.65rem;"></i>
+                        <%= b.guestDetails.map(g => g.name).join(', ') %>
+                      </div>
+                    <% } %>
               </td>
               <td><strong>₹<%= b.totalPrice?.toLocaleString('en-IN') %></strong></td>
               <td><span class="badge b-<%= b.paymentStatus %>">

@@ -2,6 +2,53 @@ const crypto  = require("crypto");
 const Listing = require("../models/listing");
 const Booking = require("../models/booking");
 const User    = require("../models/user");
+const { MAX_GUESTS, computePrice, validateGuestDetails } = require("../utils/pricing");
+
+const PENDING_ORDER_TTL_MS = 60 * 60 * 1000; // checkout data kept for 1 hour
+
+/**
+ * Validate the trip parameters shared by checkout and order creation.
+ * Returns { error } or { listing, checkInDate, checkOutDate, nights, guests }.
+ */
+async function validateTrip({ listingId, checkIn, checkOut, guests }, { populateOwner = false } = {}) {
+  if (!listingId || !checkIn || !checkOut || !guests) {
+    return { error: "Incomplete booking details. Please select dates and guests." };
+  }
+  const query = Listing.findById(listingId);
+  const listing = await (populateOwner ? query.populate("owner") : query);
+  if (!listing) return { error: "Listing not found.", notFound: true };
+
+  const checkInDate  = new Date(checkIn);
+  const checkOutDate = new Date(checkOut);
+  if (isNaN(checkInDate) || isNaN(checkOutDate) || checkOutDate <= checkInDate) {
+    return { error: "Invalid dates. Check-out must be after check-in." };
+  }
+  const nights = Math.ceil((checkOutDate - checkInDate) / 86400000);
+  if (nights < 1 || nights > 7) return { error: "Stay must be between 1 and 7 nights." };
+
+  const guestCount = parseInt(guests, 10);
+  if (!Number.isInteger(guestCount) || guestCount < 1 || guestCount > MAX_GUESTS) {
+    return { error: `Guests must be between 1 and ${MAX_GUESTS}.` };
+  }
+
+  const overlap = await Booking.findOne({
+    listing: listingId,
+    paymentStatus: "paid",
+    status: { $ne: "cancelled" },
+    checkIn:  { $lt: checkOutDate },
+    checkOut: { $gt: checkInDate },
+  });
+  if (overlap) return { error: "These dates are already booked. Please choose different dates." };
+
+  return { listing, checkInDate, checkOutDate, nights, guests: guestCount };
+}
+
+function priceSnapshot(price) {
+  const { pricePerNight, baseGuests, extraGuests, extraGuestPercent,
+          extraGuestFeePerNight, baseTotal, extraGuestTotal, gstRate, gst, serviceFee } = price;
+  return { pricePerNight, baseGuests, extraGuests, extraGuestPercent,
+           extraGuestFeePerNight, baseTotal, extraGuestTotal, gstRate, gst, serviceFee };
+}
 
 function getRazorpay() {
   const Razorpay = require("razorpay");
@@ -19,53 +66,16 @@ function getRazorpay() {
 //   GET /api/payment/checkout?listingId=&checkIn=&checkOut=&guests=
 // ─────────────────────────────────────────────────────────
 module.exports.checkoutPage = async (req, res) => {
-  const { listingId, checkIn, checkOut, guests } = req.query;
+  const { listingId, checkIn, checkOut } = req.query;
+  const trip = await validateTrip(req.query, { populateOwner: true });
 
-  if (!listingId || !checkIn || !checkOut || !guests) {
-    req.flash("error", "Incomplete booking details. Please select dates and guests.");
-    return res.redirect("back");
+  if (trip.error) {
+    req.flash("error", trip.error);
+    return res.redirect(trip.notFound || !listingId ? "/listings" : `/listings/${listingId}`);
   }
 
-  const listing = await Listing.findById(listingId).populate("owner");
-  if (!listing) {
-    req.flash("error", "Listing not found.");
-    return res.redirect("/listings");
-  }
-
-  const checkInDate  = new Date(checkIn);
-  const checkOutDate = new Date(checkOut);
-
-  if (isNaN(checkInDate) || isNaN(checkOutDate) || checkOutDate <= checkInDate) {
-    req.flash("error", "Invalid dates. Check-out must be after check-in.");
-    return res.redirect(`/listings/${listingId}`);
-  }
-
-  const nights = Math.ceil((checkOutDate - checkInDate) / 86400000);
-  if (nights < 1 || nights > 7) {
-    req.flash("error", "Stay must be between 1 and 7 nights.");
-    return res.redirect(`/listings/${listingId}`);
-  }
-  if (parseInt(guests) < 1 || parseInt(guests) > 4) {
-    req.flash("error", "Guests must be between 1 and 4.");
-    return res.redirect(`/listings/${listingId}`);
-  }
-
-  // Check overlap
-  const overlap = await Booking.findOne({
-    listing: listingId,
-    paymentStatus: "paid",
-    status: { $ne: "cancelled" },
-    checkIn:  { $lt: checkOutDate },
-    checkOut: { $gt: checkInDate },
-  });
-  if (overlap) {
-    req.flash("error", "These dates are already booked. Please choose different dates.");
-    return res.redirect(`/listings/${listingId}`);
-  }
-
-  const totalPrice    = nights * listing.price;
-  const serviceFee    = Math.round(totalPrice * 0.05);   // 5% service fee
-  const grandTotal    = totalPrice + serviceFee;
+  const { listing, checkInDate, checkOutDate, nights, guests } = trip;
+  const price = computePrice(listing, nights, guests);
 
   res.render("payment/checkout", {
     listing,
@@ -73,12 +83,13 @@ module.exports.checkoutPage = async (req, res) => {
     checkOut,
     checkInDate,
     checkOutDate,
-    guests: parseInt(guests),
+    guests,
     nights,
-    pricePerNight: listing.price,
-    totalPrice,
-    serviceFee,
-    grandTotal,
+    price,
+    pricePerNight: price.pricePerNight,
+    totalPrice: price.subtotal,
+    serviceFee: price.serviceFee,
+    grandTotal: price.grandTotal,
     RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID || "",
   });
 };
@@ -89,51 +100,24 @@ module.exports.checkoutPage = async (req, res) => {
 // ─────────────────────────────────────────────────────────
 module.exports.createOrder = async (req, res) => {
   try {
-    const { listingId, checkIn, checkOut, guests } = req.body;
+    const { listingId, checkIn, checkOut, guestDetails } = req.body;
 
-    if (!listingId || !checkIn || !checkOut || !guests) {
-      return res.status(400).json({ success: false, message: "Missing required booking details" });
+    const trip = await validateTrip(req.body);
+    if (trip.error) {
+      return res.status(trip.notFound ? 404 : 400).json({ success: false, message: trip.error });
+    }
+    const { listing, nights, guests } = trip;
+
+    const checked = validateGuestDetails(guestDetails, guests);
+    if (checked.error) {
+      return res.status(400).json({ success: false, message: checked.error });
     }
 
-    const listing = await Listing.findById(listingId);
-    if (!listing) {
-      return res.status(404).json({ success: false, message: "Listing not found" });
-    }
-
-    const checkInDate  = new Date(checkIn);
-    const checkOutDate = new Date(checkOut);
-
-    if (isNaN(checkInDate) || isNaN(checkOutDate) || checkOutDate <= checkInDate) {
-      return res.status(400).json({ success: false, message: "Invalid dates selected" });
-    }
-
-    const nights = Math.ceil((checkOutDate - checkInDate) / 86400000);
-    if (nights < 1 || nights > 7) {
-      return res.status(400).json({ success: false, message: "Stay must be between 1 and 7 nights" });
-    }
-    if (parseInt(guests) < 1 || parseInt(guests) > 4) {
-      return res.status(400).json({ success: false, message: "Guests must be 1–4" });
-    }
-
-    // Re-check overlap
-    const overlap = await Booking.findOne({
-      listing: listingId,
-      paymentStatus: "paid",
-      status: { $ne: "cancelled" },
-      checkIn:  { $lt: checkOutDate },
-      checkOut: { $gt: checkInDate },
-    });
-    if (overlap) {
-      return res.status(400).json({ success: false, message: "These dates are already booked." });
-    }
-
-    const totalPrice = nights * listing.price;
-    const serviceFee = Math.round(totalPrice * 0.05);
-    const grandTotal = totalPrice + serviceFee;
+    const price = computePrice(listing, nights, guests);
 
     const razorpay = getRazorpay();
     const order = await razorpay.orders.create({
-      amount:   grandTotal * 100,  // paise
+      amount:   price.grandTotal * 100,  // paise
       currency: "INR",
       receipt:  `hk_${Date.now()}`,
       notes: {
@@ -146,15 +130,34 @@ module.exports.createOrder = async (req, res) => {
       },
     });
 
+    // Keep the server-computed booking for /verify (never trust the client there)
+    const now = Date.now();
+    const pending = req.session.pendingOrders || {};
+    for (const [id, p] of Object.entries(pending)) {
+      if (now - p.createdAt > PENDING_ORDER_TTL_MS) delete pending[id];
+    }
+    pending[order.id] = {
+      listingId: listingId.toString(),
+      checkIn,
+      checkOut,
+      guests,
+      nights,
+      guestDetails: checked.guests,
+      price,
+      createdAt: now,
+    };
+    req.session.pendingOrders = pending;
+    await new Promise((resolve, reject) => req.session.save(err => (err ? reject(err) : resolve())));
+
     res.json({
       success:    true,
       orderId:    order.id,
-      amount:     grandTotal * 100,
+      amount:     price.grandTotal * 100,
       currency:   "INR",
       nights,
-      totalPrice,
-      serviceFee,
-      grandTotal,
+      totalPrice: price.subtotal,
+      serviceFee: price.serviceFee,
+      grandTotal: price.grandTotal,
     });
 
   } catch (err) {
@@ -169,17 +172,7 @@ module.exports.createOrder = async (req, res) => {
 // ─────────────────────────────────────────────────────────
 module.exports.verifyPayment = async (req, res) => {
   try {
-    const {
-      razorpay_order_id,
-      razorpay_payment_id,
-      razorpay_signature,
-      listingId,
-      checkIn,
-      checkOut,
-      guests,
-      nights,
-      grandTotal,
-    } = req.body;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
       return res.status(400).json({ success: false, message: "Missing payment credentials" });
@@ -209,15 +202,38 @@ module.exports.verifyPayment = async (req, res) => {
       });
     }
 
+    // ── Booking details come from the server, not the request body ──
+    let pending = req.session.pendingOrders?.[razorpay_order_id];
+    if (!pending) {
+      // Session lost (expired / other device): rebuild from the Razorpay order
+      // so a captured payment is never dropped. Guest details are unavailable.
+      const order = await getRazorpay().orders.fetch(razorpay_order_id);
+      const n = order.notes || {};
+      if (n.userId !== req.user._id.toString()) {
+        return res.status(403).json({ success: false, message: "This payment belongs to a different account." });
+      }
+      const listing = await Listing.findById(n.listingId);
+      const nightsN = parseInt(n.nights, 10);
+      const guestsN = parseInt(n.guests, 10);
+      const price = listing ? computePrice(listing, nightsN, guestsN) : {};
+      pending = {
+        listingId: n.listingId, checkIn: n.checkIn, checkOut: n.checkOut,
+        guests: guestsN, nights: nightsN, guestDetails: [],
+        price: { ...price, grandTotal: order.amount / 100 },
+      };
+    }
+
     // ── Create booking ONLY after verified ────────────
     const booking = new Booking({
       user:               req.user._id,
-      listing:            listingId,
-      checkIn:            new Date(checkIn),
-      checkOut:           new Date(checkOut),
-      guests:             parseInt(guests),
-      nights:             parseInt(nights),
-      totalPrice:         parseInt(grandTotal),
+      listing:            pending.listingId,
+      checkIn:            new Date(pending.checkIn),
+      checkOut:           new Date(pending.checkOut),
+      guests:             pending.guests,
+      nights:             pending.nights,
+      guestDetails:       pending.guestDetails,
+      priceBreakdown:     priceSnapshot(pending.price),
+      totalPrice:         pending.price.grandTotal,
       paymentStatus:      "paid",
       razorpayOrderId:    razorpay_order_id,
       razorpayPaymentId:  razorpay_payment_id,
@@ -227,6 +243,8 @@ module.exports.verifyPayment = async (req, res) => {
 
     await booking.save();
     await User.findByIdAndUpdate(req.user._id, { $push: { bookings: booking._id } });
+
+    if (req.session.pendingOrders) delete req.session.pendingOrders[razorpay_order_id];
 
     console.log(`✅ Booking confirmed: ${booking._id} | Payment: ${razorpay_payment_id}`);
 

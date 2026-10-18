@@ -42,6 +42,19 @@
     </div>
 
     <div class="row g-3 mb-3">
+      <div class="col-md-4">
+        <label class="form-label">Extra guest charge (%)</label>
+        <input type="number" class="form-control" name="listing[extraGuestPercent]" min="0" max="100" step="1" value="20">
+        <div class="invalid-feedback">Enter 0–100.</div>
+      </div>
+      <div class="col-md-8 d-flex align-items-end">
+        <p class="text-muted mb-2" style="font-size:0.85rem;">
+          Your nightly price covers 2 guests. Each extra guest (up to 4) adds this % of the nightly price per night. Use 0 for no extra charge.
+        </p>
+      </div>
+    </div>
+
+    <div class="row g-3 mb-3">
       <div class="col-md-6">
         <label class="form-label">Country *</label>
         <input type="text" required class="form-control" name="listing[country]" placeholder="e.g. India">

@@ -83,6 +83,28 @@
   @keyframes spin { to { transform: rotate(360deg); } }
   .pay-loading p { color: #fff; font-size: 0.95rem; font-weight: 600; }
 
+  /* Guest details */
+  .guest-card { margin-top: 1.4rem; }
+  .guest-card h3 { font-size: 1.05rem; font-weight: 700; color: #1f2933; margin-bottom: 0.3rem; }
+  .guest-card .gc-sub { font-size: 0.82rem; color: #6b7280; margin-bottom: 1rem; }
+  .guest-row {
+    border: 1.5px solid #f1f5f9; border-radius: 14px; padding: 0.9rem 1rem; margin-bottom: 0.8rem;
+  }
+  .guest-row-title { font-size: 0.82rem; font-weight: 700; color: #374151; margin-bottom: 0.6rem; }
+  .guest-fields { display: grid; grid-template-columns: 1fr 90px 150px; gap: 0.6rem; }
+  @media (max-width: 560px) { .guest-fields { grid-template-columns: 1fr 1fr; } .guest-fields .gf-name { grid-column: 1 / -1; } }
+  .guest-fields label { display: block; font-size: 0.74rem; font-weight: 600; color: #6b7280; margin-bottom: 3px; }
+  .guest-fields input, .guest-fields select {
+    width: 100%; border: 1.5px solid #e3e5ec; border-radius: 10px; padding: 0.5rem 0.7rem;
+    font-size: 0.88rem; font-family: inherit; background: #fff;
+  }
+  .guest-fields input:focus, .guest-fields select:focus { outline: none; border-color: var(--primary); }
+  .guest-fields .is-invalid { border-color: #ef4444; }
+  .guest-error {
+    display: none; background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca;
+    border-radius: 10px; padding: 0.6rem 0.8rem; font-size: 0.84rem; margin-bottom: 0.8rem;
+  }
+
   /* Razorpay branding */
   .rzp-logo { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 1rem; opacity: 0.55; }
   .rzp-logo img { height: 18px; }
@@ -163,6 +185,42 @@
         Cancel before check-in for a full refund.
       </p>
     </div>
+
+    <!-- Guest details -->
+    <div class="guest-card">
+      <h3>Guest details</h3>
+      <p class="gc-sub">Enter details for all <%= guests %> guest<%= guests !== 1 ? 's' : '' %>. At least one guest must be 18 or older.</p>
+      <div class="guest-error" id="guestError"></div>
+      <form id="guestForm" novalidate>
+        <% for (let i = 0; i < guests; i++) { %>
+          <div class="guest-row">
+            <div class="guest-row-title">Guest <%= i + 1 %><%= i === 0 ? ' (primary)' : '' %></div>
+            <div class="guest-fields">
+              <div class="gf-name">
+                <label for="gName<%= i %>">Full name</label>
+                <input type="text" id="gName<%= i %>" data-field="name" data-idx="<%= i %>"
+                  minlength="2" maxlength="60" required
+                  <% if (i === 0) { %>value="<%= currUser.username %>"<% } %>>
+              </div>
+              <div>
+                <label for="gAge<%= i %>">Age</label>
+                <input type="number" id="gAge<%= i %>" data-field="age" data-idx="<%= i %>" min="0" max="120" required>
+              </div>
+              <div>
+                <label for="gGender<%= i %>">Gender</label>
+                <select id="gGender<%= i %>" data-field="gender" data-idx="<%= i %>" required>
+                  <option value="">Select</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="other">Other</option>
+                  <option value="prefer_not_to_say">Prefer not to say</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        <% } %>
+      </form>
+    </div>
   </div>
 
   <!-- ── RIGHT: Price & Pay ── -->
@@ -171,10 +229,27 @@
 
     <div class="pr-row">
       <span>₹<%= pricePerNight.toLocaleString('en-IN') %> × <%= nights %> night<%= nights !== 1 ? 's' : '' %></span>
-      <span>₹<%= totalPrice.toLocaleString('en-IN') %></span>
+      <span>₹<%= price.baseTotal.toLocaleString('en-IN') %></span>
+    </div>
+    <% if (price.extraGuestTotal > 0) { %>
+      <div class="pr-row">
+        <span>
+          Extra guest<%= price.extraGuests > 1 ? 's' : '' %>
+          (<%= price.extraGuests %> × ₹<%= price.extraGuestFeePerNight.toLocaleString('en-IN') %> × <%= nights %> night<%= nights !== 1 ? 's' : '' %>)
+          <div style="font-size:0.74rem;color:#9ca3af;">+<%= price.extraGuestPercent %>% per guest beyond <%= price.baseGuests %></div>
+        </span>
+        <span>₹<%= price.extraGuestTotal.toLocaleString('en-IN') %></span>
+      </div>
+    <% } %>
+    <div class="pr-row">
+      <span>
+        GST (<%= price.gstRate %>%)
+        <div style="font-size:0.74rem;color:#9ca3af;"><%= price.gstRate === 5 ? 'Room tariff up to ₹7,500/night' : 'Room tariff above ₹7,500/night' %> · non-refundable on cancellation</div>
+      </span>
+      <span>₹<%= price.gst.toLocaleString('en-IN') %></span>
     </div>
     <div class="pr-row fee">
-      <span><i class="fa-solid fa-circle-info" style="font-size:0.75rem;"></i> Service fee (5%)</span>
+      <span><i class="fa-solid fa-circle-info" style="font-size:0.75rem;"></i> Service fee</span>
       <span>₹<%= serviceFee.toLocaleString('en-IN') %></span>
     </div>
     <div class="pr-row total">
@@ -211,9 +286,43 @@ const bookData = {
   checkIn:    '<%= checkIn %>',
   checkOut:   '<%= checkOut %>',
   guests:     '<%= guests %>',
-  nights:     '<%= nights %>',
-  grandTotal: '<%= grandTotal %>',
 };
+const GUEST_COUNT = <%= guests %>;
+
+// Read + validate the guest form; returns the array or null (and shows the error)
+function collectGuestDetails() {
+  const errBox = document.getElementById("guestError");
+  const inputs = document.querySelectorAll("#guestForm [data-field]");
+  inputs.forEach(el => el.classList.remove("is-invalid"));
+  const guests = Array.from({ length: GUEST_COUNT }, () => ({}));
+  inputs.forEach(el => { guests[el.dataset.idx][el.dataset.field] = el.value.trim(); });
+
+  let firstBad = null, msg = "";
+  guests.forEach((g, i) => {
+    const bad = (field, m) => {
+      const el = document.querySelector(`#guestForm [data-idx="${i}"][data-field="${field}"]`);
+      el.classList.add("is-invalid");
+      if (!firstBad) { firstBad = el; msg = `Guest ${i + 1}: ${m}`; }
+    };
+    if (g.name.length < 2) bad("name", "enter a full name.");
+    const age = Number(g.age);
+    if (g.age === "" || !Number.isInteger(age) || age < 0 || age > 120) bad("age", "enter a valid age (0–120).");
+    if (!g.gender) bad("gender", "select a gender.");
+    g.age = age;
+  });
+  if (!firstBad && !guests.some(g => g.age >= 18)) {
+    msg = "At least one guest must be 18 or older.";
+    firstBad = document.querySelector('#guestForm [data-field="age"]');
+  }
+  if (firstBad) {
+    errBox.textContent = msg;
+    errBox.style.display = "block";
+    firstBad.focus();
+    return null;
+  }
+  errBox.style.display = "none";
+  return guests;
+}
 const currentUser = {
   name:  '<%= currUser.username %>',
   email: '<%= currUser.email %>',
@@ -224,6 +333,9 @@ const payBtn     = document.getElementById("payBtn");
 const payLoading = document.getElementById("payLoading");
 
 payBtn.addEventListener("click", async () => {
+  const guestDetails = collectGuestDetails();
+  if (!guestDetails) return;
+
   payBtn.disabled = true;
   payBtn.innerHTML = '<div style="width:20px;height:20px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite;"></div> Creating order…';
   payLoading.classList.add("active");
@@ -238,6 +350,7 @@ payBtn.addEventListener("click", async () => {
         checkIn:   bookData.checkIn,
         checkOut:  bookData.checkOut,
         guests:    bookData.guests,
+        guestDetails,
       }),
     });
 
@@ -283,12 +396,6 @@ payBtn.addEventListener("click", async () => {
               razorpay_order_id:   response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature:  response.razorpay_signature,
-              listingId:   bookData.listingId,
-              checkIn:     bookData.checkIn,
-              checkOut:    bookData.checkOut,
-              guests:      bookData.guests,
-              nights:      bookData.nights,
-              grandTotal:  bookData.grandTotal,
             }),
           });
 

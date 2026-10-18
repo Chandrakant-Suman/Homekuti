@@ -134,10 +134,17 @@
         <span>Amount paid</span>
         <span>₹<%= booking.totalPrice.toLocaleString('en-IN') %></span>
       </div>
+      <% const gstPaid = booking.priceBreakdown?.gst || 0; %>
+      <% if (gstPaid > 0) { %>
+        <div class="rb-row">
+          <span>GST (non-refundable)</span>
+          <span style="color:#ef4444;">– ₹<%= gstPaid.toLocaleString('en-IN') %></span>
+        </div>
+      <% } %>
       <% if (refundPolicy.percentage < 100) { %>
         <div class="rb-row">
           <span>Cancellation fee (<%= 100 - refundPolicy.percentage %>%)</span>
-          <span style="color:#ef4444;">– ₹<%= (booking.totalPrice - refundAmount).toLocaleString('en-IN') %></span>
+          <span style="color:#ef4444;">– ₹<%= (booking.getRefundableBase() - refundAmount).toLocaleString('en-IN') %></span>
         </div>
       <% } %>
       <div class="rb-row total">

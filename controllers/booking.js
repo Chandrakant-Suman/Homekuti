@@ -92,7 +92,7 @@ module.exports.cancelPreview = async (req, res) => {
   }
 
   const refundPolicy = booking.getRefundPolicy();
-  const refundAmount = Math.round(booking.totalPrice * refundPolicy.percentage / 100);
+  const refundAmount = booking.getRefundAmount();
 
   res.render("bookings/cancel-preview", { booking, refundPolicy, refundAmount });
 };
@@ -117,7 +117,7 @@ module.exports.cancelBooking = async (req, res) => {
   }
 
   const refundPolicy = booking.getRefundPolicy();
-  const refundAmount = Math.round(booking.totalPrice * refundPolicy.percentage / 100);
+  const refundAmount = booking.getRefundAmount();
   const cancelledBy = req.user.role === "admin" ? "admin" : "user";
   const reason = req.body.reason?.trim() || "User requested cancellation";
 

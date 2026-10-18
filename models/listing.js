@@ -35,6 +35,15 @@ const listingSchema = new Schema({
     required: true
   },
 
+  // Nightly price covers BASE_GUESTS; each extra guest adds this % of the
+  // nightly price per night (set by the host)
+  extraGuestPercent: {
+    type: Number,
+    min: 0,
+    max: 100,
+    default: 20
+  },
+
   location: {
     type: String,
     required: true
