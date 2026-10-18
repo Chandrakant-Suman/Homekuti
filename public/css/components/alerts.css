@@ -2,6 +2,8 @@
    FLASH MESSAGES
 ========================================= */
 .hk-flash {
+  position: relative;
+  z-index: 20; /* above the search pill (z-index 10), so it stays visible and clickable */
   display: flex;
   align-items: center;
   gap: 10px;

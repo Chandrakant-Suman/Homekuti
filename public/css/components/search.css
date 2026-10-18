@@ -9,6 +9,12 @@
   position: relative;
 }
 
+/* When a flash message sits above the search (e.g. /listings after sign-in),
+   drop the pull-up so the pill doesn't slide over the message.
+   The home page keeps its overlap with the hero section. */
+.hk-flash ~ .hk-search-wrapper { margin-top: 0; }
+.hk-flash ~ section + .hk-search-wrapper { margin-top: -50px; }
+
 /* CONTAINER */
 .hk-search-pill {
   display: grid;

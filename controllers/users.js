@@ -18,9 +18,13 @@ module.exports.authenticateLocal = (req, res, next) => {
     passport.authenticate("local", (err, user, info) => {
         if (err) return next(err);
         if (!user) {
-            const message = info?.message === "Missing credentials"
-                ? "Please enter your username/email and password."
-                : info?.message || "Password or username is incorrect";
+            let message = info?.message || "Password or username is incorrect";
+            if (info?.message === "Missing credentials") {
+                message = "Please enter your username/email and password.";
+            } else if (info?.name === "NoSaltValueStoredError") {
+                // Account was created with Google and has no password yet
+                message = "This account uses Google sign-in. Click \"Continue with Google\", or use \"Forgot password?\" to set a password.";
+            }
             req.flash("error", message);
             return req.session.save((saveErr) => {
                 if (saveErr) console.error("Session save error:", saveErr);
