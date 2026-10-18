@@ -6,6 +6,7 @@ const DeletedUser = require("../models/deletedUser");
 const DeletedListing = require("../models/deletedListing");
 const { archiveAndDeleteListing } = require("../utils/listingDeletion");
 const { syncPendingRefunds } = require("../utils/refundSync");
+const { isProtectedAdmin, PROTECTED_ADMIN_EMAIL } = require("../utils/protectedAdmin");
 
 module.exports.dashboard = async (req, res) => {
 
@@ -147,7 +148,7 @@ module.exports.listUsers = async (req, res) => {
 
   const deletedUsers = await DeletedUser.find({}).sort({ deletedAt: -1 }).lean();
 
-  res.render("admin/users", { users, deleteRequests, deletedUsers });
+  res.render("admin/users", { users, deleteRequests, deletedUsers, protectedAdminEmail: PROTECTED_ADMIN_EMAIL });
 };
 
 // Keep a minimal record (no credentials/contact extras) before removing the account
@@ -179,6 +180,10 @@ module.exports.approveDeleteRequest = async (req, res) => {
     req.flash("error", "No pending deletion request for this user.");
     return res.redirect("/admin/users");
   }
+  if (isProtectedAdmin(user)) {
+    req.flash("error", `${PROTECTED_ADMIN_EMAIL} is the primary admin and can't be deleted.`);
+    return res.redirect("/admin/users");
+  }
 
   // Don't strand guests or listings: these must be resolved first
   const [openBookings, ownedListings] = await Promise.all([
@@ -207,10 +212,39 @@ module.exports.rejectDeleteRequest = async (req, res) => {
   res.redirect("/admin/users");
 };
 
+const ROLES = ["user", "owner", "admin"];
+
 module.exports.changeRole = async (req, res) => {
   const { role } = req.body;
-  await User.findByIdAndUpdate(req.params.id, { role });
-  req.flash("success", "User role updated");
+  if (!ROLES.includes(role)) {
+    req.flash("error", "Invalid role");
+    return res.redirect("/admin/users");
+  }
+
+  const user = await User.findById(req.params.id);
+  if (!user) {
+    req.flash("error", "User not found");
+    return res.redirect("/admin/users");
+  }
+  if (user.role === role) return res.redirect("/admin/users");
+
+  if (isProtectedAdmin(user)) {
+    req.flash("error", `${PROTECTED_ADMIN_EMAIL} is the primary admin and must stay an admin.`);
+    return res.redirect("/admin/users");
+  }
+  if (user._id.equals(req.user._id)) {
+    req.flash("error", "You can't change your own role. Ask another admin.");
+    return res.redirect("/admin/users");
+  }
+  // Never leave the site without an admin
+  if (user.role === "admin" && (await User.countDocuments({ role: "admin" })) <= 1) {
+    req.flash("error", "This is the only admin. Promote someone else before changing this role.");
+    return res.redirect("/admin/users");
+  }
+
+  user.role = role;
+  await user.save();
+  req.flash("success", `${user.username} is now ${role === "admin" ? "an admin" : `a${role === "owner" ? "n" : ""} ${role}`}.`);
   res.redirect("/admin/users");
 };
 
@@ -220,8 +254,16 @@ module.exports.deleteUser = async (req, res) => {
     req.flash("error", "User not found");
     return res.redirect("/admin/users");
   }
+  if (isProtectedAdmin(user)) {
+    req.flash("error", `${PROTECTED_ADMIN_EMAIL} is the primary admin and can't be deleted.`);
+    return res.redirect("/admin/users");
+  }
   if (user._id.equals(req.user._id)) {
     req.flash("error", "You can't delete your own admin account.");
+    return res.redirect("/admin/users");
+  }
+  if (user.role === "admin" && (await User.countDocuments({ role: "admin" })) <= 1) {
+    req.flash("error", "You can't delete the only admin.");
     return res.redirect("/admin/users");
   }
   await archiveAndDeleteUser(user, { method: "admin", admin: req.user });

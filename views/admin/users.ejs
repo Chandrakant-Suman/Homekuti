@@ -199,15 +199,22 @@
               <td style="color:#9ca3af;">
                 <%= i+1 %>
               </td>
+              <% const isPrimary = u.email && u.email.trim().toLowerCase() === protectedAdminEmail;
+                 const isSelf = currUser && String(u._id) === String(currUser._id);
+                 const locked = isPrimary || isSelf; %>
               <td><strong>
                   <%= u.username %>
-                </strong></td>
+                </strong>
+                <% if (isPrimary) { %><span class="badge badge-admin" style="margin-left:4px;" title="Can't be demoted or deleted"><i class="fa-solid fa-lock" style="font-size:0.65rem;"></i> Primary admin</span><% } %>
+                <% if (isSelf && !isPrimary) { %><span class="badge" style="margin-left:4px;background:#f3f4f6;color:#4b5563;">You</span><% } %>
+              </td>
               <td style="color:#6b7280;">
                 <%= u.email %>
               </td>
               <td>
                 <form method="POST" action="/admin/users/<%= u._id %>/role" style="display:inline;">
-                  <select name="role" class="role-sel" onchange="this.form.submit()">
+                  <% const lockTitle = isPrimary ? 'The primary admin must stay an admin' : 'You cannot change your own role'; %>
+                  <select name="role" class="role-sel" onchange="this.form.submit()" <% if (locked) { %>disabled title="<%= lockTitle %>"<% } %>>
                     <option value="user" <%=u.role==='user' ? 'selected' : '' %>>User</option>
                     <option value="owner" <%=u.role==='owner' ? 'selected' : '' %>>Owner</option>
                     <option value="admin" <%=u.role==='admin' ? 'selected' : '' %>>Admin</option>
@@ -218,10 +225,14 @@
                 <%= new Date(u.createdAt).toLocaleDateString('en-IN') %>
               </td>
               <td>
+                <% if (locked) { %>
+                  <span style="color:#9ca3af;font-size:0.8rem;">—</span>
+                <% } else { %>
                 <form method="POST" action="/admin/users/<%= u._id %>?_method=DELETE"
                   onsubmit="return confirm('Delete this user?');">
                   <button type="submit" class="btn-del">Delete</button>
                 </form>
+                <% } %>
               </td>
             </tr>
             <% }) %>

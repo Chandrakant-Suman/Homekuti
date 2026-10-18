@@ -66,6 +66,8 @@ mongoose.connection.on("disconnected", () => {
 });
 
 mongoose.connection.on("connected", () => {
+  require("./utils/protectedAdmin").ensureProtectedAdmin(User)
+    .catch(err => console.error("Protected admin check failed:", err.message));
   console.log("✓ MongoDB reconnected");
 });
 

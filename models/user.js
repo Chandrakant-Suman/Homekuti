@@ -77,6 +77,32 @@ const userSchema = new Schema({
 userSchema.index({ googleId: 1 });
 userSchema.index({ "deleteRequest.status": 1 });
 
+// ── Primary admin protection (backstop for every code path) ──
+const { isProtectedAdmin, protectedEmailRegex } = require("../utils/protectedAdmin");
+const protectedError = () =>
+    Object.assign(new Error("The primary admin account cannot be demoted or deleted."), { statusCode: 403 });
+
+userSchema.pre("save", function () {
+    if (!this.isNew && this.isModified("role") && this.role !== "admin" && isProtectedAdmin(this)) {
+        throw protectedError();
+    }
+});
+
+userSchema.pre(["findOneAndUpdate", "updateOne", "updateMany"], async function () {
+    const update = this.getUpdate() || {};
+    const role = update.$set?.role ?? update.role;
+    if (role === undefined || role === "admin") return;
+    if (await this.model.exists({ ...this.getFilter(), email: protectedEmailRegex() })) {
+        throw protectedError();
+    }
+});
+
+userSchema.pre(["findOneAndDelete", "deleteOne", "deleteMany"], { document: false, query: true }, async function () {
+    if (await this.model.exists({ ...this.getFilter(), email: protectedEmailRegex() })) {
+        throw protectedError();
+    }
+});
+
 userSchema.plugin(passportLocalMongoose, {
     // Allow signing in with either username or email
     usernameQueryFields: ["email"],

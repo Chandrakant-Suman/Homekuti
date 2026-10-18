@@ -4,6 +4,7 @@ const crypto = require("crypto");
 const passport = require("passport");
 const { OAuth2Client } = require("google-auth-library");
 const { sendMail } = require("../utils/mailer");
+const { isProtectedAdmin } = require("../utils/protectedAdmin");
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -234,7 +235,7 @@ module.exports.updatePassword = async (req, res) => {
 module.exports.requestDeletion = async (req, res) => {
     const user = await User.findById(req.user._id);
 
-    if (user.role === "admin") {
+    if (user.role === "admin" || isProtectedAdmin(user)) {
         req.flash("error", "Admin accounts cannot request deletion. Ask another admin to change your role first.");
         return res.redirect("/user/profile");
     }
