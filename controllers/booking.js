@@ -1,6 +1,7 @@
 const Booking = require("../models/booking");
 const Listing = require("../models/listing");
 const User = require("../models/user");
+const { syncRefundStatus, syncPendingRefunds } = require("../utils/refundSync");
 
 // ── Razorpay refund helper ────────────────────────────────
 function getRazorpay() {
@@ -30,7 +31,10 @@ module.exports.myBookings = async (req, res) => {
 
   if (filter === "upcoming") query.status = "upcoming";
   if (filter === "cancelled") query.status = { $in: ["cancelled", "unavailable"] };
-  if (filter === "refund") query.paymentStatus = { $in: ["refund_initiated", "refunded", "refund_failed"] };
+  if (filter === "refund") query.paymentStatus = { $in: ["refund_initiated", "refunded", "refund_failed", "refund_cancelled"] };
+
+  // Pick up refunds Razorpay finished since the last visit (webhook may be missed)
+  await syncPendingRefunds({ user: req.user._id });
 
   const bookings = await Booking.find(query)
     .populate("listing")
@@ -54,6 +58,14 @@ module.exports.bookingDetail = async (req, res) => {
   if (!booking.user._id.equals(req.user._id) && req.user.role !== "admin") {
     req.flash("error", "Access denied");
     return res.redirect("/bookings/my");
+  }
+
+  if (booking.paymentStatus === "refund_initiated") {
+    try {
+      await syncRefundStatus(booking);
+    } catch (err) {
+      console.error("Refund sync failed:", err?.error?.description || err.message);
+    }
   }
 
   const refundPolicy = booking.getRefundPolicy();
@@ -266,7 +278,16 @@ module.exports.adminRefund = async (req, res) => {
     return res.redirect("/admin/bookings");
   }
 
-  const amount = parseInt(req.body.amount) || booking.totalPrice;
+  if (booking.paymentStatus === "refund_cancelled") {
+    req.flash("error", "This refund was cancelled");
+    return res.redirect("/admin/bookings");
+  }
+
+  const amount = parseInt(req.body.amount, 10) || booking.totalPrice;
+  if (amount < 1 || amount > booking.totalPrice) {
+    req.flash("error", `Refund amount must be between ₹1 and ₹${booking.totalPrice.toLocaleString("en-IN")}`);
+    return res.redirect("/admin/bookings");
+  }
 
   try {
     const refund = await processRazorpayRefund(booking, amount, "admin_manual_refund");
@@ -291,10 +312,68 @@ module.exports.adminRefund = async (req, res) => {
       err?.message ||              // Normal error
       "Unknown error occurred";    // fallback
 
+    // Record the failure so the admin can retry or cancel it
+    booking.paymentStatus = "refund_failed";
+    booking.refund = booking.refund || {};
+    booking.refund.status = "failed";
+    booking.refund.failureReason = message;
+    await booking.save();
+
     req.flash("error", `Refund failed: ${message}`);
-    res.redirect("/admin/bookings");
+    return res.redirect("/admin/bookings");
   }
 
+  res.redirect("/admin/bookings");
+};
+
+// ─────────────────────────────────────────────────────────
+// POST /bookings/:id/refund/sync  (admin: ask Razorpay for the latest status)
+// ─────────────────────────────────────────────────────────
+module.exports.syncRefund = async (req, res) => {
+  const booking = await Booking.findById(req.params.id);
+  if (!booking || booking.paymentStatus !== "refund_initiated") {
+    req.flash("error", "No refund in progress for this booking");
+    return res.redirect("/admin/bookings");
+  }
+  try {
+    const status = await syncRefundStatus(booking);
+    const messages = {
+      processed: "Refund completed — marked as refunded.",
+      failed: "Razorpay reports this refund failed. You can retry or cancel it.",
+      pending: "Razorpay is still processing this refund.",
+    };
+    req.flash(status === "failed" ? "error" : "success", messages[status] || `Razorpay status: ${status}`);
+  } catch (err) {
+    req.flash("error", `Couldn't check refund status: ${err?.error?.description || err.message}`);
+  }
+  res.redirect("/admin/bookings");
+};
+
+// ─────────────────────────────────────────────────────────
+// POST /bookings/:id/refund/cancel  (admin closes a failed refund)
+// Razorpay can't cancel a refund itself; this only closes a FAILED one on our
+// side, e.g. when it was settled offline or no refund is due after review.
+// ─────────────────────────────────────────────────────────
+module.exports.cancelRefund = async (req, res) => {
+  const booking = await Booking.findById(req.params.id);
+  if (!booking) {
+    req.flash("error", "Booking not found");
+    return res.redirect("/admin/bookings");
+  }
+  if (booking.paymentStatus !== "refund_failed") {
+    req.flash("error", "Only failed refunds can be cancelled");
+    return res.redirect("/admin/bookings");
+  }
+
+  booking.paymentStatus = "refund_cancelled";
+  booking.refund = booking.refund || {};
+  booking.refund.status = "cancelled";
+  booking.refund.cancelledAt = new Date();
+  booking.refund.cancelledBy = { id: req.user._id, username: req.user.username };
+  booking.refund.cancelReason = (req.body.reason || "").trim().slice(0, 300) || undefined;
+  await booking.save();
+
+  req.flash("success", "Failed refund cancelled.");
   res.redirect("/admin/bookings");
 };
 

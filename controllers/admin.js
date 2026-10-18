@@ -5,6 +5,7 @@ const Review = require("../models/review");
 const DeletedUser = require("../models/deletedUser");
 const DeletedListing = require("../models/deletedListing");
 const { archiveAndDeleteListing } = require("../utils/listingDeletion");
+const { syncPendingRefunds } = require("../utils/refundSync");
 
 module.exports.dashboard = async (req, res) => {
 
@@ -248,6 +249,8 @@ module.exports.deleteListing = async (req, res) => {
 };
 
 module.exports.listBookings = async (req, res) => {
+  // Bring "refund initiated" rows up to date with Razorpay before showing them
+  await syncPendingRefunds();
   const bookings = await Booking.find({})
     .populate("user", "username email")
     .populate("listing", "title location")

@@ -150,6 +150,33 @@
       background: var(--primary-dark);
     }
 
+    .b-refund_cancelled {
+      background: #f3f4f6;
+      color: #4b5563;
+    }
+
+    .cancel-refund-form {
+      margin-top: 6px;
+      text-align: center;
+    }
+
+    .cancel-refund-btn {
+      background: none;
+      border: 1.5px solid #e3e5ec;
+      border-radius: 8px;
+      color: #6b7280;
+      padding: 4px 12px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .cancel-refund-btn:hover {
+      border-color: #9ca3af;
+      color: #374151;
+    }
+
     .refund-done {
       font-size: 0.78rem;
       color: #15803d;
@@ -305,65 +332,88 @@
           <td><span class="badge b-<%= b.status %>"><%= b.status %></span></td>
           <td>
             <%
-              const canRefund =
-              b.razorpayPaymentId &&
-              [' paid','refund_failed'].includes(b.paymentStatus) && ['cancelled','unavailable'].includes(b.status) &&
-                    !b.refund?.razorpayRefundId; const
-                    alreadyRefunded=['refund_initiated','refunded'].includes(b.paymentStatus) ||
-                    b.refund?.razorpayRefundId; %>
-                    <% if (alreadyRefunded) { %>
-                      <span class="refund-done">
-                        <i class="fa-solid fa-circle-check"></i>
-                        ₹<%= b.refund?.amount?.toLocaleString('en-IN') || '0' %>
-                          <%= b.paymentStatus==='refunded' ? 'Refunded' : 'In Progress' %>
-                            <span style="margin-left:4px;">
-                              <%= b.paymentStatus==='refunded' ? 'Refunded' : 'In Progress' %>
-                            </span>
-                      </span>
-                      <% } else if (canRefund) { %>
-                        <form method="POST" action="/bookings/<%= b._id %>/refund" class="refund-form"
-                          onsubmit="return confirm('Initiate refund of this amount via Razorpay?')">
-                          <input type="number" name="amount" class="refund-input" value="<%= b.totalPrice %>" min="1"
-                            max="<%= b.totalPrice %>">
-                          <button type="submit" class="refund-btn">
-                            <i class="fa-solid fa-rotate-left"></i> Refund
-                          </button>
-                        </form>
-                        <% } else if (b.status==='upcoming' && b.paymentStatus==='paid' ) { %>
-                          <!-- Host can mark unavailable -->
-                          <form method="POST" action="/bookings/<%= b._id %>/unavailable"
-                            onsubmit="return confirm('Mark this booking as unavailable? A full refund will be auto-initiated.')">
-                            <input type="hidden" name="reason" value="Marked unavailable by admin">
-                            <button type="submit" class="unavail-btn">Mark Unavailable</button>
-                          </form>
-                          <% } else { %>
-                            <% if (b.paymentStatus==='refunded' ) { %>
-                              <span class="refund-done">
-                                <i class="fa-solid fa-circle-check"></i>
-                                Refunded ₹<%= b.refund?.amount?.toLocaleString('en-IN') || '0' %>
-                              </span>
-
-                              <% } else if (b.paymentStatus==='refund_initiated' ) { %>
-                                <span style="color:#d97706;font-weight:600;font-size:0.78rem;">
-                                  <i class="fa-solid fa-clock"></i>
-                                  Refund Initiated
-                                </span>
-
-                                <% } else if (b.paymentStatus==='refund_failed' ) { %>
-                                  <span style="color:#ef4444;font-weight:600;font-size:0.78rem;">
-                                    <i class="fa-solid fa-circle-xmark"></i>
-                                    Refund Failed
-                                  </span>
-
-                                  <% } else { %>
-                                    <span style="color:#9ca3af;font-size:0.78rem;">
-                                      No Action
-                                    </span>
-                                    <% } %>
-                                      <% } %>
-              </td>
+              const isClosed = ['cancelled', 'unavailable'].includes(b.status);
+              // Retry/cancel applies to failed refunds even if Razorpay assigned a refund ID
+              const canRefund = b.razorpayPaymentId && isClosed &&
+                ((b.paymentStatus === 'paid' && !b.refund?.razorpayRefundId) || b.paymentStatus === 'refund_failed');
+            %>
+            <% if (b.paymentStatus === 'refunded') { %>
+              <span class="refund-done">
+                <i class="fa-solid fa-circle-check"></i>
+                Refunded ₹<%= b.refund?.amount?.toLocaleString('en-IN') || '0' %>
+              </span>
+            <% } else if (b.paymentStatus === 'refund_initiated') { %>
+              <span style="color:#d97706;font-weight:600;font-size:0.8rem;">
+                <i class="fa-solid fa-clock"></i>
+                ₹<%= b.refund?.amount?.toLocaleString('en-IN') || '0' %> In Progress
+              </span>
+              <% if (b.refund?.razorpayRefundId) { %>
+                <form method="POST" action="/bookings/<%= b._id %>/refund/sync" style="margin-top:6px;">
+                  <button type="submit" class="cancel-refund-btn">
+                    <i class="fa-solid fa-arrows-rotate"></i> Check Status
+                  </button>
+                </form>
+              <% } %>
+            <% } else if (b.paymentStatus === 'refund_cancelled') { %>
+              <span style="color:#6b7280;font-weight:600;font-size:0.8rem;"
+                title="<%= b.refund?.cancelReason || 'No reason given' %>">
+                <i class="fa-solid fa-ban"></i> Refund Cancelled
+              </span>
+              <div style="font-size:0.72rem;color:#9ca3af;margin-top:2px;">
+                by <%= b.refund?.cancelledBy?.username || 'admin' %><% if (b.refund?.cancelledAt) { %>, <%= new Date(b.refund.cancelledAt).toLocaleDateString('en-IN') %><% } %>
+              </div>
+            <% } else if (canRefund) { %>
+              <% if (b.paymentStatus === 'refund_failed' && b.refund?.failureReason) { %>
+                <div style="color:#b91c1c;font-size:0.72rem;margin-bottom:4px;max-width:200px;">
+                  <i class="fa-solid fa-circle-xmark"></i> <%= b.refund.failureReason %>
+                </div>
+              <% } %>
+              <form method="POST" action="/bookings/<%= b._id %>/refund" class="refund-form"
+                onsubmit="return confirm('Initiate refund of this amount via Razorpay?')">
+                <input type="number" name="amount" class="refund-input" value="<%= b.totalPrice %>" min="1"
+                  max="<%= b.totalPrice %>">
+                <button type="submit" class="refund-btn">
+                  <i class="fa-solid fa-rotate-left"></i> <%= b.paymentStatus === 'refund_failed' ? 'Retry Refund' : 'Refund' %>
+                </button>
+              </form>
+              <% if (b.paymentStatus === 'refund_failed') { %>
+                <form method="POST" action="/bookings/<%= b._id %>/refund/cancel" class="cancel-refund-form">
+                  <input type="hidden" name="reason">
+                  <button type="submit" class="cancel-refund-btn">
+                    <i class="fa-solid fa-ban"></i> Cancel Refund
+                  </button>
+                </form>
+              <% } %>
+            <% } else if (b.status === 'upcoming' && b.paymentStatus === 'paid') { %>
+              <!-- Host can mark unavailable -->
+              <form method="POST" action="/bookings/<%= b._id %>/unavailable"
+                onsubmit="return confirm('Mark this booking as unavailable? A full refund will be auto-initiated.')">
+                <input type="hidden" name="reason" value="Marked unavailable by admin">
+                <button type="submit" class="unavail-btn">Mark Unavailable</button>
+              </form>
+            <% } else if (b.paymentStatus === 'refund_failed') { %>
+              <span style="color:#ef4444;font-weight:600;font-size:0.78rem;">
+                <i class="fa-solid fa-circle-xmark"></i> Refund Failed
+              </span>
+            <% } else { %>
+              <span style="color:#9ca3af;font-size:0.78rem;">No Action</span>
+            <% } %>
+          </td>
             </tr>
             <% }) %>
         </tbody>
       </table>
     </div>
+
+  <script>
+    // Ask for an optional reason before cancelling a failed refund
+    document.querySelectorAll('.cancel-refund-form').forEach(form => {
+      form.addEventListener('submit', (e) => {
+        const reason = prompt('Cancel this failed refund? No money will be sent to the guest.
+
+Reason (optional, e.g. "settled by bank transfer"):');
+        if (reason === null) return e.preventDefault();
+        form.querySelector('input[name="reason"]').value = reason;
+      });
+    });
+  </script>

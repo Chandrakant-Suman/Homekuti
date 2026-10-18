@@ -43,6 +43,7 @@ const bookingSchema = new Schema({
       "refund_initiated",
       "refunded",
       "refund_failed",
+      "refund_cancelled", // admin closed a failed refund without retrying
     ],
     default: "pending",
   },
@@ -86,11 +87,17 @@ const bookingSchema = new Schema({
     },
     status: {
       type: String,
-      enum: ["initiated", "processed", "failed"],
+      enum: ["initiated", "processed", "failed", "cancelled"],
     },
     initiatedAt: Date,
     processedAt: Date,
     failureReason: String,
+    cancelledAt: Date,
+    cancelledBy: {
+      id: { type: Schema.Types.ObjectId, ref: "User" },
+      username: String,
+    },
+    cancelReason: String,
   },
 
   createdAt: {

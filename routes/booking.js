@@ -27,6 +27,8 @@ router.post("/:id/unavailable", isLoggedIn, wrapAsync(ctrl.markUnavailable));
 
 // Admin manual refund
 router.post("/:id/refund", isLoggedIn, isAdmin, wrapAsync(ctrl.adminRefund));
+router.post("/:id/refund/cancel", isLoggedIn, isAdmin, wrapAsync(ctrl.cancelRefund));
+router.post("/:id/refund/sync", isLoggedIn, isAdmin, wrapAsync(ctrl.syncRefund));
 
 // Fallback
 router.post("/", isLoggedIn, wrapAsync(ctrl.createBooking));
