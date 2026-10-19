@@ -6,117 +6,12 @@ const DeletedUser = require("../models/deletedUser");
 const DeletedListing = require("../models/deletedListing");
 const { archiveAndDeleteListing } = require("../utils/listingDeletion");
 const { syncPendingRefunds } = require("../utils/refundSync");
+const { getDashboardStats } = require("../utils/dashboardStats");
 const { isProtectedAdmin, PROTECTED_ADMIN_EMAIL } = require("../utils/protectedAdmin");
 
 module.exports.dashboard = async (req, res) => {
-
-  const [totalUsers, totalListings, totalBookings, recentBookings] = await Promise.all([
-    User.countDocuments(),
-    Listing.countDocuments(),
-    Booking.countDocuments({ paymentStatus: "paid" }),
-    Booking.find({ paymentStatus: "paid" })
-      .populate("user", "username email")
-      .populate("listing", "title price")
-      .sort({ createdAt: -1 })
-      .limit(5)
-      .lean(),
-  ]);
-
-  // 💰 Revenue
-  const revenueAgg = await Booking.aggregate([
-    { $match: { paymentStatus: "paid" } },
-    {
-      $group: {
-        _id: null,
-        total: { $sum: "$totalPrice" }
-      }
-    }
-  ]);
-
-  const totalRevenue = revenueAgg[0]?.total || 0;
-
-  // 📈 Revenue Trend
-  const revenueTrend = await Booking.aggregate([
-    {
-      $match: {
-        paymentStatus: "paid",
-        createdAt: {
-          $gte: new Date(Date.now() - 7 * 86400000)
-        }
-      }
-    },
-    {
-      $group: {
-        _id: {
-          $dateToString: { format: "%d %b", date: "$createdAt" }
-        },
-        revenue: { $sum: "$totalPrice" }
-      }
-    },
-    { $sort: { _id: 1 } }
-  ]);
-
-  // 👤 User Growth
-  const userGrowth = await User.aggregate([
-    {
-      $match: {
-        createdAt: {
-          $gte: new Date(Date.now() - 7 * 86400000)
-        }
-      }
-    },
-    {
-      $group: {
-        _id: {
-          $dateToString: { format: "%d %b", date: "$createdAt" }
-        },
-        users: { $sum: 1 }
-      }
-    },
-    { $sort: { _id: 1 } }
-  ]);
-
-  // 🔥 Top Listings
-  const bookingsPerListing = await Booking.aggregate([
-    {
-      $match: { paymentStatus: "paid" }
-    },
-    {
-      $group: {
-        _id: "$listing",
-        count: { $sum: 1 }
-      }
-    },
-    {
-      $lookup: {
-        from: "listings",
-        localField: "_id",
-        foreignField: "_id",
-        as: "listing"
-      }
-    },
-    { $unwind: "$listing" },
-    {
-      $project: {
-        title: "$listing.title",
-        count: 1
-      }
-    },
-    { $sort: { count: -1 } },
-    { $limit: 5 }
-  ]);
-
-  // ✅ FINAL RENDER (THIS FIXES YOUR ERROR)
-  res.render("admin/dashboard", {
-    totalUsers,
-    totalListings,
-    totalBookings,
-    totalRevenue,
-    recentBookings,
-    revenueTrend,
-    userGrowth,
-    bookingsPerListing
-  });
+  const stats = await getDashboardStats();
+  res.render("admin/dashboard", stats);
 };
 
 module.exports.listUsers = async (req, res) => {

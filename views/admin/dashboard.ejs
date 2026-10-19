@@ -1,52 +1,86 @@
 <% layout('/layouts/boilerplate') -%>
+<%
+  const { counts, finance, earningsTrend, userGrowth, earningsByListing, recentBookings } = data;
+  const inr = n => '₹' + Math.round(Number(n) || 0).toLocaleString('en-IN');
+  /* JSON for an inline script tag: every less-than sign is escaped so data cannot end the tag early */
+  const safeJson = v => JSON.stringify(v ?? null).replace(/</g, '\\u003c');
+%>
 
 <style>
   .admin-header { margin: 2rem 0 1.5rem; }
   .admin-header h2 { font-size: 1.8rem; font-weight: 700; color: #1f2933; }
-  .admin-header p { color: #6b7280; }
+  .admin-header p { color: #6b7280; margin: 0; }
 
-  .stat-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.2rem; margin-bottom: 2rem; }
-  .stat-card {
-    background: #fff; border-radius: 16px; padding: 1.5rem;
-    box-shadow: 0 4px 20px rgba(15,23,42,0.06); border: 1.5px solid #f1f5f9;
-    display: flex; align-items: center; gap: 1rem;
+  .admin-nav { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 1.5rem; }
+  .admin-nav a {
+    padding: 8px 20px; border-radius: 10px; border: 1.5px solid #e3e5ec;
+    text-decoration: none; font-size: 0.88rem; font-weight: 600; color: #374151; transition: all 0.15s;
   }
+  .admin-nav a:hover, .admin-nav a.active { background: var(--primary); color: #fff; border-color: var(--primary); text-decoration: none; }
+
+  .dash-error {
+    background: #fffbeb; border: 1px solid #fde68a; color: #92400e;
+    border-radius: 12px; padding: 0.8rem 1rem; font-size: 0.88rem; margin-bottom: 1.2rem;
+  }
+
+  .section-title { font-size: 0.8rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.06em; margin: 0 0 0.7rem; }
+
+  .stat-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 1rem; margin-bottom: 1.8rem; }
+  .stat-card {
+    background: #fff; border-radius: 16px; padding: 1.2rem 1.3rem;
+    box-shadow: 0 4px 20px rgba(15,23,42,0.06); border: 1.5px solid #f1f5f9;
+    display: flex; align-items: flex-start; gap: 0.9rem; min-width: 0;
+  }
+  .stat-card.highlight { border-color: #bbf7d0; background: linear-gradient(180deg, #f0fdf4, #fff 70%); }
   .stat-icon {
-    width: 52px; height: 52px; border-radius: 14px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.4rem; flex-shrink: 0;
+    width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 1.15rem;
   }
   .icon-pink { background: #fff1f2; color: var(--primary); }
   .icon-blue { background: #eff6ff; color: #2563eb; }
   .icon-green { background: #f0fdf4; color: #16a34a; }
   .icon-amber { background: #fffbeb; color: #d97706; }
-  .stat-value { font-size: 1.7rem; font-weight: 700; color: #1f2933; line-height: 1; }
+  .icon-gray { background: #f3f4f6; color: #4b5563; }
+  .icon-red { background: #fef2f2; color: #dc2626; }
+  .stat-value { font-size: 1.55rem; font-weight: 700; color: #1f2933; line-height: 1.1; word-break: break-word; }
   .stat-label { font-size: 0.82rem; color: #6b7280; margin-top: 3px; }
+  .stat-sub { font-size: 0.74rem; color: #9ca3af; margin-top: 4px; }
+  .stat-sub a { color: var(--primary); font-weight: 600; text-decoration: none; }
 
-  .admin-nav { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 2rem; }
-  .admin-nav a {
-    padding: 8px 20px; border-radius: 10px; border: 1.5px solid #e3e5ec;
-    text-decoration: none; font-size: 0.88rem; font-weight: 600; color: #374151;
-    transition: all 0.15s;
+  .chart-grid { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 1rem; margin-bottom: 1rem; }
+  @media (max-width: 900px) { .chart-grid { grid-template-columns: minmax(0, 1fr); } }
+  .panel {
+    background: #fff; border-radius: 16px; padding: 1.3rem;
+    box-shadow: 0 4px 20px rgba(15,23,42,0.06); border: 1.5px solid #f1f5f9; min-width: 0;
   }
-  .admin-nav a:hover, .admin-nav a.active { background: var(--primary); color: #fff; border-color: var(--primary); text-decoration: none; }
+  .panel-head { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; margin-bottom: 0.8rem; }
+  .panel-head h3 { font-size: 1rem; font-weight: 700; color: #1f2933; margin: 0; }
+  .panel-head .meta { font-size: 0.8rem; color: #6b7280; white-space: nowrap; }
+  /* Fixed-height boxes: charts fill them instead of growing with page width */
+  .chart-box { position: relative; height: 280px; width: 100%; }
+  .chart-box.small { height: 220px; }
+  .empty-state {
+    height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    color: #9ca3af; text-align: center; gap: 4px; font-size: 0.88rem;
+  }
+  .empty-state .big { font-size: 1.6rem; font-weight: 700; color: #6b7280; }
 
-  .table-card { background: #fff; border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 20px rgba(15,23,42,0.06); }
-  .table-card h3 { font-size: 1rem; font-weight: 700; color: #1f2933; margin-bottom: 1rem; }
   table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
-  thead th { padding: 8px 12px; text-align: left; font-size: 0.78rem; color: #6b7280; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid #f1f5f9; }
+  thead th { padding: 8px 12px; text-align: left; font-size: 0.76rem; color: #6b7280; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid #f1f5f9; }
   tbody td { padding: 10px 12px; border-bottom: 1px solid #f9fafb; color: #374151; }
   tbody tr:last-child td { border-bottom: none; }
-  tbody tr:hover td { background: #fafafa; }
-  .badge { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; }
-  .badge-green { background: #f0fdf4; color: #16a34a; }
-  .badge-blue { background: #eff6ff; color: #2563eb; }
-  .badge-red { background: #fef2f2; color: #b91c1c; }
+  .table-scroll { overflow-x: auto; }
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 0.74rem; font-weight: 700; white-space: nowrap; }
+  .b-paid, .b-upcoming, .b-active, .b-completed { background: #f0fdf4; color: #16a34a; }
+  .b-refund_initiated { background: #fffbeb; color: #d97706; }
+  .b-refunded { background: #eff6ff; color: #2563eb; }
+  .b-refund_failed, .b-cancelled, .b-unavailable { background: #fef2f2; color: #b91c1c; }
+  .b-refund_cancelled { background: #f3f4f6; color: #4b5563; }
 </style>
 
 <div class="admin-header">
   <h2>⚙️ Admin Dashboard</h2>
-  <p>Full control over Homekuti platform</p>
+  <p>Platform overview · all amounts in INR · dates in IST</p>
 </div>
 
 <div class="admin-nav">
@@ -56,140 +90,264 @@
   <a href="/admin/bookings">Bookings</a>
 </div>
 
-<!-- Stat cards -->
+<% if (errors.length) { %>
+  <div class="dash-error">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    Some sections couldn't be loaded (<%= errors.join(', ') %>). The rest of the dashboard is accurate — refresh to retry.
+  </div>
+<% } %>
+
+<!-- ── Platform ────────────────────────────────────────── -->
+<p class="section-title">Platform</p>
 <div class="stat-cards">
   <div class="stat-card">
     <div class="stat-icon icon-blue"><i class="fa-solid fa-users"></i></div>
     <div>
-      <div class="stat-value"><%= totalUsers %></div>
-      <div class="stat-label">Total Users</div>
+      <div class="stat-value"><%= counts ? counts.users : '—' %></div>
+      <div class="stat-label">Users</div>
+      <% if (counts) { %><div class="stat-sub"><%= counts.owners %> host<%= counts.owners !== 1 ? 's' : '' %> · <%= counts.admins %> admin<%= counts.admins !== 1 ? 's' : '' %></div><% } %>
     </div>
   </div>
   <div class="stat-card">
     <div class="stat-icon icon-pink"><i class="fa-solid fa-house"></i></div>
     <div>
-      <div class="stat-value"><%= totalListings %></div>
-      <div class="stat-label">Total Listings</div>
+      <div class="stat-value"><%= counts ? counts.listings : '—' %></div>
+      <div class="stat-label">Active listings</div>
     </div>
   </div>
   <div class="stat-card">
     <div class="stat-icon icon-green"><i class="fa-solid fa-calendar-check"></i></div>
     <div>
-      <div class="stat-value"><%= totalBookings %></div>
-      <div class="stat-label">Paid Bookings</div>
+      <div class="stat-value"><%= counts ? counts.bookings : '—' %></div>
+      <div class="stat-label">Bookings</div>
+      <% if (counts) { %><div class="stat-sub"><%= counts.upcoming %> upcoming · <%= counts.completed %> completed · <%= counts.cancelled %> cancelled</div><% } %>
     </div>
   </div>
   <div class="stat-card">
-    <div class="stat-icon icon-amber"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+    <div class="stat-icon icon-red"><i class="fa-solid fa-bell"></i></div>
     <div>
-      <div class="stat-value">₹<%= (totalRevenue/1000).toFixed(1) %>k</div>
-      <div class="stat-label">Total Revenue</div>
+      <% const actionItems = (finance?.refundsFailed || 0) + (counts?.pendingDeletion || 0); %>
+      <div class="stat-value"><%= (finance || counts) ? actionItems : '—' %></div>
+      <div class="stat-label">Needs attention</div>
+      <div class="stat-sub">
+        <% if (actionItems === 0) { %>All clear<% } %>
+        <% if (finance?.refundsFailed) { %><a href="/admin/bookings"><%= finance.refundsFailed %> failed refund<%= finance.refundsFailed !== 1 ? 's' : '' %></a><% } %>
+        <% if (finance?.refundsFailed && counts?.pendingDeletion) { %> · <% } %>
+        <% if (counts?.pendingDeletion) { %><a href="/admin/users"><%= counts.pendingDeletion %> deletion request<%= counts.pendingDeletion !== 1 ? 's' : '' %></a><% } %>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- Recent bookings -->
-<div class="table-card">
-  <h3>Recent Bookings</h3>
-  <% if (recentBookings.length === 0) { %>
-    <p style="color:#9ca3af;font-style:italic;font-size:0.9rem;">No bookings yet.</p>
-  <% } else { %>
-    <table>
-      <thead>
-        <tr>
-          <th>Guest</th>
-          <th>Listing</th>
-          <th>Amount</th>
-          <th>Status</th>
-          <th>Date</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% recentBookings.forEach(b => { %>
-          <tr>
-            <td><strong><%= b.user?.username %></strong><br><span style="color:#9ca3af;font-size:0.78rem;"><%= b.user?.email %></span></td>
-            <td><%= b.listing?.title %></td>
-            <td><strong>₹<%= b.totalPrice?.toLocaleString('en-IN') %></strong></td>
-            <td><span class="badge badge-green"><%= b.paymentStatus %></span></td>
-            <td><%= new Date(b.createdAt).toLocaleDateString('en-IN') %></td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
-  <% } %>
-</div>
 
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<script type="application/json" id="revenue-data">
-<%- JSON.stringify(revenueTrend || []) %>
-</script>
-<script type="application/json" id="user-data">
-<%- JSON.stringify(userGrowth || []) %>
-</script>
-<script type="application/json" id="listing-data">
-<%- JSON.stringify(bookingsPerListing || []) %>
-</script>
-
-<div class="row mt-5">
-
-  <!-- Revenue Chart -->
-  <div class="col-md-6">
-    <canvas id="revenueChart"></canvas>
+<!-- ── Finance ─────────────────────────────────────────── -->
+<p class="section-title">Finance</p>
+<div class="stat-cards">
+  <div class="stat-card highlight">
+    <div class="stat-icon icon-green"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+    <div>
+      <div class="stat-value"><%= finance ? inr(finance.net) : '—' %></div>
+      <div class="stat-label">Net earnings</div>
+      <div class="stat-sub">After refunds, excluding GST</div>
+    </div>
   </div>
-
-  <!-- User Growth -->
-  <div class="col-md-6">
-    <canvas id="userChart"></canvas>
+  <div class="stat-card">
+    <div class="stat-icon icon-blue"><i class="fa-solid fa-wallet"></i></div>
+    <div>
+      <div class="stat-value"><%= finance ? inr(finance.collected) : '—' %></div>
+      <div class="stat-label">Total collected</div>
+      <div class="stat-sub">All captured payments</div>
+    </div>
   </div>
-
-</div>
-
-<div class="row mt-5">
-  <div class="col-md-12">
-    <canvas id="listingChart"></canvas>
+  <div class="stat-card">
+    <div class="stat-icon icon-amber"><i class="fa-solid fa-rotate-left"></i></div>
+    <div>
+      <div class="stat-value"><%= finance ? inr(finance.refunded + finance.refundsInProgress) : '—' %></div>
+      <div class="stat-label">Refunds</div>
+      <div class="stat-sub">
+        <% if (finance) { %>
+          <%= inr(finance.refunded) %> done<% if (finance.refundsInProgress) { %> · <%= inr(finance.refundsInProgress) %> in progress<% } %>
+          <% if (finance.refundsFailed) { %> · <a href="/admin/bookings"><%= finance.refundsFailed %> failed</a><% } %>
+        <% } %>
+      </div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon icon-gray"><i class="fa-solid fa-file-invoice"></i></div>
+    <div>
+      <div class="stat-value"><%= finance ? inr(finance.gst) : '—' %></div>
+      <div class="stat-label">GST collected</div>
+      <div class="stat-sub">Tax payable — not earnings</div>
+    </div>
   </div>
 </div>
 
+
+<!-- ── Charts ──────────────────────────────────────────── -->
+<div class="chart-grid">
+  <div class="panel">
+    <div class="panel-head">
+      <h3>Net earnings · last <%= trendDays %> days</h3>
+      <% if (earningsTrend) { %><span class="meta"><%= inr(earningsTrend.total) %></span><% } %>
+    </div>
+    <div class="chart-box">
+      <% if (!earningsTrend) { %>
+        <div class="empty-state">Couldn't load earnings trend.</div>
+      <% } else if (earningsTrend.total === 0) { %>
+        <div class="empty-state"><span class="big">₹0</span>No earnings in the last <%= trendDays %> days</div>
+      <% } else { %>
+        <canvas id="earningsChart" aria-label="Net earnings per day"></canvas>
+      <% } %>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <h3>Earnings by listing</h3>
+      <% if (earningsByListing) { %><span class="meta">All time</span><% } %>
+    </div>
+    <div class="chart-box">
+      <% if (!earningsByListing) { %>
+        <div class="empty-state">Couldn't load listing earnings.</div>
+      <% } else if (earningsByListing.total === 0) { %>
+        <div class="empty-state"><span class="big">₹0</span>No earnings yet</div>
+      <% } else { %>
+        <canvas id="listingChart" aria-label="Net earnings share by listing"></canvas>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<div class="chart-grid">
+  <div class="panel">
+    <div class="panel-head">
+      <h3>New users · last <%= trendDays %> days</h3>
+      <% if (userGrowth) { %><span class="meta"><%= userGrowth.total %> joined</span><% } %>
+    </div>
+    <div class="chart-box small">
+      <% if (!userGrowth) { %>
+        <div class="empty-state">Couldn't load user growth.</div>
+      <% } else if (userGrowth.total === 0) { %>
+        <div class="empty-state"><span class="big">0</span>No new users in the last <%= trendDays %> days</div>
+      <% } else { %>
+        <canvas id="userChart" aria-label="New users per day"></canvas>
+      <% } %>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head"><h3>Recent bookings</h3><a href="/admin/bookings" class="meta" style="color:var(--primary);">View all →</a></div>
+    <% if (!recentBookings) { %>
+      <div class="empty-state" style="height:auto;padding:2rem 0;">Couldn't load bookings.</div>
+    <% } else if (recentBookings.length === 0) { %>
+      <div class="empty-state" style="height:auto;padding:2rem 0;">No bookings yet.</div>
+    <% } else { %>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Guest</th><th>Amount</th><th>Payment</th><th>Date</th></tr></thead>
+          <tbody>
+            <% recentBookings.forEach(b => { %>
+              <tr>
+                <td>
+                  <strong><%= b.user?.username || 'Deleted user' %></strong><br>
+                  <span style="color:#9ca3af;font-size:0.76rem;"><%= b.listing?.title || 'Deleted listing' %></span>
+                </td>
+                <td><strong><%= inr(b.totalPrice) %></strong></td>
+                <td><span class="badge b-<%= b.paymentStatus %>"><%= b.paymentStatus.replace(/_/g, ' ') %></span></td>
+                <td style="white-space:nowrap;"><%= new Date(b.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', timeZone: 'Asia/Kolkata' }) %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<script type="application/json" id="dash-data"><%- safeJson({
+  earnings: earningsTrend && earningsTrend.total > 0 ? earningsTrend.days : null,
+  users: userGrowth && userGrowth.total > 0 ? userGrowth.days : null,
+  listings: earningsByListing && earningsByListing.total > 0 ? earningsByListing.items : null,
+}) %></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script>
-  const revenueData = JSON.parse(document.getElementById('revenue-data').textContent);
-  const userData = JSON.parse(document.getElementById('user-data').textContent);
-  const listingData = JSON.parse(document.getElementById('listing-data').textContent);
+(() => {
+  const data = JSON.parse(document.getElementById('dash-data').textContent);
+  const canvases = ['earningsChart', 'listingChart', 'userChart'].map(id => document.getElementById(id)).filter(Boolean);
 
-  // Revenue Chart
-  new Chart(document.getElementById("revenueChart"), {
-    type: "line",
-    data: {
-      labels: revenueData.map(d => d._id),
-      datasets: [{
-        label: "Revenue",
-        data: revenueData.map(d => d.revenue),
-        borderWidth: 2
-      }]
-    }
-  });
+  // CDN blocked/offline: replace canvases with a message instead of blank space
+  if (typeof Chart === 'undefined') {
+    canvases.forEach(c => { c.outerHTML = '<div class="empty-state">Charts unavailable (couldn’t load Chart.js).</div>'; });
+    return;
+  }
 
-  // User Growth Chart
-  new Chart(document.getElementById("userChart"), {
-    type: "bar",
-    data: {
-      labels: userData.map(d => d._id),
-      datasets: [{
-        label: "Users",
-        data: userData.map(d => d.users)
-      }]
-    }
-  });
+  const inr = n => '₹' + Math.round(n).toLocaleString('en-IN');
+  const PALETTE = ['#ff385c', '#2563eb', '#16a34a', '#d97706', '#7c3aed', '#0891b2', '#9ca3af'];
+  Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
+  Chart.defaults.color = '#6b7280';
+  const base = { responsive: true, maintainAspectRatio: false };   // size comes from .chart-box
 
-  // Top Listings Chart
-  new Chart(document.getElementById("listingChart"), {
-    type: "doughnut",
-    data: {
-      labels: listingData.map(d => d.title),
-      datasets: [{
-        data: listingData.map(d => d.count)
-      }]
-    }
-  });
+  if (data.earnings) {
+    new Chart(document.getElementById('earningsChart'), {
+      type: 'line',
+      data: {
+        labels: data.earnings.map(d => d.label),
+        datasets: [{
+          label: 'Net earnings', data: data.earnings.map(d => d.value),
+          borderColor: '#16a34a', backgroundColor: 'rgba(22,163,74,0.08)', fill: true,
+          tension: 0.3, borderWidth: 2, pointRadius: 2, pointHoverRadius: 5,
+        }],
+      },
+      options: {
+        ...base,
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => inr(c.parsed.y) } } },
+        scales: {
+          x: { grid: { display: false }, ticks: { maxTicksLimit: 8 } },
+          y: { beginAtZero: true, ticks: { callback: v => inr(v), precision: 0 } },
+        },
+      },
+    });
+  }
+
+  if (data.listings) {
+    const total = data.listings.reduce((a, l) => a + l.net, 0);
+    new Chart(document.getElementById('listingChart'), {
+      type: 'doughnut',
+      data: {
+        labels: data.listings.map(l => l.title),
+        datasets: [{ data: data.listings.map(l => l.net), backgroundColor: PALETTE, borderWidth: 2, borderColor: '#fff' }],
+      },
+      options: {
+        ...base,
+        cutout: '62%',
+        plugins: {
+          legend: { position: 'bottom', labels: { boxWidth: 10, padding: 10, font: { size: 11 } } },
+          tooltip: {
+            callbacks: {
+              label: c => `${inr(c.parsed)} (${Math.round(c.parsed / total * 100)}%) · ${data.listings[c.dataIndex].bookings} booking(s)`,
+            },
+          },
+        },
+      },
+    });
+  }
+
+  if (data.users) {
+    new Chart(document.getElementById('userChart'), {
+      type: 'bar',
+      data: {
+        labels: data.users.map(d => d.label),
+        datasets: [{ label: 'New users', data: data.users.map(d => d.value), backgroundColor: '#2563eb', borderRadius: 4, maxBarThickness: 18 }],
+      },
+      options: {
+        ...base,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { display: false }, ticks: { maxTicksLimit: 8 } },
+          y: { beginAtZero: true, ticks: { precision: 0 } },
+        },
+      },
+    });
+  }
+})();
 </script>
