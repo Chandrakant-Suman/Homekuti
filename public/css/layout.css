@@ -272,8 +272,8 @@
   transform: translateY(-2px);
 }
 
-.footer-social a:hover i.fa-twitter {
-  color: #1DA1F2;
+.footer-social a:hover i.fa-x-twitter {
+  color: #000;
   transform: translateY(-2px);
 }
 
