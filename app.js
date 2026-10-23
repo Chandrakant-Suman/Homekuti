@@ -82,6 +82,19 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json()); // For API requests
 app.use(methodOverride("_method"));
 
+// ================= HEALTH CHECK =================
+// Used by CI/CD and uptime monitors. Registered before sessions/maintenance so
+// it never creates a session and still answers during maintenance mode.
+app.get("/healthz", (req, res) => {
+  const dbUp = mongoose.connection.readyState === 1;
+  res.status(dbUp ? 200 : 503).json({
+    status: dbUp ? "ok" : "degraded",
+    db: dbUp ? "up" : "down",
+    commit: process.env.RENDER_GIT_COMMIT || process.env.GIT_COMMIT || null,
+    uptime: Math.round(process.uptime()),
+  });
+});
+
 // ================= SESSION CONFIG =================
 
 // Trust proxy for production deployments

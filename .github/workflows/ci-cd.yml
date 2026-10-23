@@ -1,0 +1,106 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# A newer push to the same branch cancels the older run
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # ── CI: runs on every push and pull request ───────────────
+  test:
+    name: Check, test & smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    # Throwaway MongoDB just for this run; never touches production data
+    services:
+      mongo:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+
+    env:
+      NODE_ENV: test
+      MONGO_URI: mongodb://127.0.0.1:27017/homekuti_ci
+      SESSION_SECRET: ci-only-session-secret
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.18.0   # matches "engines" in package.json and Render
+          cache: npm
+
+      - name: Install dependencies (from lockfile)
+        run: npm ci
+
+      - name: Syntax & template checks
+        run: npm run check
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Smoke test (boot app + hit key routes)
+        run: npm run smoke
+
+      - name: Dependency audit (informational)
+        run: npm audit --omit=dev --audit-level=high
+        continue-on-error: true
+
+  # ── CD: only after CI passes on main ──────────────────────
+  deploy:
+    name: Deploy to Render
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: production
+      url: ${{ vars.APP_URL || 'https://homekuti.onrender.com' }}
+
+    env:
+      APP_URL: ${{ vars.APP_URL || 'https://homekuti.onrender.com' }}
+
+    steps:
+      - name: Trigger Render deploy
+        env:
+          DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$DEPLOY_HOOK" ]; then
+            echo "::error::Secret RENDER_DEPLOY_HOOK_URL is not set (Render → Settings → Deploy Hook)."
+            exit 1
+          fi
+          curl -fsS -X POST "$DEPLOY_HOOK" > /dev/null
+          echo "Deploy triggered for ${GITHUB_SHA::7}"
+
+      - name: Wait until Render serves this commit and is healthy
+        run: |
+          # Render keeps the old instance up until the new one is ready, so wait
+          # for /healthz to report THIS commit, not just any 200.
+          for i in $(seq 1 60); do
+            body=$(curl -fsS --max-time 60 "$APP_URL/healthz" || true)
+            echo "[$i] $body"
+            if echo "$body" | grep -q "\"commit\":\"$GITHUB_SHA\"" && echo "$body" | grep -q '"db":"up"'; then
+              echo "✓ $APP_URL is live on ${GITHUB_SHA::7}"
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "::error::Deploy did not become healthy on ${GITHUB_SHA::7} within 15 minutes. Check Render logs."
+          exit 1

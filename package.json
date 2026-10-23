@@ -10,7 +10,10 @@
     "dev": "nodemon app.js",
     "seed:reset": "cross-env RESET_DB=true node init/index.js",
     "fix:geocode": "node init/backfill-geocode.js",
-    "test": "echo \"No tests yet\""
+    "test": "node --test",
+    "check": "node scripts/check.js",
+    "smoke": "node scripts/smoke.js",
+    "ci": "npm run check && npm test && npm run smoke"
   },
   "keywords": [],
   "author": "",
