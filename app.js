@@ -251,6 +251,9 @@ app.use(finalErrorHandler);
 // ================= SERVER =================
 const PORT = process.env.PORT || 8000;
 
+// Advance booking statuses (upcoming → active → completed) while the app is awake
+require("./utils/bookingLifecycle").startStatusScheduler();
+
 const server = app.listen(PORT, () => {
   console.log(`✓ Server running on port ${PORT}`);
   console.log(`✓ Environment: ${process.env.NODE_ENV || "development"}`);

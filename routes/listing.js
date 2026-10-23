@@ -6,6 +6,7 @@ const { isOwner } = require("../middlewares/authorize");
 const { validateListing } = require("../middlewares/validateListing");
 const upload = require("../middlewares/upload");
 const wrapAsync = require("../utils/wrapAsync");
+const { freshStatuses } = require("../utils/bookingLifecycle");
 const Review = require("../models/review");
 
 // Index + Create
@@ -26,7 +27,7 @@ router.get("/new", isLoggedIn, requireVerifiedEmail, listingController.renderNew
 // Show + Update + Delete
 router
   .route("/:id")
-  .get(wrapAsync(listingController.showListing))
+  .get(freshStatuses, wrapAsync(listingController.showListing))
   .put(
     isLoggedIn,
     isOwner,

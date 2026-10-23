@@ -19,7 +19,8 @@ test("nightsBetween lists each night, excluding the check-out day", () => {
   assert.equal(nightsBetween(d("2027-01-10"), d("2027-01-10")).length, 0);
 });
 
-const DB = process.env.TEST_MONGO_URI;
+// Own database per test file: node runs test files in parallel
+const DB = process.env.TEST_MONGO_URI && process.env.TEST_MONGO_URI.replace(/(\/[^/?]*)(\?|$)/, "$1_locks$2");
 
 test("date locking against a real database", { skip: !DB && "set TEST_MONGO_URI to run" }, async t => {
   await mongoose.connect(DB);

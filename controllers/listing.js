@@ -5,6 +5,7 @@ const { fileToImage } = require("../cloudConfig");
 const { destroyImage, archiveAndDeleteListing } = require("../utils/listingDeletion");
 const { getAvailability } = require("../utils/availability");
 const { statusOf, reverifyReasons, markPending } = require("../utils/verification");
+const { getReviewEligibility } = require("../utils/reviewEligibility");
 
 const DEFAULT_IMAGE = {
   url: "https://res.cloudinary.com/dgu8te3bn/image/upload/v1771003245/Homekuti_DEV/kzjbrisg2uqssvvp99a3.jpg",
@@ -204,7 +205,9 @@ module.exports.showListing = async (req, res) => {
   // console.log("USER:", req.user);
   // console.log("WISHLIST:", req.user?.wishlist);
 
-  res.render("listings/show", { listing, isDefaultLocation, isWishlisted });
+  const reviewEligibility = await getReviewEligibility(req.user, listing);
+
+  res.render("listings/show", { listing, isDefaultLocation, isWishlisted, reviewEligibility });
 };
 
 module.exports.createListing = async (req, res) => {

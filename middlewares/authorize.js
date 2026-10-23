@@ -23,7 +23,7 @@ module.exports.isReviewAuthor = async (req, res, next) => {
     req.flash("error", "Review not found");
     return res.redirect(`/listings/${id}`);
   }
-  if (!review.author.equals(req.user._id) && req.user.role !== "admin") {
+  if (!review.author?.equals(req.user._id) && req.user.role !== "admin") {
     req.flash("error", "You are not the author of this review");
     return res.redirect(`/listings/${id}`);
   }

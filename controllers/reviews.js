@@ -1,5 +1,6 @@
 const Review = require("../models/review");
 const Listing = require("../models/listing");
+const { getReviewEligibility } = require("../utils/reviewEligibility");
 
 module.exports.createReview = async (req, res) => {
   const listing = await Listing.findById(req.params.id);
@@ -8,9 +9,29 @@ module.exports.createReview = async (req, res) => {
     return res.redirect("/listings");
   }
 
-  const newReview = new Review(req.body.review);
-  newReview.author = req.user._id;
-  await newReview.save();
+  const eligibility = await getReviewEligibility(req.user, listing);
+  if (!eligibility.eligible) {
+    req.flash("error", eligibility.message);
+    return res.redirect(`/listings/${listing._id}`);
+  }
+
+  const { rating, comment } = req.body.review;
+  const newReview = new Review({
+    rating,
+    comment,
+    author: req.user._id,
+    listing: listing._id,
+    booking: eligibility.booking._id,
+  });
+  try {
+    await newReview.save();
+  } catch (err) {
+    if (err.code === 11000) {   // double submit for the same stay
+      req.flash("error", "You've already reviewed this stay.");
+      return res.redirect(`/listings/${listing._id}`);
+    }
+    throw err;
+  }
 
   listing.reviews.push(newReview._id);
 
@@ -21,7 +42,7 @@ module.exports.createReview = async (req, res) => {
   listing.totalReviews = allReviews.length;
 
   await listing.save();
-  req.flash("success", "Review added!");
+  req.flash("success", "Thanks for reviewing your stay!");
   res.redirect(`/listings/${listing._id}`);
 };
 

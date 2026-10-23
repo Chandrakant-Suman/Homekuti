@@ -1,6 +1,7 @@
 const Booking = require("../models/booking");
 const Listing = require("../models/listing");
 const User = require("../models/user");
+const Review = require("../models/review");
 const { syncRefundStatus, syncPendingRefunds } = require("../utils/refundSync");
 const { releaseBooking } = require("../utils/availability");
 
@@ -30,7 +31,8 @@ module.exports.myBookings = async (req, res) => {
 
   let query = { user: req.user._id };
 
-  if (filter === "upcoming") query.status = "upcoming";
+  if (filter === "upcoming") query.status = { $in: ["upcoming", "active"] };
+  if (filter === "past") query.status = "completed";
   if (filter === "cancelled") query.status = { $in: ["cancelled", "unavailable"] };
   if (filter === "refund") query.paymentStatus = { $in: ["refund_initiated", "refunded", "refund_failed", "refund_cancelled"] };
 
@@ -41,7 +43,13 @@ module.exports.myBookings = async (req, res) => {
     .populate("listing")
     .sort({ createdAt: -1 });
 
-  res.render("bookings/my-bookings", { bookings, query: req.query });
+  // Completed stays that still need a review get a "Write a review" button
+  const completedIds = bookings.filter(b => b.status === "completed").map(b => b._id);
+  const reviewedIds = completedIds.length
+    ? (await Review.find({ booking: { $in: completedIds } }).distinct("booking")).map(String)
+    : [];
+
+  res.render("bookings/my-bookings", { bookings, query: req.query, reviewedIds });
 };
 
 // ─────────────────────────────────────────────────────────

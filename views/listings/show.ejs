@@ -197,8 +197,8 @@
         <% } %>
       </h3>
 
-      <% if (currUser && !currUser._id.equals(listing.owner._id)) { %>
-        <form action="/listings/<%= listing._id %>/reviews" method="POST"
+      <% if (reviewEligibility.eligible) { %>
+        <form id="review" action="/listings/<%= listing._id %>/reviews" method="POST"
           style="background:#f9fafb;padding:1.2rem;border-radius:14px;margin-bottom:1.5rem;">
           <fieldset class="starability-coinFlip" style="border:none;padding:0;margin-bottom:0.8rem;">
             <legend style="font-size:0.78rem;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px;">Your Rating</legend>
@@ -211,10 +211,16 @@
           </fieldset>
           <textarea name="review[comment]" rows="3" required placeholder="Share your experience…"
             style="width:100%;border:1.5px solid #e3e5ec;border-radius:10px;padding:10px 14px;font-family:inherit;font-size:0.9rem;resize:vertical;outline:none;box-sizing:border-box;margin-bottom:0.8rem;"></textarea>
+          <p style="font-size:0.78rem;color:#6b7280;margin:-0.3rem 0 0.8rem;">
+            Reviewing your stay of <%= new Date(reviewEligibility.booking.checkIn).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) %>
+            – <%= new Date(reviewEligibility.booking.checkOut).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) %>
+          </p>
           <button type="submit" class="hk-btn" style="width:fit-content;">Submit Review</button>
         </form>
       <% } else if (!currUser) { %>
         <p style="color:#6b7280;margin-bottom:1.2rem;"><a href="/user/signin">Sign in</a> to leave a review.</p>
+      <% } else if (reviewEligibility.reason !== 'owner') { %>
+        <p style="color:#6b7280;margin-bottom:1.2rem;font-size:0.9rem;"><i class="fa-solid fa-circle-info"></i> <%= reviewEligibility.message %></p>
       <% } %>
 
       <% if (listing.reviews.length === 0) { %>
@@ -223,14 +229,17 @@
         <% for (let rv of listing.reviews) { %>
           <div class="rv-card">
             <div class="rv-head">
-              <div class="rv-av"><%= rv.author.username.charAt(0).toUpperCase() %></div>
+              <div class="rv-av"><%= (rv.author?.username || '?').charAt(0).toUpperCase() %></div>
               <div>
-                <strong style="font-size:0.9rem;"><%= rv.author.username %></strong>
+                <strong style="font-size:0.9rem;"><%= rv.author?.username || 'Former guest' %></strong>
+                <% if (rv.booking) { %>
+                  <span style="margin-left:6px;padding:1px 8px;border-radius:999px;background:#ecfdf5;color:#047857;font-size:0.7rem;font-weight:700;"><i class="fa-solid fa-circle-check"></i> Verified stay</span>
+                <% } %>
                 <div class="starability-result" data-rating="<%= rv.rating %>">Rated: <%= rv.rating %> stars</div>
               </div>
             </div>
             <p style="color:#4b5563;font-size:0.88rem;margin:0;line-height:1.65;"><%= rv.comment %></p>
-            <% if (currUser && (currUser._id.equals(rv.author._id) || currUser.role === 'admin')) { %>
+            <% if (currUser && ((rv.author && currUser._id.equals(rv.author._id)) || currUser.role === 'admin')) { %>
               <form method="POST" action="/listings/<%= listing._id %>/reviews/<%= rv._id %>?_method=DELETE" style="margin-top:0.6rem;">
                 <button type="submit" style="background:none;border:none;color:#ef4444;font-size:0.8rem;font-weight:600;cursor:pointer;padding:0;" data-no-disable="true">
                   <i class="fa-solid fa-trash-can"></i> Delete

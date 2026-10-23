@@ -29,6 +29,7 @@
   .sb-cancelled   { background:#f3f4f6;color:#6b7280; }
   .sb-unavailable { background:#fef2f2;color:#b91c1c; }
   .sb-completed   { background:#f3f4f6;color:#374151; }
+  .sb-active      { background:#ecfdf5;color:#047857; }
   .sb-paid        { background:#f0fdf4;color:#15803d; }
   .sb-refund_initiated { background:#fffbeb;color:#d97706; }
   .sb-refunded    { background:#f0fdf4;color:#15803d; }
@@ -70,6 +71,7 @@
   const tabs = [
     { key: 'all',       label: '🏠 All' },
     { key: 'upcoming',  label: '📅 Upcoming' },
+    { key: 'past',      label: '🧳 Past stays' },
     { key: 'cancelled', label: '❌ Cancelled' },
     { key: 'refund',    label: '💰 Refunds' },
   ];
@@ -148,6 +150,11 @@
           <% if (b.status === 'upcoming' && b.paymentStatus === 'paid') { %>
             <a href="/bookings/<%= b._id %>/cancel-preview" class="btn-outline btn-cancel">
               Cancel & Refund
+            </a>
+          <% } %>
+          <% if (b.status === 'completed' && b.listing && !(reviewedIds || []).includes(String(b._id))) { %>
+            <a href="/listings/<%= b.listing._id %>#review" class="btn-outline" style="color:#047857;border-color:#a7f3d0;">
+              <i class="fa-solid fa-star"></i> Write a review
             </a>
           <% } %>
         </div>

@@ -124,6 +124,8 @@ const bookingSchema = new Schema({
     cancelReason: String,
   },
 
+  completedAt: Date,   // set when the stay's check-out date passes
+
   createdAt: {
     type: Date,
     default: Date.now,
