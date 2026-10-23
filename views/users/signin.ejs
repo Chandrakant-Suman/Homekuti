@@ -211,14 +211,13 @@ document.getElementById("signinForm").addEventListener("submit", function(e) {
   let valid = true;
 
   [username, password].forEach(input => {
-    if (!input.value.trim()) {
-      input.classList.add("is-invalid");
-      input.nextElementSibling.style.display = "block";
-      valid = false;
-    } else {
-      input.classList.remove("is-invalid");
-      if (input.nextElementSibling) input.nextElementSibling.style.display = "none";
-    }
+    // The password field is wrapped for its show/hide button, so look up the
+    // message through the form group instead of the input's next sibling
+    const msg = input.closest(".mb-form")?.querySelector(".invalid-msg");
+    const empty = !input.value.trim();
+    input.classList.toggle("is-invalid", empty);
+    if (msg) msg.style.display = empty ? "block" : "none";
+    if (empty) valid = false;
   });
 
   if (!valid) e.preventDefault();

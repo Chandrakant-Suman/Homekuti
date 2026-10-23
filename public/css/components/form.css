@@ -55,3 +55,18 @@ form textarea::placeholder {
 .form-control.is-valid {
   border-color: #198754;
 }
+
+
+/* ── Show / hide password toggle (added by public/js/script.js) ── */
+.pw-wrap { position: relative; display: block; width: 100%; }
+.pw-wrap > input { width: 100%; padding-right: 44px !important; }
+.pw-toggle {
+  position: absolute; top: 50%; right: 6px; transform: translateY(-50%);
+  width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center;
+  background: none; border: none; border-radius: 8px; padding: 0;
+  color: #6b7280; font-size: 1rem; cursor: pointer;
+}
+.pw-toggle:hover { color: #1f2933; background: rgba(0, 0, 0, 0.05); }
+.pw-toggle:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+/* Edge/IE draw their own reveal eye; hide it so there's only one */
+input::-ms-reveal, input::-ms-clear { display: none; }

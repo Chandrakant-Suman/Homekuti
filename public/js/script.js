@@ -153,4 +153,42 @@
 
     toggle();
   });
+
+  // ===============================
+  // SHOW / HIDE PASSWORD (every password field on every page)
+  // ===============================
+  document.querySelectorAll('input[type="password"]').forEach(input => {
+    if (input.dataset.pwToggle) return;
+    input.dataset.pwToggle = "1";
+
+    const wrap = document.createElement("span");
+    wrap.className = "pw-wrap";
+    input.parentNode.insertBefore(wrap, input);
+    wrap.appendChild(input);
+
+    const btn = document.createElement("button");
+    btn.type = "button";                       // never submits the form
+    btn.className = "pw-toggle";
+    btn.setAttribute("aria-label", "Show password");
+    btn.setAttribute("aria-pressed", "false");
+    btn.innerHTML = '<i class="fa-regular fa-eye" aria-hidden="true"></i>';
+    wrap.appendChild(btn);
+
+    const setVisible = visible => {
+      input.type = visible ? "text" : "password";
+      btn.setAttribute("aria-pressed", String(visible));
+      btn.setAttribute("aria-label", visible ? "Hide password" : "Show password");
+      btn.innerHTML = `<i class="fa-regular ${visible ? "fa-eye-slash" : "fa-eye"}" aria-hidden="true"></i>`;
+    };
+
+    btn.addEventListener("click", () => {
+      const pos = input.selectionStart;
+      setVisible(input.type === "password");
+      input.focus();
+      if (pos !== null) input.setSelectionRange(pos, pos);   // keep the cursor where it was
+    });
+
+    // Hide again on submit so the browser's password manager still recognises the field
+    input.form?.addEventListener("submit", () => setVisible(false));
+  });
 })();
