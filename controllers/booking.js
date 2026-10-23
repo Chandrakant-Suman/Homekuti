@@ -386,10 +386,18 @@ module.exports.cancelRefund = async (req, res) => {
 module.exports.refundWebhook = async (req, res) => {
   const crypto = require("crypto");
   const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
-  const sig = req.headers["x-razorpay-signature"];
-  const expected = crypto.createHmac("sha256", secret).update(JSON.stringify(req.body)).digest("hex");
+  if (!secret) {
+    console.error("Webhook received but RAZORPAY_WEBHOOK_SECRET is not set");
+    return res.status(500).json({ status: "webhook not configured" });
+  }
+  const sig = String(req.headers["x-razorpay-signature"] || "");
+  if (!req.rawBody) return res.status(400).json({ status: "missing body" });
 
-  if (sig !== expected) {
+  // Signature is over the exact bytes Razorpay sent; compare in constant time
+  const expected = crypto.createHmac("sha256", secret).update(req.rawBody).digest("hex");
+  const valid = sig.length === expected.length &&
+    crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected));
+  if (!valid) {
     console.error("Webhook signature mismatch");
     return res.status(400).json({ status: "invalid signature" });
   }

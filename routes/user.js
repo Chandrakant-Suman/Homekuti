@@ -4,20 +4,23 @@ const passport = require("passport");
 const userController = require("../controllers/users");
 const { isLoggedIn } = require("../middlewares/authenticate");
 const wrapAsync = require("../utils/wrapAsync");
+const {
+  signinLimiter, signupLimiter, forgotPasswordLimiter, passwordChangeLimiter,
+} = require("../middlewares/rateLimit");
 
 // Signin
 router.get("/signin", userController.signinForm);
-router.post("/signin", userController.authenticateLocal, userController.signin);
+router.post("/signin", signinLimiter, userController.authenticateLocal, userController.signin);
 
 // Signup
 router.get("/signup", userController.signupForm);
-router.post("/signup", wrapAsync(userController.signup));
+router.post("/signup", signupLimiter, wrapAsync(userController.signup));
 
 // Forgot / reset password
 router.get("/forgot-password", userController.forgotPasswordForm);
-router.post("/forgot-password", wrapAsync(userController.forgotPassword));
+router.post("/forgot-password", forgotPasswordLimiter, wrapAsync(userController.forgotPassword));
 router.get("/reset-password/:token", wrapAsync(userController.resetPasswordForm));
-router.post("/reset-password/:token", wrapAsync(userController.resetPassword));
+router.post("/reset-password/:token", passwordChangeLimiter, wrapAsync(userController.resetPassword));
 
 // Logout
 router.get("/logout", userController.logout);
@@ -28,7 +31,7 @@ router.get("/google", wrapAsync(userController.googleAuth));
 // Profile
 router.get("/profile", isLoggedIn, wrapAsync(userController.profile));
 router.patch("/profile/username", isLoggedIn, wrapAsync(userController.updateUsername));
-router.patch("/profile/password", isLoggedIn, wrapAsync(userController.updatePassword));
+router.patch("/profile/password", isLoggedIn, passwordChangeLimiter, wrapAsync(userController.updatePassword));
 router.post("/profile/delete-request", isLoggedIn, wrapAsync(userController.requestDeletion));
 router.delete("/profile/delete-request", isLoggedIn, wrapAsync(userController.cancelDeletionRequest));
 

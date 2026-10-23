@@ -79,7 +79,13 @@ app.set("views", path.join(__dirname, "views"));
 // ================= GLOBAL MIDDLEWARE =================
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.urlencoded({ extended: true }));
-app.use(express.json()); // For API requests
+app.use(express.json({
+  // Keep the exact bytes for the Razorpay webhook: its signature is computed
+  // over the raw body, and re-serialising parsed JSON can change it
+  verify: (req, res, buf) => {
+    if (req.originalUrl.startsWith("/bookings/webhook")) req.rawBody = buf;
+  },
+})); // For API requests
 app.use(methodOverride("_method"));
 
 // ================= HEALTH CHECK =================
@@ -127,21 +133,6 @@ store.on("error", (err) => {
   console.error("❌ SESSION STORE ERROR:", err);
 });
 
-store.on("create", (sessionId) => {
-  console.log("✓ Session created in MongoDB:", sessionId);
-});
-
-store.on("touch", (sessionId) => {
-  console.log("✓ Session touched:", sessionId);
-});
-
-store.on("update", (sessionId) => {
-  console.log("✓ Session updated:", sessionId);
-});
-
-store.on("destroy", (sessionId) => {
-  console.log("✓ Session destroyed:", sessionId);
-});
 
 const sessionOptions = {
   name: "homekuti.sid",
@@ -194,12 +185,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// temporary debug middleware to log session and user info on every request
-app.use((req, res, next) => {
-  console.log("Session ID:", req.sessionID);
-  console.log("User:", req.user ? req.user.username : "No user");
-  next();
-});
 
 // ================= ROUTES =================
 
@@ -245,41 +230,6 @@ app.get("/privacy", (req, res) => res.render("privacy"));
 app.get("/maintenance", (req, res) => res.render("maintenance"));
 
 // ================= TEST ROUTES (REMOVE IN PRODUCTION) =================
-// app.get("/test/auth", (req, res) => {
-//   res.json({
-//     isAuthenticated: req.isAuthenticated(),
-//     sessionID: req.sessionID,
-//     user: req.user,
-//     session: req.session,
-//     cookie: req.headers.cookie,
-//   });
-// });
-
-app.get("/test/session", (req, res) => {
-  if (!req.session.views) {
-    req.session.views = 1;
-  } else {
-    req.session.views++;
-  }
-
-  req.session.save((err) => {
-    if (err) {
-      return res.json({ error: err.message });
-    }
-    res.json({
-      message: "Session test - refresh to see views increment",
-      views: req.session.views,
-      sessionID: req.sessionID,
-      saved: true,
-    });
-  });
-});
-
-app.get("/test/validation", wrapAsync(async (req, res) => {
-  const listing = new Listing({}); // Missing required fields
-  await listing.save(); // Will trigger ValidationError
-}));
-
 // ================= ERROR HANDLING =================
 
 // 1. Transform Mongoose/MongoDB errors

@@ -14,6 +14,7 @@ if (!DB_URI) {
 const PORT = process.env.SMOKE_PORT || 4010;
 const BASE = `http://127.0.0.1:${PORT}`;
 const BOOT_TIMEOUT_MS = 45000;
+const WEBHOOK_SECRET = "smoke-webhook-secret";
 
 const CHECKS = [
   { path: "/healthz", status: 200, json: body => body.db === "up" },
@@ -35,6 +36,7 @@ const app = spawn(process.execPath, [path.join(__dirname, "..", "app.js")], {
     MONGO_URI: DB_URI,
     PORT: String(PORT),
     SESSION_SECRET: process.env.SESSION_SECRET || "smoke-test-secret",
+    RAZORPAY_WEBHOOK_SECRET: WEBHOOK_SECRET,
   },
   stdio: ["ignore", "pipe", "pipe"],
 });
@@ -67,8 +69,48 @@ async function main() {
     console.log(`${ok ? "✓" : "✗"} GET ${c.path} → ${res.status} (expected ${c.status})`);
     if (!ok) failed++;
   }
+  failed += await securityChecks();
   if (failed) throw new Error(`${failed} smoke check(s) failed`);
   console.log("✓ Smoke test passed");
+}
+
+// Regression checks for security fixes (Group A)
+async function securityChecks() {
+  let failed = 0;
+  const check = (ok, label) => { console.log(`${ok ? "✓" : "✗"} ${label}`); if (!ok) failed++; };
+  const form = body => ({
+    method: "POST", redirect: "manual",
+    headers: { "content-type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams(body),
+  });
+
+  // Unsafe booking delete route and debug routes are gone
+  let res = await fetch(`${BASE}/bookings/000000000000000000000000?_method=DELETE`, form({}));
+  check(res.status === 404, `DELETE /bookings/:id removed → ${res.status}`);
+  res = await fetch(`${BASE}/test/session`);
+  check(res.status === 404, `/test/session removed → ${res.status}`);
+
+  // Webhook: valid signature over the raw body accepted, tampered body rejected
+  const crypto = require("crypto");
+  const raw = JSON.stringify({ event: "refund.processed", payload: { refund: { entity: { id: "rfnd_smoke" } } } });
+  const sign = b => crypto.createHmac("sha256", WEBHOOK_SECRET).update(b).digest("hex");
+  const hook = (body, sig) => fetch(`${BASE}/bookings/webhook`, {
+    method: "POST", headers: { "content-type": "application/json", "x-razorpay-signature": sig }, body,
+  });
+  res = await hook(raw, sign(raw));
+  check(res.status === 200, `webhook with valid signature → ${res.status}`);
+  res = await hook(raw.replace("smoke", "evil"), sign(raw));
+  check(res.status === 400, `webhook with tampered body → ${res.status}`);
+
+  // Sign-in rate limit: 10 failed attempts allowed, the 11th is blocked
+  let last;
+  for (let i = 0; i < 11; i++) {
+    last = await fetch(`${BASE}/user/signin`, form({ username: "nobody-smoke", password: "wrong" }));
+  }
+  const header = last.headers.get("ratelimit") || "";
+  check(/remaining=0/.test(header), `11th failed sign-in is rate limited (RateLimit: ${header || "none"})`);
+
+  return failed;
 }
 
 main()
