@@ -441,8 +441,3 @@ module.exports.refundWebhook = async (req, res) => {
 
   res.json({ status: "ok" });
 };
-
-module.exports.createBooking = async (req, res) => {
-  req.flash("error", "Please use the payment flow to book");
-  res.redirect("/listings");
-};

@@ -202,8 +202,6 @@ module.exports.showListing = async (req, res) => {
   const isDefaultLocation =
     listing.geometry?.isApproximate ??
     isDefaultCoordinates(listing.geometry?.coordinates);
-  // console.log("USER:", req.user);
-  // console.log("WISHLIST:", req.user?.wishlist);
 
   const reviewEligibility = await getReviewEligibility(req.user, listing);
 

@@ -128,18 +128,6 @@
 
   }
 
-  // ===============================
-  // REMOVE BUTTON FREEZE CODE (Not needed anymore)
-  // ===============================
-  // Commented out - now handled in form submit event
-  /*
-  document.querySelectorAll(".hk-btn").forEach(btn => {
-    btn.addEventListener("click", function () {
-      this.classList.add("clicked");
-    });
-  });
-  */
-
   window.addEventListener("pageshow", () => {
     document.querySelectorAll(".hk-btn.clicked").forEach(btn => {
       btn.classList.remove("clicked");
@@ -165,16 +153,4 @@
 
     toggle();
   });
-  // ===============================
-  // AUTO CLOSE ALERTS
-  // ===============================
-  setTimeout(() => {
-    if (!window.bootstrap) return;
-
-    document.querySelectorAll('.auto-close').forEach(alert => {
-      bootstrap.Alert.getOrCreateInstance(alert).close();
-    });
-
-  }, 5000);
-
 })();

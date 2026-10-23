@@ -1,5 +1,4 @@
 const User = require("../models/user");
-const Booking = require("../models/booking");
 const crypto = require("crypto");
 const passport = require("passport");
 const { OAuth2Client } = require("google-auth-library");
@@ -325,13 +324,6 @@ module.exports.toggleWishlist = async (req, res) => {
     }
     await user.save();
     res.json({ success: true, wishlisted: idx === -1 });
-};
-
-module.exports.myBookings = async (req, res) => {
-    const bookings = await Booking.find({ user: req.user._id })
-        .populate("listing")
-        .sort({ createdAt: -1 });
-    res.render("bookings/my-bookings", { bookings });
 };
 
 // ================= FORGOT / RESET PASSWORD =================

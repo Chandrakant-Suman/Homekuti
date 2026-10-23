@@ -96,23 +96,6 @@ const handleMulterError = (err, req, res, next) => {
 };
 
 /**
- * Transform JWT/Authentication errors
- */
-const handleAuthError = (err, req, res, next) => {
-  if (err.name === "JsonWebTokenError") {
-    err.statusCode = 401;
-    err.message = "Invalid token. Please log in again.";
-  }
-
-  if (err.name === "TokenExpiredError") {
-    err.statusCode = 401;
-    err.message = "Your session has expired. Please log in again.";
-  }
-
-  next(err);
-};
-
-/**
  * 404 Handler
  */
 const notFoundHandler = (req, res, next) => {
@@ -192,7 +175,6 @@ const setupProcessHandlers = () => {
 module.exports = {
   handleMongooseError,
   handleMulterError,
-  handleAuthError,
   notFoundHandler,
   finalErrorHandler,
   setupProcessHandlers,

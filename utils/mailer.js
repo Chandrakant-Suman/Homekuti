@@ -84,4 +84,3 @@ module.exports.sendMail = async ({ to, subject, text, html }) => {
     console.log("────────────────────────────────────────────────────────────────");
 };
 
-module.exports.mailProvider = () => provider;

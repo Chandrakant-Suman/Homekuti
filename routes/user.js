@@ -1,10 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const passport = require("passport");
 const userController = require("../controllers/users");
 const { isLoggedIn } = require("../middlewares/authenticate");
 const wrapAsync = require("../utils/wrapAsync");
-const { freshStatuses } = require("../utils/bookingLifecycle");
 const {
   signinLimiter, signupLimiter, forgotPasswordLimiter, passwordChangeLimiter, verifyEmailLimiter,
 } = require("../middlewares/rateLimit");
@@ -42,8 +40,5 @@ router.delete("/profile/delete-request", isLoggedIn, wrapAsync(userController.ca
 
 // Wishlist toggle
 router.post("/wishlist/:listingId", isLoggedIn, wrapAsync(userController.toggleWishlist));
-
-// My bookings
-router.get("/bookings", isLoggedIn, freshStatuses, wrapAsync(userController.myBookings));
 
 module.exports = router;

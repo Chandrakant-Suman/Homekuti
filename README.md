@@ -148,7 +148,7 @@ Homekuti/
 ## 🖼️ Screenshots 📸
 
 ### 🏠 Homekuti Architecture Image
-![Homekuti Architecture Image](https://raw.githubusercontent.com/Chandrakant-Suman/Homekuti/main/public/images/homekuti-architecture-image.png)
+![Homekuti Architecture Image](https://raw.githubusercontent.com/Chandrakant-Suman/Homekuti/main/public/images/Homekuti-Architecture-Image.jpg)
 
 ### 🏠 Home Page
 ![Homekuti Home Page](https://raw.githubusercontent.com/Chandrakant-Suman/Homekuti/main/public/images/demo-home.png)

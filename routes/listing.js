@@ -7,7 +7,6 @@ const { validateListing } = require("../middlewares/validateListing");
 const upload = require("../middlewares/upload");
 const wrapAsync = require("../utils/wrapAsync");
 const { freshStatuses } = require("../utils/bookingLifecycle");
-const Review = require("../models/review");
 
 // Index + Create
 router

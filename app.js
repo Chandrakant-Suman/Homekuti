@@ -16,7 +16,6 @@ const LocalStrategy = require("passport-local");
 // ================= MODELS =================
 const Listing = require("./models/listing");
 const User = require("./models/user");
-const Review = require("./models/review");
 
 
 // ================= ROUTES =================
@@ -36,7 +35,6 @@ const ExpressError = require("./utils/ExpressError");
 const {
   handleMongooseError,
   handleMulterError,
-  handleAuthError,
   notFoundHandler,
   finalErrorHandler,
   setupProcessHandlers,
@@ -189,7 +187,6 @@ app.use((req, res, next) => {
   res.locals.emailUnverified = Boolean(req.user) && req.user.emailVerified === false;
   res.locals.success = req.flash("success");
   res.locals.error = req.flash("error");
-  res.locals.hideFlash = false;
   next();
 });
 
@@ -246,8 +243,6 @@ app.use(handleMongooseError);
 // 2. Transform Multer file upload errors
 app.use(handleMulterError);
 
-// 3. Transform JWT/Authentication errors
-app.use(handleAuthError);
 
 // 4. 404 Handler (must be AFTER all routes)
 app.use(notFoundHandler);

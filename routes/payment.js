@@ -17,7 +17,4 @@ router.post("/verify", isLoggedIn, wrapAsync(paymentController.verifyPayment));
 // GET: Booking confirmation page (after success)
 router.get("/confirmation/:bookingId", isLoggedIn, wrapAsync(paymentController.confirmationPage));
 
-router.get("/back", (req, res) => {
-  res.send("Back route working ✅");
-});
 module.exports = router;

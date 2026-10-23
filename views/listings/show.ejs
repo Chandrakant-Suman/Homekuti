@@ -160,7 +160,7 @@
       onsubmit="return confirm('Delete this listing? This cannot be undone.');"
       class="form-no-card"
     >
-      <button type="submit" class="hk-btn" data-no-disable="true">
+      <button type="submit" class="hk-btn">
         <i class="fa-solid fa-trash"></i> Delete
       </button>
     </form>
@@ -241,7 +241,7 @@
             <p style="color:#4b5563;font-size:0.88rem;margin:0;line-height:1.65;"><%= rv.comment %></p>
             <% if (currUser && ((rv.author && currUser._id.equals(rv.author._id)) || currUser.role === 'admin')) { %>
               <form method="POST" action="/listings/<%= listing._id %>/reviews/<%= rv._id %>?_method=DELETE" style="margin-top:0.6rem;">
-                <button type="submit" style="background:none;border:none;color:#ef4444;font-size:0.8rem;font-weight:600;cursor:pointer;padding:0;" data-no-disable="true">
+                <button type="submit" style="background:none;border:none;color:#ef4444;font-size:0.8rem;font-weight:600;cursor:pointer;padding:0;">
                   <i class="fa-solid fa-trash-can"></i> Delete
                 </button>
               </form>
