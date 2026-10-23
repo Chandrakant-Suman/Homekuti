@@ -113,6 +113,7 @@
     <div>
       <div class="stat-value"><%= counts ? counts.listings : '—' %></div>
       <div class="stat-label">Active listings</div>
+      <% if (counts) { %><div class="stat-sub"><%= counts.verifiedListings %> verified · <%= counts.pendingVerification %> pending</div><% } %>
     </div>
   </div>
   <div class="stat-card">
@@ -126,7 +127,7 @@
   <div class="stat-card">
     <div class="stat-icon icon-red"><i class="fa-solid fa-bell"></i></div>
     <div>
-      <% const actionItems = (finance?.refundsFailed || 0) + (counts?.pendingDeletion || 0); %>
+      <% const actionItems = (finance?.refundsFailed || 0) + (counts?.pendingDeletion || 0) + (counts?.pendingVerification || 0); %>
       <div class="stat-value"><%= (finance || counts) ? actionItems : '—' %></div>
       <div class="stat-label">Needs attention</div>
       <div class="stat-sub">
@@ -134,6 +135,7 @@
         <% if (finance?.refundsFailed) { %><a href="/admin/bookings"><%= finance.refundsFailed %> failed refund<%= finance.refundsFailed !== 1 ? 's' : '' %></a><% } %>
         <% if (finance?.refundsFailed && counts?.pendingDeletion) { %> · <% } %>
         <% if (counts?.pendingDeletion) { %><a href="/admin/users"><%= counts.pendingDeletion %> deletion request<%= counts.pendingDeletion !== 1 ? 's' : '' %></a><% } %>
+        <% if (counts?.pendingVerification) { %><% if (finance?.refundsFailed || counts?.pendingDeletion) { %> · <% } %><a href="/admin/listings"><%= counts.pendingVerification %> listing<%= counts.pendingVerification !== 1 ? 's' : '' %> to verify</a><% } %>
       </div>
     </div>
   </div>

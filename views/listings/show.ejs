@@ -88,7 +88,10 @@
   <div>
     <!-- Title row -->
     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;">
-      <h1 class="listing-title"><%= listing.title %></h1>
+      <div>
+        <h1 class="listing-title"><%= listing.title %></h1>
+        <%- include('../includes/verified-badge', { listing, size: 'md' }) %>
+      </div>
       <% if (currUser) { %>
         <button class="wl-btn <%= isWishlisted ? 'active' : '' %>" id="wlBtn"
           title="<%= isWishlisted ? 'Remove from wishlist' : 'Save' %>">
@@ -133,6 +136,19 @@
 
     <!-- Owner edit/delete -->
 <% if (currUser && currUser._id.equals(listing.owner._id)) { %>
+  <% const vs = (listing.verification && listing.verification.status) || 'pending'; %>
+  <div style="margin:0.8rem 0;padding:0.8rem 1rem;border-radius:12px;font-size:0.86rem;
+    <%= vs === 'verified' ? 'background:#ecfdf5;color:#047857;' : vs === 'rejected' ? 'background:#fef2f2;color:#b91c1c;' : 'background:#fffbeb;color:#92400e;' %>">
+    <% if (vs === 'verified') { %>
+      <i class="fa-solid fa-circle-check"></i> <strong>Verified</strong> by our team. Changing the title, location or photo will require re-verification.
+    <% } else if (vs === 'rejected') { %>
+      <i class="fa-solid fa-circle-xmark"></i> <strong>Verification was not approved.</strong>
+      <% if (listing.verification.note) { %>Reason: <%= listing.verification.note %>.<% } %>
+      Edit the listing to fix this and it will be re-reviewed.
+    <% } else { %>
+      <i class="fa-regular fa-clock"></i> <strong>Verification pending.</strong> Your listing is live; our team will verify it soon.
+    <% } %>
+  </div>
   <div class="listing-actions">
 
     <a href="/listings/<%= listing._id %>/edit" class="hk-btn">

@@ -93,6 +93,18 @@
     .badge { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; }
     .badge-owner-del { background: #eff6ff; color: #1d4ed8; }
     .badge-removed { background: #fef2f2; color: #b91c1c; }
+    .v-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: 999px; font-size: 0.74rem; font-weight: 700; white-space: nowrap; }
+    .v-verified { background: #ecfdf5; color: #047857; }
+    .v-pending { background: #f3f4f6; color: #4b5563; }
+    .v-rejected { background: #fef2f2; color: #b91c1c; }
+    .queue-card { border: 1.5px solid #fde68a; margin-bottom: 1.5rem; }
+    .queue-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.3rem; color: #92400e; }
+    .queue-actions { display: flex; flex-direction: column; gap: 6px; min-width: 220px; }
+    .queue-actions input { border: 1.5px solid #e3e5ec; border-radius: 8px; padding: 5px 8px; font-size: 0.8rem; font-family: inherit; width: 100%; }
+    .btn-verify { background: #047857; color: #fff; border: none; border-radius: 8px; padding: 5px 12px; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+    .btn-verify:hover { background: #065f46; }
+    .btn-soft { background: none; border: 1.5px solid #e3e5ec; border-radius: 8px; color: #374151; padding: 4px 12px; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+    .btn-soft:hover { border-color: #9ca3af; }
   </style>
 
   <h2 style="font-size:1.6rem;font-weight:700;margin:1.5rem 0 0.5rem;">Listings Management</h2>
@@ -101,6 +113,53 @@
     <a href="/admin/users">Users</a>
     <a href="/admin/listings" class="active">Listings</a>
     <a href="/admin/bookings">Bookings</a>
+  </div>
+
+  <!-- Verification queue -->
+  <div class="table-card queue-card">
+    <h3><i class="fa-solid fa-clipboard-check"></i> Verification requests (<%= verificationQueue.length %>)</h3>
+    <p style="font-size:0.84rem;color:#6b7280;margin-bottom:1rem;">
+      Verify only after checking the property (ground visit, documents or video call). Oldest requests first.
+    </p>
+    <% if (verificationQueue.length === 0) { %>
+      <p style="color:#9ca3af;font-style:italic;font-size:0.9rem;margin:0;">No listings waiting for verification.</p>
+    <% } else { %>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Listing</th><th>Owner</th><th>Requested</th><th>Note</th><th>Decision</th></tr>
+        </thead>
+        <tbody>
+          <% verificationQueue.forEach(l => { %>
+            <tr>
+              <td>
+                <a href="/listings/<%= l._id %>" target="_blank" style="font-weight:600;color:#1f2933;"><%= l.title %></a>
+                <div style="font-size:0.78rem;color:#6b7280;"><%= l.location %>, <%= l.country %> · ₹<%= l.price?.toLocaleString('en-IN') %>/night</div>
+              </td>
+              <td>
+                <%= l.owner?.username || '—' %>
+                <div style="font-size:0.75rem;color:#9ca3af;"><%= l.owner?.email || '' %></div>
+              </td>
+              <td style="white-space:nowrap;"><%= requestedAt(l).toLocaleDateString('en-IN') %></td>
+              <td style="max-width:200px;font-size:0.8rem;color:#6b7280;"><%= l.verification?.note || '—' %></td>
+              <td>
+                <div class="queue-actions">
+                  <form method="POST" action="/admin/listings/<%= l._id %>/verify" style="display:flex;gap:6px;">
+                    <input type="text" name="note" maxlength="500" placeholder="Note (e.g. visited 24 Oct)">
+                    <button type="submit" class="btn-verify"><i class="fa-solid fa-check"></i> Verify</button>
+                  </form>
+                  <form method="POST" action="/admin/listings/<%= l._id %>/reject" style="display:flex;gap:6px;">
+                    <input type="text" name="note" maxlength="500" placeholder="Reason (required)" required>
+                    <button type="submit" class="btn-soft">Reject</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+    <% } %>
   </div>
 
   <div class="user-tabs" role="tablist">
@@ -119,6 +178,7 @@
             <th>Location</th>
             <th>Price</th>
             <th>Owner</th>
+            <th>Verification</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -139,6 +199,24 @@
               <td><strong>₹<%= l.price?.toLocaleString('en-IN') %></strong></td>
               <td>
                 <%= l.owner?.username %>
+              </td>
+              <td>
+                <% const vs = statusOf(l); %>
+                <% if (vs === 'verified') { %>
+                  <span class="v-badge v-verified" title="<%= l.verification?.note || '' %>"><i class="fa-solid fa-circle-check"></i> Verified</span>
+                  <div style="font-size:0.72rem;color:#9ca3af;margin-top:2px;">
+                    by <%= l.verification?.reviewedBy?.username || 'admin' %><% if (l.verification?.reviewedAt) { %>, <%= new Date(l.verification.reviewedAt).toLocaleDateString('en-IN') %><% } %>
+                  </div>
+                  <form method="POST" action="/admin/listings/<%= l._id %>/revoke" style="margin-top:4px;"
+                    onsubmit="return confirm('Remove the Verified badge and send this listing back to the queue?');">
+                    <button type="submit" class="btn-soft" style="font-size:0.72rem;padding:2px 8px;">Revoke</button>
+                  </form>
+                <% } else if (vs === 'rejected') { %>
+                  <span class="v-badge v-rejected" title="<%= l.verification?.note || '' %>"><i class="fa-solid fa-circle-xmark"></i> Rejected</span>
+                  <div style="font-size:0.72rem;color:#9ca3af;margin-top:2px;max-width:180px;"><%= l.verification?.note || '' %></div>
+                <% } else { %>
+                  <span class="v-badge v-pending"><i class="fa-regular fa-clock"></i> Pending</span>
+                <% } %>
               </td>
               <td>
                 <form method="POST" action="/admin/listings/<%= l._id %>?_method=DELETE"

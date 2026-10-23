@@ -7,6 +7,8 @@ const DeletedListing = require("../models/deletedListing");
 const { archiveAndDeleteListing } = require("../utils/listingDeletion");
 const { syncPendingRefunds } = require("../utils/refundSync");
 const { getDashboardStats } = require("../utils/dashboardStats");
+const { statusOf } = require("../utils/verification");
+const { sendMail } = require("../utils/mailer");
 const { isProtectedAdmin, PROTECTED_ADMIN_EMAIL } = require("../utils/protectedAdmin");
 
 module.exports.dashboard = async (req, res) => {
@@ -168,11 +170,67 @@ module.exports.deleteUser = async (req, res) => {
 
 module.exports.listListings = async (req, res) => {
   const [listings, deletedListings] = await Promise.all([
-    Listing.find({}).populate("owner", "username").lean(),
+    Listing.find({}).populate("owner", "username email").lean(),
     DeletedListing.find({}).sort({ deletedAt: -1 }).lean(),
   ]);
-  res.render("admin/listings", { listings, deletedListings });
+  // Oldest request first; listings created before this feature have no requestedAt
+  const requestedAt = l => new Date(l.verification?.requestedAt || l._id.getTimestamp());
+  const verificationQueue = listings
+    .filter(l => statusOf(l) === "pending")
+    .sort((a, b) => requestedAt(a) - requestedAt(b));
+  res.render("admin/listings", { listings, deletedListings, verificationQueue, statusOf, requestedAt });
 };
+
+// ── Listing verification ─────────────────────────────────
+const VERIFY_EMAIL = {
+  verified: l => ({
+    subject: `Your listing "${l.title}" is now verified`,
+    text: `Good news! Our team has verified "${l.title}". It now shows a Verified badge to guests.`,
+  }),
+  rejected: (l, note) => ({
+    subject: `Your listing "${l.title}" could not be verified`,
+    text: `Our team could not verify "${l.title}".` + (note ? `\n\nReason: ${note}` : "") +
+      `\n\nYour listing stays live but is marked "Not verified". Edit it to fix the issue and it will be re-reviewed.`,
+  }),
+};
+
+async function setVerification(req, res, status) {
+  const listing = await Listing.findById(req.params.id).populate("owner", "username email");
+  if (!listing) {
+    req.flash("error", "Listing not found");
+    return res.redirect("/admin/listings");
+  }
+  const note = (req.body.note || "").trim().slice(0, 500);
+  if (status === "rejected" && !note) {
+    req.flash("error", "Please give a reason so the host knows what to fix.");
+    return res.redirect("/admin/listings");
+  }
+
+  listing.verification = {
+    status,
+    requestedAt: listing.verification?.requestedAt || listing._id.getTimestamp(),
+    reviewedAt: new Date(),
+    reviewedBy: { id: req.user._id, username: req.user.username },
+    note: note || undefined,
+  };
+  await listing.save();
+
+  // Tell the host; a mail failure must not undo the admin's decision
+  if (listing.owner?.email && VERIFY_EMAIL[status]) {
+    const mail = VERIFY_EMAIL[status](listing, note);
+    sendMail({ to: listing.owner.email, ...mail })
+      .catch(err => console.error("Verification email failed:", err.message));
+  }
+
+  const word = { verified: "verified", rejected: "rejected", pending: "marked as not verified" }[status];
+  req.flash("success", `"${listing.title}" ${word}.`);
+  res.redirect("/admin/listings");
+}
+
+module.exports.verifyListing = (req, res) => setVerification(req, res, "verified");
+module.exports.rejectListing = (req, res) => setVerification(req, res, "rejected");
+// Revoke: back to "Not verified" and into the queue (e.g. a complaint came in)
+module.exports.revokeVerification = (req, res) => setVerification(req, res, "pending");
 
 module.exports.deleteListing = async (req, res) => {
   const listing = await Listing.findById(req.params.id);

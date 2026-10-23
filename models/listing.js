@@ -104,7 +104,26 @@ const listingSchema = new Schema({
     default: 0,
   },
 
+  // Admin / ground-level verification. Every listing starts "pending" (shown
+  // as "Not verified") and appears in the admin verification queue.
+  verification: {
+    status: {
+      type: String,
+      enum: ["pending", "verified", "rejected"],
+      default: "pending",
+    },
+    requestedAt: { type: Date, default: Date.now },
+    reviewedAt: Date,
+    reviewedBy: {
+      id: { type: Schema.Types.ObjectId, ref: "User" },
+      username: String,
+    },
+    note: { type: String, trim: true, maxlength: 500 },  // admin's note, or rejection reason
+  },
+
 });
+
+listingSchema.index({ "verification.status": 1, "verification.requestedAt": 1 });
 
 
 /* Auto-delete reviews when listing is deleted */

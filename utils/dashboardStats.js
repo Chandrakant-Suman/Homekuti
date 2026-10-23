@@ -60,7 +60,7 @@ function fillDays(rows, days, valueKey) {
 const windowStart = days => new Date(Date.now() - days * 86400000);
 
 async function counts() {
-  const [users, usersByRole, listings, bookingStatus, pendingDeletion] = await Promise.all([
+  const [users, usersByRole, listings, bookingStatus, pendingDeletion, verifiedListings, pendingVerification] = await Promise.all([
     User.countDocuments(),
     User.aggregate([{ $group: { _id: "$role", n: { $sum: 1 } } }]),
     Listing.countDocuments(),
@@ -69,6 +69,9 @@ async function counts() {
       { $group: { _id: "$status", n: { $sum: 1 } } },
     ]),
     User.countDocuments({ "deleteRequest.status": "pending" }),
+    Listing.countDocuments({ "verification.status": "verified" }),
+    // Listings created before verification existed have no status: treat as pending
+    Listing.countDocuments({ $or: [{ "verification.status": "pending" }, { "verification.status": { $exists: false } }] }),
   ]);
   const byStatus = Object.fromEntries(bookingStatus.map(r => [r._id, r.n]));
   const roles = Object.fromEntries(usersByRole.map(r => [r._id, r.n]));
@@ -82,6 +85,8 @@ async function counts() {
     completed: byStatus.completed || 0,
     cancelled: (byStatus.cancelled || 0) + (byStatus.unavailable || 0),
     pendingDeletion,
+    verifiedListings,
+    pendingVerification,
   };
 }
 

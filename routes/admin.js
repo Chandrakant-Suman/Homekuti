@@ -16,6 +16,9 @@ router.post("/users/:id/delete-request/approve", wrapAsync(adminController.appro
 router.post("/users/:id/delete-request/reject", wrapAsync(adminController.rejectDeleteRequest));
 router.get("/listings", wrapAsync(adminController.listListings));
 router.delete("/listings/:id", wrapAsync(adminController.deleteListing));
+router.post("/listings/:id/verify", wrapAsync(adminController.verifyListing));
+router.post("/listings/:id/reject", wrapAsync(adminController.rejectListing));
+router.post("/listings/:id/revoke", wrapAsync(adminController.revokeVerification));
 router.get("/bookings", wrapAsync(adminController.listBookings));
 router.delete("/reviews/:id", wrapAsync(adminController.deleteReview));
 

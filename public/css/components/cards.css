@@ -248,3 +248,12 @@
   font-weight: 600;
   font-size: 0.78rem;
 }
+/* ── Listing verification badge ── */
+.hk-verify-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 9px; border-radius: 999px;
+  font-size: 0.72rem; font-weight: 700; line-height: 1.5; white-space: nowrap;
+}
+.hk-verify-badge.is-verified { background: #ecfdf5; color: #047857; }
+.hk-verify-badge.is-unverified { background: #f3f4f6; color: #6b7280; }
+.hk-verify-badge.is-md { font-size: 0.82rem; padding: 4px 12px; }

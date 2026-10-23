@@ -4,6 +4,7 @@ const { geocodeToGeometry, isDefaultCoordinates } = require("../utils/geocoding"
 const { fileToImage } = require("../cloudConfig");
 const { destroyImage, archiveAndDeleteListing } = require("../utils/listingDeletion");
 const { getAvailability } = require("../utils/availability");
+const { statusOf, reverifyReasons, markPending } = require("../utils/verification");
 
 const DEFAULT_IMAGE = {
   url: "https://res.cloudinary.com/dgu8te3bn/image/upload/v1771003245/Homekuti_DEV/kzjbrisg2uqssvvp99a3.jpg",
@@ -220,6 +221,8 @@ module.exports.createListing = async (req, res) => {
   newListing.image = uploaded || DEFAULT_IMAGE;
 
   newListing.owner = req.user._id;
+  // Always starts unverified and lands in the admin verification queue
+  newListing.verification = { status: "pending", requestedAt: new Date() };
   newListing.geometry = await geocodeSafe(newListing.location, newListing.country);
 
   await newListing.save();
@@ -235,7 +238,7 @@ module.exports.createListing = async (req, res) => {
       "New listing created! We couldn't pin the exact spot — edit the listing with a more specific location (e.g. \"Calangute, Goa\") to fix the map."
     );
   } else {
-    req.flash("success", "New listing created successfully!");
+    req.flash("success", "New listing created! It's live now and has been sent to our team for verification.");
   }
   res.redirect(`/listings/${newListing._id}`);
 };
@@ -260,6 +263,7 @@ module.exports.updateListing = async (req, res) => {
 
   const prevLocation = listing.location;
   const prevCountry = listing.country;
+  const before = { title: listing.title, location: listing.location, country: listing.country };
 
   // Apply text field updates
   Object.assign(listing, req.body.listing);
@@ -285,15 +289,30 @@ module.exports.updateListing = async (req, res) => {
     listing.geometry = await geocodeSafe(listing.location, listing.country);
   }
 
+  // Verification: owner edits to inspected details need a fresh check;
+  // a rejected listing that the owner edits is resubmitted for review.
+  let verificationNote = "";
+  if (req.user.role !== "admin") {
+    const status = statusOf(listing);
+    const reasons = reverifyReasons(before, listing, Boolean(uploaded));
+    if (status === "verified" && reasons.length) {
+      markPending(listing, `Changed after verification: ${reasons.join(", ")}`);
+      verificationNote = " Because you changed the " + reasons.join(", ") + ", it needs to be verified again.";
+    } else if (status === "rejected") {
+      markPending(listing, "Resubmitted by owner after rejection");
+      verificationNote = " It has been resubmitted for verification.";
+    }
+  }
+
   await listing.save();
 
   if (listing.geometry?.isApproximate) {
     req.flash(
       "success",
-      "Listing updated! The map still shows an approximate location — try a more specific location name."
+      "Listing updated! The map still shows an approximate location — try a more specific location name." + verificationNote
     );
   } else {
-    req.flash("success", "Listing updated!");
+    req.flash("success", "Listing updated!" + verificationNote);
   }
   res.redirect(`/listings/${id}`);
 };
