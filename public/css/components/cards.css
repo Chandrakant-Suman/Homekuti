@@ -248,12 +248,24 @@
   font-weight: 600;
   font-size: 0.78rem;
 }
-/* ── Listing verification badge ── */
-.hk-verify-badge {
-  display: inline-flex; align-items: center; gap: 4px;
-  padding: 2px 9px; border-radius: 999px;
-  font-size: 0.72rem; font-weight: 700; line-height: 1.5; white-space: nowrap;
+/* ── Listing verification icon (right after the title, text on hover) ── */
+.hk-verify-icon {
+  position: relative; z-index: 3;   /* above full-card links (home page cards use z-index 2) */
+  display: inline-flex; align-items: center;
+  margin-left: 6px; vertical-align: 0.05em; cursor: help;
+  font-size: 0.9em; line-height: 1; outline: none;
 }
-.hk-verify-badge.is-verified { background: #ecfdf5; color: #047857; }
-.hk-verify-badge.is-unverified { background: #f3f4f6; color: #6b7280; }
-.hk-verify-badge.is-md { font-size: 0.82rem; padding: 4px 12px; }
+.hk-verify-icon.is-verified { color: #059669; }
+.hk-verify-icon.is-unverified { color: #9ca3af; }
+.hk-verify-icon.is-md { font-size: 0.75em; margin-left: 10px; }
+.hk-verify-icon::after {
+  content: attr(data-tip);
+  position: absolute; left: 50%; bottom: calc(100% + 8px); transform: translate(-50%, 4px);
+  background: #1f2933; color: #fff; padding: 5px 10px; border-radius: 8px;
+  font-size: 12px; font-weight: 600; letter-spacing: 0; white-space: nowrap;
+  opacity: 0; pointer-events: none; transition: opacity 0.15s, transform 0.15s; z-index: 30;
+}
+.hk-verify-icon:hover::after,
+.hk-verify-icon:focus-visible::after,
+.hk-verify-icon:focus::after { opacity: 1; transform: translate(-50%, 0); }
+.hk-verify-icon:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; border-radius: 50%; }

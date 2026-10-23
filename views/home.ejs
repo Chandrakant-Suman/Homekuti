@@ -78,9 +78,8 @@
                     <%= listing.location || "Location" %>, <%= listing.country || "India" %>
                   </p>
                   <p class="hk-stay-title">
-                    <%= listing.title || "Untitled" %>
+                    <%= listing.title || "Untitled" %><%- include('./includes/verified-badge', { listing, size: 'sm' }) %>
                   </p>
-                  <div style="margin:-2px 0 6px;"><%- include('./includes/verified-badge', { listing, size: 'sm' }) %></div>
                   <div style="display:flex;justify-content:space-between;align-items:center;">
                     <p class="hk-stay-price" style="margin:0;">
                       <span>₹<%= listing.price ? Number(listing.price).toLocaleString("en-IN") : "N/A" %></span> /night

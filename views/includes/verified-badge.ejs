@@ -1,12 +1,12 @@
 <%#
-  Verified / Not verified badge for a listing.
+  Verification icon shown right after a listing title; the text appears on hover
+  (or on tap/keyboard focus, for touch screens and accessibility).
   Usage: include('../includes/verified-badge', { listing, size: 'sm' | 'md' })
   Listings created before verification existed have no status → "Not verified".
 %>
 <% const isVerified = listing && listing.verification && listing.verification.status === 'verified'; %>
 <% const big = typeof size !== 'undefined' && size === 'md'; %>
-<span class="hk-verify-badge <%= isVerified ? 'is-verified' : 'is-unverified' %> <%= big ? 'is-md' : '' %>"
-  title="<%= isVerified ? 'Checked by the Homekuti team' : 'Not yet checked by the Homekuti team' %>">
-  <i class="fa-solid <%= isVerified ? 'fa-circle-check' : 'fa-circle-question' %>"></i>
-  <%= isVerified ? 'Verified' : 'Not verified' %>
-</span>
+<% const tip = isVerified ? 'Verified by Homekuti' : 'Not verified yet'; %>
+<span class="hk-verify-icon <%= isVerified ? 'is-verified' : 'is-unverified' %> <%= big ? 'is-md' : '' %>"
+  tabindex="0" role="img" aria-label="<%= tip %>" data-tip="<%= tip %>"><i
+  class="fa-solid <%= isVerified ? 'fa-circle-check' : 'fa-circle-question' %>" aria-hidden="true"></i></span>

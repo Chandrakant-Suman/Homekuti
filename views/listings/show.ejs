@@ -88,10 +88,7 @@
   <div>
     <!-- Title row -->
     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;">
-      <div>
-        <h1 class="listing-title"><%= listing.title %></h1>
-        <%- include('../includes/verified-badge', { listing, size: 'md' }) %>
-      </div>
+      <h1 class="listing-title"><%= listing.title %><%- include('../includes/verified-badge', { listing, size: 'md' }) %></h1>
       <% if (currUser) { %>
         <button class="wl-btn <%= isWishlisted ? 'active' : '' %>" id="wlBtn"
           title="<%= isWishlisted ? 'Remove from wishlist' : 'Save' %>">

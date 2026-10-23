@@ -187,9 +187,8 @@
                       <%= listing.location %>, <%= listing.country %>
                     </p>
                     <p class="hk-stay-title">
-                      <%= listing.title %>
+                      <%= listing.title %><%- include('../includes/verified-badge', { listing, size: 'sm' }) %>
                     </p>
-                    <div style="margin:-2px 0 6px;"><%- include('../includes/verified-badge', { listing, size: 'sm' }) %></div>
                     <div class="card-footer">
                       <p class="hk-stay-price" style="margin: 0;">
                         <span>₹<%= listing.price.toLocaleString("en-IN") %></span>/night
