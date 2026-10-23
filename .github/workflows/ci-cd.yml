@@ -19,7 +19,7 @@ jobs:
   # ── CI: runs on every push and pull request ───────────────
   test:
     name: Check, test & smoke
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
 
     # Throwaway MongoDB just for this run; never touches production data
@@ -40,9 +40,9 @@ jobs:
       SESSION_SECRET: ci-only-session-secret
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 20.18.0   # matches "engines" in package.json and Render
           cache: npm
@@ -68,7 +68,7 @@ jobs:
     name: Deploy to Render
     needs: test
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     environment:
       name: production
