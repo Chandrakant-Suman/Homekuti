@@ -265,6 +265,7 @@
     </button>
 
     <p class="pay-note">You'll be redirected to Razorpay's secure payment page</p>
+    <p class="pay-note"><i class="fa-regular fa-clock"></i> We'll hold these dates for you for <%= holdMinutes %> minutes once you click Pay</p>
 
     <div class="pay-secure">
       <i class="fa-solid fa-shield-halved"></i>
@@ -372,6 +373,8 @@ payBtn.addEventListener("click", async () => {
       name:        "Homekuti",
       description: `${listingTitle} — ${order.nights} night${order.nights > 1 ? "s" : ""}`,
       order_id:    order.orderId,
+      // Close the payment window when our date hold expires
+      timeout:     Math.max(60, Math.floor((new Date(order.holdExpiresAt) - Date.now()) / 1000) - 30),
       prefill: {
         name:  currentUser.name,
         email: currentUser.email,
@@ -400,6 +403,14 @@ payBtn.addEventListener("click", async () => {
           });
 
           const result = await vRes.json();
+
+          if (!result.success && result.confirmationUrl) {
+            // Paid, but the dates were taken meanwhile: full refund already initiated
+            payLoading.classList.remove("active");
+            alert("⚠️ " + result.message);
+            window.location.href = result.confirmationUrl;
+            return;
+          }
 
           if (result.success) {
             document.querySelector("#payLoading p").textContent = "Booking confirmed! Redirecting…";

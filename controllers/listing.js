@@ -3,6 +3,7 @@ const User = require("../models/user");
 const { geocodeToGeometry, isDefaultCoordinates } = require("../utils/geocoding");
 const { fileToImage } = require("../cloudConfig");
 const { destroyImage, archiveAndDeleteListing } = require("../utils/listingDeletion");
+const { getAvailability } = require("../utils/availability");
 
 const DEFAULT_IMAGE = {
   url: "https://res.cloudinary.com/dgu8te3bn/image/upload/v1771003245/Homekuti_DEV/kzjbrisg2uqssvvp99a3.jpg",
@@ -309,4 +310,18 @@ module.exports.deleteListing = async (req, res) => {
   await archiveAndDeleteListing(listing, { method, deletedBy: req.user });
   req.flash("success", "Listing deleted!");
   res.redirect("/listings");
+};
+
+// GET /listings/:id/availability?checkIn=YYYY-MM-DD&checkOut=YYYY-MM-DD
+module.exports.availability = async (req, res) => {
+  const { checkIn, checkOut } = req.query;
+  const ci = new Date(checkIn), co = new Date(checkOut);
+  if (typeof checkIn !== "string" || typeof checkOut !== "string" || isNaN(ci) || isNaN(co) || co <= ci) {
+    return res.status(400).json({ available: false, message: "Invalid dates." });
+  }
+  if (!(await Listing.exists({ _id: req.params.id }))) {
+    return res.status(404).json({ available: false, message: "Listing not found." });
+  }
+  // { available, reason: "booked" | "held", retryInMinutes, message }
+  res.json(await getAvailability(req.params.id, ci, co, req.user?._id || null));
 };

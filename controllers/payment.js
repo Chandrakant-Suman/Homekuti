@@ -3,6 +3,9 @@ const Listing = require("../models/listing");
 const Booking = require("../models/booking");
 const User    = require("../models/user");
 const { MAX_GUESTS, computePrice, validateGuestDetails } = require("../utils/pricing");
+const {
+  getAvailability, acquireHold, confirmBooking, releaseHold, DatesUnavailableError, HOLD_MINUTES,
+} = require("../utils/availability");
 
 const PENDING_ORDER_TTL_MS = 60 * 60 * 1000; // checkout data kept for 1 hour
 
@@ -10,7 +13,7 @@ const PENDING_ORDER_TTL_MS = 60 * 60 * 1000; // checkout data kept for 1 hour
  * Validate the trip parameters shared by checkout and order creation.
  * Returns { error } or { listing, checkInDate, checkOutDate, nights, guests }.
  */
-async function validateTrip({ listingId, checkIn, checkOut, guests }, { populateOwner = false } = {}) {
+async function validateTrip({ listingId, checkIn, checkOut, guests }, { populateOwner = false, userId = null } = {}) {
   if (!listingId || !checkIn || !checkOut || !guests) {
     return { error: "Incomplete booking details. Please select dates and guests." };
   }
@@ -31,16 +34,56 @@ async function validateTrip({ listingId, checkIn, checkOut, guests }, { populate
     return { error: `Guests must be between 1 and ${MAX_GUESTS}.` };
   }
 
-  const overlap = await Booking.findOne({
-    listing: listingId,
-    paymentStatus: "paid",
-    status: { $ne: "cancelled" },
-    checkIn:  { $lt: checkOutDate },
-    checkOut: { $gt: checkInDate },
-  });
-  if (overlap) return { error: "These dates are already booked. Please choose different dates." };
+  // Fast read-only check; the real guarantee is the atomic hold in createOrder
+  const availability = await getAvailability(listingId, checkInDate, checkOutDate, userId);
+  if (!availability.available) return { error: availability.message };
 
   return { listing, checkInDate, checkOutDate, nights, guests: guestCount };
+}
+
+/**
+ * Payment succeeded but the nights were taken (hold expired first). Save the
+ * booking as unavailable and issue a full refund so the money is never lost.
+ */
+async function refundLostRace(req, res, booking, pending) {
+  booking.status = "unavailable";
+  booking.cancellation = {
+    cancelledBy: "system",
+    cancelledAt: new Date(),
+    reason: "Dates were booked by another guest before this payment completed",
+    policyApplied: "full",
+  };
+  try {
+    const refund = await getRazorpay().payments.refund(booking.razorpayPaymentId, {
+      amount: booking.totalPrice * 100,
+      speed: "normal",
+      notes: { bookingId: booking._id.toString(), reason: "dates_unavailable" },
+    });
+    booking.paymentStatus = "refund_initiated";
+    booking.refund = {
+      razorpayRefundId: refund.id, amount: booking.totalPrice, percentage: 100,
+      reason: "host_unavailable", status: "initiated", initiatedAt: new Date(),
+    };
+  } catch (err) {
+    console.error("Auto-refund after lost booking race failed:", err?.error?.description || err.message);
+    booking.paymentStatus = "refund_failed";
+    booking.refund = {
+      amount: booking.totalPrice, percentage: 100, reason: "host_unavailable",
+      status: "failed", failureReason: err?.error?.description || err.message,
+    };
+  }
+  await booking.save();
+  await User.findByIdAndUpdate(req.user._id, { $push: { bookings: booking._id } });
+  if (req.session.pendingOrders) delete req.session.pendingOrders[booking.razorpayOrderId];
+  console.warn(`⚠️ Booking race lost: ${booking._id} | full refund ${booking.paymentStatus}`);
+
+  return res.status(409).json({
+    success: false,
+    message: "Sorry, these dates were booked by another guest while your payment was processing. " +
+      "A full refund has been initiated and will reach you in 5–7 business days.",
+    bookingId: booking._id,
+    confirmationUrl: `/bookings/${booking._id}`,
+  });
 }
 
 function priceSnapshot(price) {
@@ -67,7 +110,7 @@ function getRazorpay() {
 // ─────────────────────────────────────────────────────────
 module.exports.checkoutPage = async (req, res) => {
   const { listingId, checkIn, checkOut } = req.query;
-  const trip = await validateTrip(req.query, { populateOwner: true });
+  const trip = await validateTrip(req.query, { populateOwner: true, userId: req.user._id });
 
   if (trip.error) {
     req.flash("error", trip.error);
@@ -90,6 +133,7 @@ module.exports.checkoutPage = async (req, res) => {
     totalPrice: price.subtotal,
     serviceFee: price.serviceFee,
     grandTotal: price.grandTotal,
+    holdMinutes: HOLD_MINUTES,
     RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID || "",
   });
 };
@@ -102,7 +146,7 @@ module.exports.createOrder = async (req, res) => {
   try {
     const { listingId, checkIn, checkOut, guestDetails } = req.body;
 
-    const trip = await validateTrip(req.body);
+    const trip = await validateTrip(req.body, { userId: req.user._id });
     if (trip.error) {
       return res.status(trip.notFound ? 404 : 400).json({ success: false, message: trip.error });
     }
@@ -115,20 +159,39 @@ module.exports.createOrder = async (req, res) => {
 
     const price = computePrice(listing, nights, guests);
 
-    const razorpay = getRazorpay();
-    const order = await razorpay.orders.create({
-      amount:   price.grandTotal * 100,  // paise
-      currency: "INR",
-      receipt:  `hk_${Date.now()}`,
-      notes: {
-        listingId:  listingId.toString(),
-        userId:     req.user._id.toString(),
-        nights:     nights.toString(),
-        checkIn,
-        checkOut,
-        guests:     guests.toString(),
-      },
-    });
+    // Atomically reserve the nights while the guest pays (HOLD_MINUTES hold)
+    let hold;
+    try {
+      hold = await acquireHold({
+        listingId: listing._id, userId: req.user._id,
+        checkIn: trip.checkInDate, checkOut: trip.checkOutDate,
+      });
+    } catch (err) {
+      if (err instanceof DatesUnavailableError) {
+        return res.status(409).json({ success: false, message: err.message });
+      }
+      throw err;
+    }
+
+    let order;
+    try {
+      order = await getRazorpay().orders.create({
+        amount:   price.grandTotal * 100,  // paise
+        currency: "INR",
+        receipt:  `hk_${Date.now()}`,
+        notes: {
+          listingId:  listingId.toString(),
+          userId:     req.user._id.toString(),
+          nights:     nights.toString(),
+          checkIn,
+          checkOut,
+          guests:     guests.toString(),
+        },
+      });
+    } catch (err) {
+      await releaseHold(hold.holdId);   // don't keep dates blocked for an order that doesn't exist
+      throw err;
+    }
 
     // Keep the server-computed booking for /verify (never trust the client there)
     const now = Date.now();
@@ -144,6 +207,7 @@ module.exports.createOrder = async (req, res) => {
       nights,
       guestDetails: checked.guests,
       price,
+      holdId: hold.holdId.toString(),
       createdAt: now,
     };
     req.session.pendingOrders = pending;
@@ -158,6 +222,7 @@ module.exports.createOrder = async (req, res) => {
       totalPrice: price.subtotal,
       serviceFee: price.serviceFee,
       grandTotal: price.grandTotal,
+      holdExpiresAt: hold.expiresAt,
     });
 
   } catch (err) {
@@ -240,6 +305,19 @@ module.exports.verifyPayment = async (req, res) => {
       razorpaySignature:  razorpay_signature,
       status:             "upcoming",
     });
+
+    // ── Lock the nights for this booking (hold → permanent) ──
+    try {
+      await confirmBooking({
+        holdId: pending.holdId, bookingId: booking._id, listingId: pending.listingId,
+        userId: req.user._id, checkIn: booking.checkIn, checkOut: booking.checkOut,
+      });
+    } catch (err) {
+      if (!(err instanceof DatesUnavailableError)) throw err;
+      // Hold expired and someone else booked these nights while this payment was
+      // in flight: never double-book. Record it and refund in full automatically.
+      return refundLostRace(req, res, booking, pending);
+    }
 
     await booking.save();
     await User.findByIdAndUpdate(req.user._id, { $push: { bookings: booking._id } });

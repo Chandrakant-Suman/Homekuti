@@ -24,6 +24,7 @@ const CHECKS = [
   { path: "/about", status: 200 },
   { path: "/this-route-does-not-exist", status: 404 },
   { path: "/admin/dashboard", status: 302 }, // protected: redirects to sign-in
+  { path: "/listings/000000000000000000000000/availability?checkIn=2030-01-01&checkOut=2030-01-02", status: 404 },
 ];
 
 const app = spawn(process.execPath, [path.join(__dirname, "..", "app.js")], {

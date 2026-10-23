@@ -1,6 +1,7 @@
 const Listing = require("../models/listing");
 const Booking = require("../models/booking");
 const DeletedListing = require("../models/deletedListing");
+const { releaseListing } = require("./availability");
 const { cloudinary } = require("../cloudConfig");
 
 const DEFAULT_IMAGE_FILENAME = "Homekuti_DEV/kzjbrisg2uqssvvp99a3";
@@ -59,6 +60,7 @@ async function archiveAndDeleteListing(listing, { method, deletedBy }) {
 
   // Only after the delete succeeded; the image is gone for good after this
   await destroyImage(listing.image);
+  await releaseListing(listing._id);
 }
 
 module.exports = { destroyImage, archiveAndDeleteListing };

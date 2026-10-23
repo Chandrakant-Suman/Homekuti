@@ -370,6 +370,24 @@ if (ciEl) {
     bwError.textContent = "";
   }
 
+  // Server-side availability for the chosen dates (debounced, latest request wins)
+  let datesTaken = false, datesMsg = "", availSeq = 0;
+  async function checkDates() {
+    const ci = ciEl.value, co = coEl.value;
+    datesTaken = false;
+    if (!ci || !co || new Date(co) <= new Date(ci)) return updateWidget();
+    const seq = ++availSeq;
+    try {
+      const r = await fetch(`/listings/${listing._id}/availability?` + new URLSearchParams({ checkIn: ci, checkOut: co }));
+      const data = await r.json();
+      if (seq !== availSeq) return;               // a newer date change superseded this one
+      datesTaken = r.ok && data.available === false;
+      datesMsg = data.message || "These dates are already booked. Please choose different dates.";
+    } catch { /* network hiccup: let checkout re-check */ }
+    updateWidget();
+    if (datesTaken) showError(datesMsg);
+  }
+
   function updateWidget() {
     clearError();
     const ci = ciEl.value, co = coEl.value, guests = gEl.value;
@@ -429,7 +447,7 @@ if (ciEl) {
     document.getElementById("pb-total").textContent        = fmt(total);
     priceBox.style.display = "block";
 
-    reserveBtn.disabled = !guests;
+    reserveBtn.disabled = !guests || datesTaken;
     reserveBtn.textContent = guests ? "Reserve" : "Select guests";
   }
 
@@ -442,10 +460,10 @@ if (ciEl) {
     if (coEl.value && new Date(coEl.value) <= new Date(ciEl.value)) {
       coEl.value = "";
     }
-    updateWidget();
+    checkDates();
   });
 
-  coEl.addEventListener("change", updateWidget);
+  coEl.addEventListener("change", checkDates);
   gEl.addEventListener("change", updateWidget);
 
   // ── Reserve: redirect to /checkout page ──────────────

@@ -39,6 +39,9 @@ router
     wrapAsync(listingController.deleteListing)
   );
 
+// Availability for the booking widget
+router.get("/:id/availability", wrapAsync(listingController.availability));
+
 // Edit form
 router.get("/:id/edit", isLoggedIn, isOwner, wrapAsync(listingController.editListing));
 

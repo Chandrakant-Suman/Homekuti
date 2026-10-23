@@ -37,6 +37,7 @@ jobs:
     env:
       NODE_ENV: test
       MONGO_URI: mongodb://127.0.0.1:27017/homekuti_ci
+      TEST_MONGO_URI: mongodb://127.0.0.1:27017/homekuti_test   # enables DB concurrency tests
       SESSION_SECRET: ci-only-session-secret
 
     steps:

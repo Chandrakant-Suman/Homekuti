@@ -90,7 +90,7 @@ const bookingSchema = new Schema({
   cancellation: {
     cancelledBy: {
       type: String,
-      enum: ["user", "host", "admin"],
+      enum: ["user", "host", "admin", "system"],
     },
     cancelledAt: Date,
     reason: String,

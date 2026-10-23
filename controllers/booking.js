@@ -2,6 +2,7 @@ const Booking = require("../models/booking");
 const Listing = require("../models/listing");
 const User = require("../models/user");
 const { syncRefundStatus, syncPendingRefunds } = require("../utils/refundSync");
+const { releaseBooking } = require("../utils/availability");
 
 // ── Razorpay refund helper ────────────────────────────────
 function getRazorpay() {
@@ -123,6 +124,7 @@ module.exports.cancelBooking = async (req, res) => {
 
   // ── Mark cancelled ───────────────────────────────────
   booking.status = "cancelled";
+  await releaseBooking(booking._id);   // dates become bookable again
   booking.cancellation = {
     cancelledBy,
     cancelledAt: new Date(),
@@ -211,6 +213,7 @@ module.exports.markUnavailable = async (req, res) => {
   const reason = req.body.reason?.trim() || "Listing unavailable — host cancelled";
 
   booking.status = "unavailable";
+  await releaseBooking(booking._id);
   booking.cancellation = {
     cancelledBy: "host",
     cancelledAt: new Date(),
