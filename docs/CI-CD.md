@@ -16,7 +16,7 @@ push / pull request ──► CI: install → check → unit tests → smoke tes
 |---|---|---|
 | Install | `npm ci` | Exact versions from `package-lock.json` |
 | Static checks | `npm run check` | JS syntax errors in any file, EJS templates that don't compile |
-| Unit tests | `npm test` | Pricing / GST, guest validation, refund tiers, primary-admin guard, listing validation (`test/`) |
+| Tests | `npm test` | Unit: pricing / GST, refunds, sign-up rules, verification rules. DB (needs `TEST_MONGO_URI`): double-booking races, booking lifecycle, verified reviews, and route authorization: who can view, cancel, edit, review and administer what (`test/`) |
 | Smoke test | `npm run smoke` | App boots against a throwaway MongoDB; key pages return the right status |
 | Audit | `npm audit` | Known vulnerable dependencies (informational, never blocks) |
 | Deploy | Render deploy hook | Only on `main`, only after all of the above pass |
@@ -48,6 +48,13 @@ CI uses its own MongoDB container. It never connects to Atlas or needs productio
 ```bash
 npm run check
 npm test
+```
+
+Database tests are skipped unless `TEST_MONGO_URI` points at a scratch database. Each test file
+uses its own database (suffix `_locks`, `_lifecycle`, `_authz`) and deletes it when done:
+
+```bash
+TEST_MONGO_URI="mongodb://127.0.0.1:27017/homekuti_test" npm test
 ```
 
 The smoke test needs a scratch database and refuses to run without one:

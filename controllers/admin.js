@@ -1,4 +1,5 @@
 const User = require("../models/user");
+const backTo = require("../utils/backTo");
 const Listing = require("../models/listing");
 const Booking = require("../models/booking");
 const Review = require("../models/review");
@@ -200,7 +201,7 @@ async function setVerification(req, res, status) {
     req.flash("error", "Listing not found");
     return res.redirect("/admin/listings");
   }
-  const note = (req.body.note || "").trim().slice(0, 500);
+  const note = String(req.body.note || "").trim().slice(0, 500);
   if (status === "rejected" && !note) {
     req.flash("error", "Please give a reason so the host knows what to fix.");
     return res.redirect("/admin/listings");
@@ -263,5 +264,5 @@ module.exports.deleteReview = async (req, res) => {
     );
   }
   req.flash("success", "Review deleted");
-  res.redirect("back");
+  res.redirect(backTo(req));
 };

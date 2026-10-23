@@ -186,34 +186,7 @@ const setupProcessHandlers = () => {
     }
   });
 
-  // Graceful Shutdown
-  const gracefulShutdown = (signal) => {
-    console.log(`\n${signal} received. Starting graceful shutdown...`);
-
-    const server = global.httpServer;
-    if (server) {
-      server.close(() => {
-        console.log("✓ HTTP server closed");
-
-        const mongoose = require("mongoose");
-        mongoose.connection.close(false, () => {
-          console.log("✓ MongoDB connection closed");
-          process.exit(0);
-        });
-      });
-
-      // Force shutdown after 10 seconds
-      setTimeout(() => {
-        console.error("❌ Forced shutdown after timeout");
-        process.exit(1);
-      }, 10000);
-    } else {
-      process.exit(0);
-    }
-  };
-
-  process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
-  process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+  // Graceful shutdown lives in app.js, next to the server it closes
 };
 
 module.exports = {

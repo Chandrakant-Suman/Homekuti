@@ -86,6 +86,12 @@ app.use(express.json({
     if (req.originalUrl.startsWith("/bookings/webhook")) req.rawBody = buf;
   },
 })); // For API requests
+// Express 5 leaves req.body undefined when a request has no parsable body;
+// handlers here (written for Express 4) expect an object
+app.use((req, res, next) => {
+  if (req.body === undefined) req.body = {};
+  next();
+});
 app.use(methodOverride("_method"));
 
 // ================= HEALTH CHECK =================
@@ -155,6 +161,7 @@ app.use(cookieParser());
 
 // Session + Flash
 app.use(session(sessionOptions));
+app.locals.sessionStore = store;   // lets tests close the store's DB connection
 app.use(flash());
 
 // ================= PASSPORT AUTH =================
@@ -251,26 +258,34 @@ app.use(finalErrorHandler);
 // ================= SERVER =================
 const PORT = process.env.PORT || 8000;
 
-// Advance booking statuses (upcoming → active → completed) while the app is awake
-require("./utils/bookingLifecycle").startStatusScheduler();
+// Start the server only when run directly (`node app.js`). Tests import the
+// app without opening a port or starting timers.
+if (require.main === module) {
+  // Advance booking statuses (upcoming → active → completed) while the app is awake
+  require("./utils/bookingLifecycle").startStatusScheduler();
 
-const server = app.listen(PORT, () => {
-  console.log(`✓ Server running on port ${PORT}`);
-  console.log(`✓ Environment: ${process.env.NODE_ENV || "development"}`);
-  console.log(`✓ Database: ${dbUrl.includes("127.0.0.1") ? "Local" : "Remote"}`);
-});
+  const server = app.listen(PORT, () => {
+    console.log(`✓ Server running on port ${PORT}`);
+    console.log(`✓ Environment: ${process.env.NODE_ENV || "development"}`);
+    console.log(`✓ Database: ${dbUrl.includes("127.0.0.1") ? "Local" : "Remote"}`);
+  });
 
-// Graceful shutdown
-process.on("SIGTERM", () => {
-  console.log("SIGTERM signal received: closing HTTP server");
-  server.close(() => {
-    console.log("HTTP server closed");
-    mongoose.connection.close(false, () => {
+  // Graceful shutdown (Render sends SIGTERM on every deploy)
+  const shutdown = signal => {
+    console.log(`${signal} received: closing HTTP server`);
+    setTimeout(() => {
+      console.error("Forced shutdown after 10s");
+      process.exit(1);
+    }, 10000).unref();
+    server.close(async () => {
+      console.log("HTTP server closed");
+      await mongoose.connection.close();   // Mongoose 8: promise, no callback
       console.log("MongoDB connection closed");
       process.exit(0);
     });
-  });
-});
+  };
+  process.on("SIGTERM", () => shutdown("SIGTERM"));
+  process.on("SIGINT", () => shutdown("SIGINT"));
+}
 
-// Export for testing
 module.exports = app;

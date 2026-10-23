@@ -5,6 +5,7 @@ const passport = require("passport");
 const { OAuth2Client } = require("google-auth-library");
 const { sendMail } = require("../utils/mailer");
 const { isProtectedAdmin } = require("../utils/protectedAdmin");
+const backTo = require("../utils/backTo");
 const {
     USERNAME_RE, validateSignup, passwordProblem, normalizeEmail, isEmailVerified,
 } = require("../utils/accountRules");
@@ -295,7 +296,7 @@ module.exports.requestDeletion = async (req, res) => {
 
     user.deleteRequest = {
         status: "pending",
-        reason: (req.body.reason || "").trim().slice(0, 500),
+        reason: String(req.body.reason || "").trim().slice(0, 500),
         requestedAt: new Date(),
     };
     await user.save();
@@ -488,7 +489,7 @@ module.exports.verifyEmail = async (req, res) => {
 };
 
 module.exports.resendVerification = async (req, res) => {
-    const back = req.get("Referrer") || "/user/profile";
+    const back = backTo(req, "/user/profile");
     const user = await User.findById(req.user._id);
     if (isEmailVerified(user)) {
         req.flash("success", "Your email is already verified.");

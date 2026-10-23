@@ -1,4 +1,5 @@
 const Booking = require("../models/booking");
+const backTo = require("../utils/backTo");
 const Listing = require("../models/listing");
 const User = require("../models/user");
 const Review = require("../models/review");
@@ -128,7 +129,7 @@ module.exports.cancelBooking = async (req, res) => {
   const refundPolicy = booking.getRefundPolicy();
   const refundAmount = booking.getRefundAmount();
   const cancelledBy = req.user.role === "admin" ? "admin" : "user";
-  const reason = req.body.reason?.trim() || "User requested cancellation";
+  const reason = String(req.body.reason || "").trim().slice(0, 300) || "User requested cancellation";
 
   // ── Mark cancelled ───────────────────────────────────
   booking.status = "cancelled";
@@ -204,21 +205,21 @@ module.exports.markUnavailable = async (req, res) => {
 
   if (!booking) {
     req.flash("error", "Booking not found");
-    return res.redirect("back");
+    return res.redirect(backTo(req));
   }
 
   const isOwner = booking.listing.owner.equals(req.user._id);
   const isAdmin = req.user.role === "admin";
   if (!isOwner && !isAdmin) {
     req.flash("error", "Access denied");
-    return res.redirect("back");
+    return res.redirect(backTo(req));
   }
   if (booking.status !== "upcoming") {
     req.flash("error", "This booking cannot be changed");
-    return res.redirect("back");
+    return res.redirect(backTo(req));
   }
 
-  const reason = req.body.reason?.trim() || "Listing unavailable — host cancelled";
+  const reason = String(req.body.reason || "").trim().slice(0, 300) || "Listing unavailable — host cancelled";
 
   booking.status = "unavailable";
   await releaseBooking(booking._id);
@@ -263,7 +264,7 @@ module.exports.markUnavailable = async (req, res) => {
   }
 
   await booking.save();
-  res.redirect("back");
+  res.redirect(backTo(req));
 };
 
 // ─────────────────────────────────────────────────────────
@@ -381,7 +382,7 @@ module.exports.cancelRefund = async (req, res) => {
   booking.refund.status = "cancelled";
   booking.refund.cancelledAt = new Date();
   booking.refund.cancelledBy = { id: req.user._id, username: req.user.username };
-  booking.refund.cancelReason = (req.body.reason || "").trim().slice(0, 300) || undefined;
+  booking.refund.cancelReason = String(req.body.reason || "").trim().slice(0, 300) || undefined;
   await booking.save();
 
   req.flash("success", "Failed refund cancelled.");
