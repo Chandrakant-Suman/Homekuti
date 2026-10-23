@@ -57,3 +57,11 @@ module.exports.checkoutLimiter = rateLimit({
     message: "Too many checkout attempts. Please wait a few minutes and try again.",
   }),
 });
+
+module.exports.verifyEmailLimiter = rateLimit({
+  ...common,
+  windowMs: 60 * MIN,
+  limit: 5,
+  keyGenerator: req => (req.user ? `user:${req.user._id}` : req.ip),
+  handler: formHandler("/user/profile"),
+});

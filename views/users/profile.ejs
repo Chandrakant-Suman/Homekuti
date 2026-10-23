@@ -125,7 +125,14 @@
         </div>
         <div style="display:flex;justify-content:space-between;padding:0.6rem 0;border-bottom:1px solid #f1f5f9;">
           <span style="color:#6b7280;font-size:0.9rem;">Email</span>
-          <span style="font-weight:600;color:#1f2933;font-size:0.9rem;"><%= user.email %></span>
+          <span style="font-weight:600;color:#1f2933;font-size:0.9rem;text-align:right;">
+            <%= user.email %>
+            <% if (user.emailVerified === false) { %>
+              <span style="display:inline-block;margin-left:6px;padding:1px 8px;border-radius:999px;background:#fffbeb;color:#92400e;font-size:0.72rem;">Not verified</span>
+            <% } else { %>
+              <span style="display:inline-block;margin-left:6px;padding:1px 8px;border-radius:999px;background:#ecfdf5;color:#047857;font-size:0.72rem;"><i class="fa-solid fa-circle-check"></i> Verified</span>
+            <% } %>
+          </span>
         </div>
         <div style="display:flex;justify-content:space-between;padding:0.6rem 0;border-bottom:1px solid #f1f5f9;">
           <span style="color:#6b7280;font-size:0.9rem;">Role</span>

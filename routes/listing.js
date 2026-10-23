@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const listingController = require("../controllers/listing");
-const { isLoggedIn } = require("../middlewares/authenticate");
+const { isLoggedIn, requireVerifiedEmail } = require("../middlewares/authenticate");
 const { isOwner } = require("../middlewares/authorize");
 const { validateListing } = require("../middlewares/validateListing");
 const upload = require("../middlewares/upload");
@@ -14,13 +14,14 @@ router
   .get(wrapAsync(listingController.index))
   .post(
     isLoggedIn,
+    requireVerifiedEmail,
     upload.single("listing[image]"),
     validateListing,
     wrapAsync(listingController.createListing)
   );
 
 // New form
-router.get("/new", isLoggedIn, listingController.renderNewForm);
+router.get("/new", isLoggedIn, requireVerifiedEmail, listingController.renderNewForm);
 
 // Show + Update + Delete
 router

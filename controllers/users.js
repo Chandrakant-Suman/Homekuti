@@ -5,6 +5,9 @@ const passport = require("passport");
 const { OAuth2Client } = require("google-auth-library");
 const { sendMail } = require("../utils/mailer");
 const { isProtectedAdmin } = require("../utils/protectedAdmin");
+const {
+    USERNAME_RE, validateSignup, passwordProblem, normalizeEmail, isEmailVerified,
+} = require("../utils/accountRules");
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -59,17 +62,41 @@ module.exports.signin = async (req, res) => {
 };
 
 module.exports.signupForm = (req, res) => {
-    res.render("users/signup");
+    res.render("users/signup", { values: {}, errors: {} });
 };
 
 module.exports.signup = async (req, res, next) => {
+    // Re-render the form with field errors and the user's input (never the password)
+    const fail = (values, errors) => res.status(422).render("users/signup", { values, errors });
     try {
-        const { email, username, password } = req.body;
-        const newUser = new User({ email, username });
-        const registeredUser = await User.register(newUser, password);
+        const { values, errors } = validateSignup(req.body);
+        if (Object.keys(errors).length) return fail(values, errors);
+
+        const ci = { locale: "en", strength: 2 };   // case-insensitive uniqueness
+        const [nameTaken, emailTaken] = await Promise.all([
+            User.exists({ username: values.username }).collation(ci),
+            User.exists({ email: values.email }).collation(ci),
+        ]);
+        if (nameTaken) errors.username = "That username is already taken.";
+        if (emailTaken) errors.email = "An account with this email already exists. Try signing in or resetting your password.";
+        if (Object.keys(errors).length) return fail(values, errors);
+
+        const newUser = new User({ email: values.email, username: values.username, emailVerified: false });
+        const registeredUser = await User.register(newUser, req.body.password);
+
+        let mailed = true;
+        try {
+            await sendVerificationEmail(registeredUser, req);
+        } catch (err) {
+            mailed = false;
+            console.error("Verification email failed:", err.message);
+        }
+
         req.login(registeredUser, (err) => {
             if (err) return next(err);
-            req.flash("success", "Welcome to Homekuti!");
+            req.flash("success", mailed
+                ? `Welcome to Homekuti! We've sent a verification link to ${registeredUser.email}.`
+                : "Welcome to Homekuti! We couldn't send your verification email — use \"Resend link\" at the top of the page.");
             req.session.save((err) => {
                 if (err) {
                     console.error("Session save error:", err);
@@ -79,10 +106,12 @@ module.exports.signup = async (req, res, next) => {
             });
         });
     } catch (err) {
-        if (err.name === "UserExistsError") {
-            req.flash("error", "Username already exists. Please try another one.");
+        if (err.name === "UserExistsError" || err.code === 11000) {
+            // Lost a race with a simultaneous sign-up for the same name/email
+            req.flash("error", "That username or email is already registered.");
             return res.redirect("/user/signup");
         }
+        console.error("Signup error:", err);
         req.flash("error", "Something went wrong. Please try again.");
         res.redirect("/user/signup");
     }
@@ -113,10 +142,13 @@ module.exports.googleAuth = async (req, res) => {
             audience: process.env.GOOGLE_CLIENT_ID,
         });
         const payload = ticket.getPayload();
-        const { sub: googleId, email, name, picture } = payload;
+        const { sub: googleId, name, picture } = payload;
+        const email = normalizeEmail(payload.email);
+        const googleVerified = payload.email_verified === true;
 
         // Find or create user
-        let user = await User.findOne({ $or: [{ googleId }, { email }] });
+        let user = await User.findOne({ $or: [{ googleId }, { email }] })
+            .collation({ locale: "en", strength: 2 }).select("+hash +salt");
 
         if (!user) {
             // Generate a unique username from email
@@ -126,11 +158,25 @@ module.exports.googleAuth = async (req, res) => {
             while (await User.findOne({ username })) {
                 username = `${baseUsername}${counter++}`;
             }
-            user = new User({ username, email, googleId, avatar: picture });
+            user = new User({ username, email, googleId, avatar: picture, emailVerified: googleVerified });
             await user.save();
         } else if (!user.googleId) {
+            if (!googleVerified) {
+                req.flash("error", "Your Google email isn't verified. Please sign in with your password instead.");
+                return res.redirect("/user/signin");
+            }
+            if (user.emailVerified === false) {
+                // Someone registered this email without proving ownership; Google just
+                // proved the real owner is here, so drop the unproven password.
+                user.hash = undefined;
+                user.salt = undefined;
+            }
             user.googleId = googleId;
+            user.emailVerified = true;
             user.avatar = user.avatar || picture;
+            await user.save();
+        } else if (googleVerified && user.emailVerified === false) {
+            user.emailVerified = true;
             await user.save();
         }
 
@@ -159,8 +205,6 @@ module.exports.profile = async (req, res) => {
     res.render("users/profile", { user, hasPassword });
 };
 
-const USERNAME_RE = /^[a-zA-Z0-9_.]{3,30}$/;
-const MIN_PASSWORD_LENGTH = 8;
 
 module.exports.updateUsername = async (req, res) => {
     const username = (req.body.username || "").trim();
@@ -190,8 +234,9 @@ module.exports.updateUsername = async (req, res) => {
 module.exports.updatePassword = async (req, res) => {
     const { currentPassword, newPassword, confirmPassword } = req.body;
 
-    if (!newPassword || newPassword.length < MIN_PASSWORD_LENGTH) {
-        req.flash("error", `New password must be at least ${MIN_PASSWORD_LENGTH} characters.`);
+    const pwProblem = passwordProblem(newPassword);
+    if (pwProblem) {
+        req.flash("error", pwProblem);
         return res.redirect("/user/profile");
     }
     if (newPassword !== confirmPassword) {
@@ -374,8 +419,9 @@ module.exports.resetPassword = async (req, res) => {
         req.flash("error", "This reset link is invalid or has expired. Please request a new one.");
         return res.redirect("/user/forgot-password");
     }
-    if (!newPassword || newPassword.length < MIN_PASSWORD_LENGTH) {
-        req.flash("error", `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`);
+    const pwProblem = passwordProblem(newPassword);
+    if (pwProblem) {
+        req.flash("error", pwProblem);
         return res.redirect(`/user/reset-password/${token}`);
     }
     if (newPassword !== confirmPassword) {
@@ -387,8 +433,77 @@ module.exports.resetPassword = async (req, res) => {
     // Single-use: clear the token so the link can't be reused
     user.resetPasswordToken = undefined;
     user.resetPasswordExpires = undefined;
+    user.emailVerified = true;   // they used a link sent to this inbox
     await user.save();
 
     req.flash("success", `Password reset. Sign in as "${user.username}" (or with your email) using your new password.`);
     res.redirect("/user/signin");
+};
+
+// ================= EMAIL VERIFICATION =================
+const VERIFY_TOKEN_TTL_MS = 24 * 60 * 60 * 1000;   // link valid for 24 hours
+const VERIFY_RESEND_COOLDOWN_MS = 60 * 1000;
+
+function appBaseUrl(req) {
+    return (process.env.BASE_URL || `${req.protocol}://${req.get("host")}`).replace(/\/$/, "");
+}
+
+async function sendVerificationEmail(user, req) {
+    const token = crypto.randomBytes(32).toString("hex");
+    user.emailVerifyToken = hashToken(token);
+    user.emailVerifyExpires = new Date(Date.now() + VERIFY_TOKEN_TTL_MS);
+    user.emailVerifySentAt = new Date();
+    await user.save();
+
+    const link = `${appBaseUrl(req)}/user/verify-email/${token}`;
+    await sendMail({
+        to: user.email,
+        subject: "Verify your Homekuti email",
+        text: `Hi ${user.username},\n\nPlease confirm this is your email address by opening this link within 24 hours:\n\n${link}\n\nIf you didn't create a Homekuti account, you can ignore this email.`,
+        html: `<p>Hi ${escapeHtml(user.username)},</p>
+            <p>Please confirm this is your email address. The link is valid for 24 hours.</p>
+            <p><a href="${link}" style="display:inline-block;padding:10px 20px;background:#fe424d;color:#fff;border-radius:8px;text-decoration:none;">Verify email</a></p>
+            <p style="color:#6b7280;font-size:13px;">Or paste this link into your browser:<br>${link}</p>
+            <p style="color:#6b7280;font-size:13px;">If you didn't create a Homekuti account, you can ignore this email.</p>`,
+    });
+}
+
+module.exports.verifyEmail = async (req, res) => {
+    const user = await User.findOne({
+        emailVerifyToken: hashToken(req.params.token || ""),
+        emailVerifyExpires: { $gt: new Date() },
+    }).select("+emailVerifyToken");
+
+    if (!user) {
+        req.flash("error", "This verification link is invalid or has expired. Sign in and use \"Resend link\" to get a new one.");
+        return res.redirect(req.user ? "/user/profile" : "/user/signin");
+    }
+    user.emailVerified = true;
+    user.emailVerifyToken = undefined;
+    user.emailVerifyExpires = undefined;
+    await user.save();
+
+    req.flash("success", "Email verified! You can now book stays and host listings.");
+    req.session.save(() => res.redirect(req.user ? "/listings" : "/user/signin"));
+};
+
+module.exports.resendVerification = async (req, res) => {
+    const back = req.get("Referrer") || "/user/profile";
+    const user = await User.findById(req.user._id);
+    if (isEmailVerified(user)) {
+        req.flash("success", "Your email is already verified.");
+        return res.redirect(back);
+    }
+    if (user.emailVerifySentAt && Date.now() - user.emailVerifySentAt.getTime() < VERIFY_RESEND_COOLDOWN_MS) {
+        req.flash("error", "We just sent a link. Please check your inbox (and spam) or wait a minute.");
+        return res.redirect(back);
+    }
+    try {
+        await sendVerificationEmail(user, req);
+        req.flash("success", `Verification link sent to ${user.email}.`);
+    } catch (err) {
+        console.error("Verification email failed:", err.message);
+        req.flash("error", "Couldn't send the email right now. Please try again later.");
+    }
+    res.redirect(back);
 };

@@ -34,24 +34,35 @@
   .signin-btn:hover { background: var(--primary-dark); }
   .signin-footer { text-align: center; margin-top: 1.4rem; font-size: 0.9rem; color: #6b7280; }
   .signin-footer a { color: var(--primary); font-weight: 600; text-decoration: none; }
+  .su-hint { font-size: 0.78rem; color: #9ca3af; margin-top: 4px; }
+  .su-hint.su-error { color: #ef4444; }
+  .signin-input.is-invalid { border-color: #ef4444; }
 </style>
 
 <div class="signin-wrapper">
   <div class="signin-card">
     <h2 class="signin-title">Create Account</h2>
 
+    <% const v = (typeof values !== 'undefined' && values) || {}; const e = (typeof errors !== 'undefined' && errors) || {}; %>
     <form action="/user/signup" method="POST" novalidate>
       <div class="mb-form">
-        <label class="signin-label">Username</label>
-        <input type="text" class="signin-input" name="username" placeholder="Choose a username" required />
+        <label class="signin-label" for="su-username">Username</label>
+        <input type="text" id="su-username" class="signin-input <%= e.username ? 'is-invalid' : '' %>" name="username"
+          placeholder="Choose a username" value="<%= v.username || '' %>" required minlength="3" maxlength="30"
+          pattern="[A-Za-z0-9_.]{3,30}" autocomplete="username" />
+        <div class="su-hint <%= e.username ? 'su-error' : '' %>"><%= e.username || 'Letters, numbers, dots or underscores (3–30).' %></div>
       </div>
       <div class="mb-form">
-        <label class="signin-label">Email</label>
-        <input type="email" class="signin-input" name="email" placeholder="Enter your email" required />
+        <label class="signin-label" for="su-email">Email</label>
+        <input type="email" id="su-email" class="signin-input <%= e.email ? 'is-invalid' : '' %>" name="email"
+          placeholder="Enter your email" value="<%= v.email || '' %>" required maxlength="254" autocomplete="email" />
+        <div class="su-hint <%= e.email ? 'su-error' : '' %>"><%= e.email || "We'll send a link to verify it." %></div>
       </div>
       <div class="mb-form">
-        <label class="signin-label">Password</label>
-        <input type="password" class="signin-input" name="password" placeholder="Create a password" required minlength="6" />
+        <label class="signin-label" for="su-password">Password</label>
+        <input type="password" id="su-password" class="signin-input <%= e.password ? 'is-invalid' : '' %>" name="password"
+          placeholder="Create a password" required minlength="8" maxlength="128" autocomplete="new-password" />
+        <div class="su-hint <%= e.password ? 'su-error' : '' %>"><%= e.password || 'At least 8 characters, with a letter and a number.' %></div>
       </div>
       <button type="submit" class="signin-btn">Create Account</button>
     </form>

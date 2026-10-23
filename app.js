@@ -179,6 +179,7 @@ passport.deserializeUser(async (id, done) => {
 app.use((req, res, next) => {
   res.locals.activeRoute = req.path;
   res.locals.currUser = req.user;
+  res.locals.emailUnverified = Boolean(req.user) && req.user.emailVerified === false;
   res.locals.success = req.flash("success");
   res.locals.error = req.flash("error");
   res.locals.hideFlash = false;

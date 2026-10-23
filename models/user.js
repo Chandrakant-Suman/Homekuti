@@ -49,6 +49,12 @@ const userSchema = new Schema({
     phone: {
         type: String,
     },
+    // Email verification. Deliberately no default: accounts created before this
+    // feature have no value and are treated as verified (see utils/accountRules).
+    emailVerified: { type: Boolean },
+    emailVerifyToken: { type: String, select: false },   // SHA-256 of the emailed token
+    emailVerifyExpires: Date,
+    emailVerifySentAt: Date,
     // Forgot-password flow: only a SHA-256 hash of the emailed token is stored
     resetPasswordToken: {
         type: String,

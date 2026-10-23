@@ -5,7 +5,7 @@ const userController = require("../controllers/users");
 const { isLoggedIn } = require("../middlewares/authenticate");
 const wrapAsync = require("../utils/wrapAsync");
 const {
-  signinLimiter, signupLimiter, forgotPasswordLimiter, passwordChangeLimiter,
+  signinLimiter, signupLimiter, forgotPasswordLimiter, passwordChangeLimiter, verifyEmailLimiter,
 } = require("../middlewares/rateLimit");
 
 // Signin
@@ -21,6 +21,10 @@ router.get("/forgot-password", userController.forgotPasswordForm);
 router.post("/forgot-password", forgotPasswordLimiter, wrapAsync(userController.forgotPassword));
 router.get("/reset-password/:token", wrapAsync(userController.resetPasswordForm));
 router.post("/reset-password/:token", passwordChangeLimiter, wrapAsync(userController.resetPassword));
+
+// Email verification
+router.get("/verify-email/:token", wrapAsync(userController.verifyEmail));
+router.post("/verify-email/resend", isLoggedIn, verifyEmailLimiter, wrapAsync(userController.resendVerification));
 
 // Logout
 router.get("/logout", userController.logout);

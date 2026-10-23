@@ -24,6 +24,15 @@
     <%- include('../includes/navbar.ejs') %>
     <main>
       <div class="main-container">
+        <% if (emailUnverified) { %>
+          <div class="hk-verify-banner">
+            <i class="fa-solid fa-envelope-circle-check"></i>
+            <span>Please verify your email (<strong><%= currUser.email %></strong>) to book stays and host listings.</span>
+            <form method="POST" action="/user/verify-email/resend">
+              <button type="submit">Resend link</button>
+            </form>
+          </div>
+        <% } %>
         <%- include('../includes/flash') %>
         <%- body %>
       </div>
