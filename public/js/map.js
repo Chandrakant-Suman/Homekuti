@@ -24,10 +24,11 @@ if (typeof listing !== "undefined" && listing?.geometry?.coordinates) {
 
   // Custom marker icon
   const redIcon = L.icon({
-    iconUrl: "/images/logo.jpg",
+    iconUrl: "/images/homekuti-logo.jpg",
+    className: "hk-map-logo",
     iconSize: [40, 40],
-    iconAnchor: [20, 40],
-    popupAnchor: [0, -40],
+    iconAnchor: [20, 20],   // round logo: centre sits on the location
+    popupAnchor: [0, -22],
   });
 
   const marker = L.marker([lat, lng], { icon: redIcon }).addTo(map);

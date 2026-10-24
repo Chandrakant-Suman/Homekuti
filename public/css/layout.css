@@ -38,9 +38,10 @@
 }
 
 .hk-logo {
-  height: 32px;
-  width: auto;
-  object-fit: contain;
+  height: 34px;
+  width: 34px;
+  object-fit: cover;
+  border-radius: 50%;   /* round logo: hide the square image's corners */
 }
 
 /* RIGHT SIDE (LINKS + MENU) */
@@ -216,8 +217,16 @@
 
 .footer-logo {
   height: 32px;
-  width: auto;
-  object-fit: contain;
+  width: 32px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+/* Round logo used as the map marker (listing page) */
+.hk-map-logo {
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  border: 2px solid #fff;
 }
 
 .footer-title {

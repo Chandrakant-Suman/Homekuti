@@ -15,3 +15,7 @@ logs/
 TECH_STACK.md
 INTERVIEW_PREP.md
 AUDIT.md
+# Personal interview-prep reports (generated)
+report/
+
+.claude/

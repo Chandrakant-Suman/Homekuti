@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img src="public/images/logo.jpg" width="52"/>
+  <img src="public/images/homekuti-logo.jpg" width="52"/>
   <br/>
   Homekuti
 </h1>
